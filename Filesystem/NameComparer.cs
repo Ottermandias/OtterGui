@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>
 {
+    // Compare paths only by their name, using the submitted string comparer.
     private readonly struct NameComparer : IComparer<IPath>
     {
         private readonly IComparer<string> _baseComparer;

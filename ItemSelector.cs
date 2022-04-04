@@ -108,7 +108,7 @@ public class ItemSelector<T>
             return false;
         using var raii = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropTarget);
 
-        if (!IsDropping(DragDropLabel))
+        if (!ImGuiUtil.IsDropping(DragDropLabel))
             return false;
 
         if (_dragDropData is not TData data)
@@ -124,7 +124,7 @@ public class ItemSelector<T>
             return false;
         using var raii = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropTarget);
 
-        if (!IsDropping(DragDropLabel))
+        if (!ImGuiUtil.IsDropping(DragDropLabel))
             return false;
 
         return _dragDropData is TData data && func(data);
@@ -203,11 +203,6 @@ public class ItemSelector<T>
     protected virtual void OnDrop(object? data, int idx)
         => throw new NotImplementedException();
 
-
-    // Internals
-    private static unsafe bool IsDropping(string name)
-        => ImGui.AcceptDragDropPayload(name).NativePtr != null;
-
     private void InternalDraw(int idx)
     {
         // Add a slight distance from the border so that the padding of a selectable fills the whole border.
@@ -233,11 +228,11 @@ public class ItemSelector<T>
             return;
 
         using var end = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropTarget);
-        if (IsDropping(DragDropLabel))
+        if (ImGuiUtil.IsDropping(DragDropLabel))
         {
             OnDrop(_dragDropData, idx);
         }
-        else if (IsDropping(MoveLabel))
+        else if (ImGuiUtil.IsDropping(MoveLabel))
         {
             var oldIdx = (int)(_dragDropData ?? idx);
             if (OnMove(oldIdx, idx) && oldIdx == CurrentIdx)

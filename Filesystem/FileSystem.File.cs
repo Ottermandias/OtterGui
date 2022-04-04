@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,7 +10,10 @@ namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>
 {
-    public void SaveToFile(FileInfo file, Func<T, string, (string, bool)> conversion, bool addEmptyFolders)
+    // Save a current filesystem to a file, using a function that transforms the data value as well as its full path
+    // to a identifier string for the data as well as a bool whether this data should be saved.
+    // If addEmptyFolders is true, folders without any leaves are stored separately.
+    protected void SaveToFile(FileInfo file, Func<T, string, (string, bool)> conversion, bool addEmptyFolders)
     {
         using var stream = File.Exists(file.FullName)
             ? File.Open(file.FullName, FileMode.Truncate)
@@ -22,13 +26,15 @@ public partial class FileSystem<T>
         j.WriteStartObject();
         j.WritePropertyName("Data");
         j.WriteStartObject();
-        if (Root._children.Count > 0)
-            foreach (var path in Root.GetAllChildren(SortMode.Lexicographical))
+        // Iterate lexicographically through all decendants, keep track of empty folders if necessary.
+        // otherwise write all the paths that are given by the conversion function.
+        if (Root.Children.Count > 0)
+            foreach (var path in Root.GetAllDescendants(SortMode.Lexicographical))
             {
                 switch (path)
                 {
                     case Folder f:
-                        if (addEmptyFolders && f._children.Count == 0)
+                        if (addEmptyFolders && f.Children.Count == 0)
                             emptyFolders.Add(f.FullName());
                         break;
                     case Leaf l:
@@ -45,6 +51,7 @@ public partial class FileSystem<T>
             }
 
         j.WriteEndObject();
+        // Write empty folders if applicable.
         if (addEmptyFolders)
         {
             j.WritePropertyName("EmptyFolders");
@@ -57,58 +64,75 @@ public partial class FileSystem<T>
         j.WriteEndObject();
     }
 
-    public static bool Load(FileInfo file, IEnumerable<T> objects, Func<T, string> func, out FileSystem<T> ret,
-        IComparer<string>? comparer = null)
+    // Check if a path ends in a duplicate number already and increment if so, otherwise add (2).
+    private static readonly Regex DuplicateRegex = new(@"\((?'Number'\d+)\)$", RegexOptions.Compiled);
+
+    private static string FixDuplicateName(string name)
     {
-        ret = new FileSystem<T>(comparer);
+        var match = DuplicateRegex.Match(name);
+        return $"{name} ({(match.Success ? int.Parse(match.Groups["Number"].Value) + 1 : 2)})";
+    }
+
+    // Load a given FileSystem from file, using an enumeration of data values, a function that corresponds a data value to its identifier
+    // and a function that corresponds a data value not stored in the saved filesystem to its name.
+    protected bool Load(FileInfo file, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
+    {
+        Root.Children.Clear();
         if (!File.Exists(file.FullName))
             return true;
 
-        var jObject      = JObject.Parse(File.ReadAllText(file.FullName));
-        var data         = jObject["Data"]?.Value<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-        var emptyFolders = jObject["EmptyFolders"]?.Value<string[]>() ?? Array.Empty<string>();
-        var changes      = false;
-
-        foreach (var value in objects)
+        var changes = false;
+        try
         {
-            var name = func(value);
-            if (data.TryGetValue(name, out var path))
+            var jObject      = JObject.Parse(File.ReadAllText(file.FullName));
+            var data         = jObject["Data"]?.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            var emptyFolders = jObject["EmptyFolders"]?.ToObject<string[]>() ?? Array.Empty<string>();
+
+            foreach (var value in objects)
             {
-                var split = path.Split();
-                var (result, folder) = ret.CreateAllFolders(split[..^1]);
-                if (result is not Result.Success or Result.SuccessNothingDone)
+                var identifier = toIdentifier(value);
+                // If the data has a path in the filesystem, create all necessary folders and set the leaf.
+                if (data.TryGetValue(identifier, out var path))
                 {
-                    changes = true;
-                    continue;
-                }
+                    data.Remove(identifier);
+                    var split = path.SplitDirectories();
+                    var (result, folder) = CreateAllFolders(split[..^1]);
+                    if (result is not Result.Success and not Result.SuccessNothingDone)
+                    {
+                        changes = true;
+                        continue;
+                    }
 
-                var leaf = new Leaf(folder, split[^1], value);
-                while (ret.SetChild(folder, leaf, out var idx) == Result.ItemExists)
+                    var leaf = new Leaf(folder, split[^1], value);
+                    while (SetChild(folder, leaf, out var idx) == Result.ItemExists)
+                    {
+                        leaf.Name = FixDuplicateName(leaf.Name);
+                        changes   = true;
+                    }
+                }
+                else
                 {
-                    leaf.Name += '_';
-                    changes   =  true;
+                    // Add a new leaf using the given toName function.
+                    var leaf = new Leaf(Root, toName(value), value);
+                    while (SetChild(Root, leaf, out var idx) == Result.ItemExists)
+                    {
+                        leaf.Name = FixDuplicateName(leaf.Name);
+                        changes   = true;
+                    }
                 }
-
-                data.Remove(name);
             }
-            else
+
+            // Add all empty folders and potential unfinished folders from 
+            foreach (var split in emptyFolders.Concat(data.Values).Select(folder => folder.SplitDirectories()))
             {
-                var leaf = new Leaf(ret.Root, name, value);
-                while (ret.SetChild(ret.Root, leaf, out var idx) == Result.ItemExists)
-                {
-                    leaf.Name += '_';
-                    changes   =  true;
-                }
+                var (result, _) = CreateAllFolders(split);
+                if (result is not Result.Success and not Result.SuccessNothingDone)
+                    changes = true;
             }
         }
-
-        changes |= data.Count > 0;
-
-        foreach (var split in emptyFolders.Concat(data.Values).Select(folder => folder.Split()))
+        catch
         {
-            var (result, _) = ret.CreateAllFolders(split);
-            if (result is not Result.Success or Result.SuccessNothingDone)
-                changes = true;
+            return true;
         }
 
         return changes;

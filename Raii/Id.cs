@@ -5,11 +5,11 @@ namespace OtterGui.Raii;
 
 public static partial class ImRaii
 {
-    public static Id PushId(string id)
-        => new Id().Push(id);
+    public static Id PushId(string id, bool enabled = true)
+        => enabled ? new Id().Push(id) : new Id();
 
-    public static Id PushId(int id)
-        => new Id().Push(id);
+    public static Id PushId(int id, bool enabled = true)
+        => enabled ? new Id().Push(id) : new Id();
 
     public sealed class Id : IDisposable
     {

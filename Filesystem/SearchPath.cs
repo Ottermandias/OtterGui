@@ -1,4 +1,6 @@
-﻿namespace OtterGui.Filesystem;
+using System.Collections.Generic;
+
+namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>
 {
@@ -8,6 +10,8 @@ public partial class FileSystem<T>
         public string Name   { get; }
     }
 
+
+    // A search path just to be used for comparison between siblings.
     internal struct SearchPath : IPath
     {
         public Folder Parent

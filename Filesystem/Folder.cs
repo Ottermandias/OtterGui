@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,12 +9,14 @@ public partial class FileSystem<T>
 {
     public class Folder : IPath
     {
-        public Folder Parent        { get; internal set; }
-        public string Name          { get; internal set; }
-        public int    TotalChildren { get; internal set; } = 0;
-        public int    TotalLeaves   { get; internal set; } = 0;
+        public Folder Parent { get; internal set; }
+        public string Name   { get; internal set; }
 
-        internal List<IPath> _children = new();
+        // The folder internally keeps track of total descendants and total leaves.
+        public int TotalDescendants { get; internal set; } = 0;
+        public int TotalLeaves   { get; internal set; } = 0;
+
+        internal List<IPath> Children = new();
 
         public Folder(Folder parent, string name)
         {
@@ -22,44 +24,72 @@ public partial class FileSystem<T>
             Name   = name.FixName();
         }
 
-        public IEnumerable<IPath> GetSortedEnumerator(SortMode mode)
+        // Iterate through all direct children in sort order.
+        public IEnumerable<IPath> GetChildren(SortMode mode)
         {
             switch (mode)
             {
                 case SortMode.FoldersFirst:
-                    yield return this;
-
-                    foreach (var child in _children.OfType<Folder>())
+                    foreach (var child in Children.OfType<Folder>())
                         yield return child;
-                    foreach (var child in _children.OfType<Leaf>())
+                    foreach (var child in Children.OfType<Leaf>())
+                        yield return child;
+
+                    break;
+                case SortMode.FoldersLast:
+                    foreach (var child in Children.OfType<Leaf>())
+                        yield return child;
+                    foreach (var child in Children.OfType<Folder>())
                         yield return child;
 
                     break;
                 case SortMode.Lexicographical:
-                    yield return this;
-
-                    foreach (var child in _children)
+                    foreach (var child in Children)
                         yield return child;
+
+                    break;
+                case SortMode.InverseFoldersFirst:
+                    foreach (var child in Children.OfType<Folder>().Reverse())
+                        yield return child;
+                    foreach (var child in Children.OfType<Leaf>().Reverse())
+                        yield return child;
+
+                    break;
+                case SortMode.InverseLexicographical:
+                    foreach (var child in ((IReadOnlyList<IPath>)Children).Reverse())
+                        yield return child;
+
+                    break;
+                case SortMode.InverseFoldersLast:
+                    foreach (var child in Children.OfType<Leaf>().Reverse())
+                        yield return child;
+                    foreach (var child in Children.OfType<Folder>().Reverse())
+                        yield return child;
+
 
                     break;
                 default: throw new InvalidEnumArgumentException();
             }
         }
 
-        public IEnumerable<IPath> GetAllChildren(SortMode mode)
+        // Iterate through all Descendants in sort order, not including the folder itself.
+        public IEnumerable<IPath> GetAllDescendants(SortMode mode)
         {
-            return GetSortedEnumerator(mode).SelectMany(p => p is Folder f
-                ? f.GetAllChildren(mode)
-                : new[]
-                {
-                    p,
-                });
+            return GetChildren(mode).SelectMany(p => p is Folder f
+                ? f.GetAllDescendants(mode).Prepend(f)
+                : Array.Empty<IPath>().Append(p));
         }
-
-        internal static Folder CreateRoot()
-            => new(null!, string.Empty);
 
         public override string ToString()
             => this.FullName();
+
+
+        // Creates the specific root element.
+        // The name is set to empty due to it being fixed in the constructor.
+        internal static Folder CreateRoot()
+            => new(null!, "_")
+            {
+                Name = string.Empty,
+            };
     }
 }
