@@ -1,0 +1,190 @@
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Reflection.Metadata.Ecma335;
+using ImGuiNET;
+using OtterGui.Filesystem;
+using OtterGui.Raii;
+
+namespace OtterGui.FileSystem.Selector;
+
+public partial class FileSystemSelector<T, TStateStorage> : IDisposable
+{
+    // The state storage can contain arbitrary data for each visible node.
+    // It also contains the path of the visible node itself
+    // as well as its depth in the file system tree.
+    private struct StateStruct
+    {
+        public TStateStorage       StateStorage;
+        public FileSystem<T>.IPath Path;
+        public byte                Depth;
+    }
+
+    // Only contains values not filtered out at any time.
+    private readonly List<StateStruct> _state;
+
+    public virtual void Dispose()
+    {
+        FileSystem.Changed -= OnFileSystemChange;
+    }
+
+    // The default filter string that is input.
+    private string _filterValue = string.Empty;
+
+    // If the filter was changed, recompute the state before the next draw iteration.
+    private bool _filterDirty = true;
+
+    protected void SetFilterDirty()
+        => _filterDirty = true;
+
+    // Customization point that gets triggered whenever FilterValue is changed.
+    // Should return whether the filter is to be set dirty afterwards.
+    protected virtual bool ChangeFilter(string filterValue)
+        => true;
+
+    private bool ChangeFilterInternal(string filterValue)
+    {
+        if (filterValue == _filterValue)
+            return false;
+
+        _filterValue = filterValue;
+        return true;
+    }
+
+    // Customization point to draw additional filters into the filter row.
+    // Parameters are start position for the filter input field and selector width.
+    // It should return the remaining width for the text input.
+    protected virtual float CustomFilters(float width)
+        => width;
+
+    // Draw the default filter row of a given width.
+    private void DrawFilterRow(float width)
+    {
+        var       pos   = ImGui.GetCursorPos();
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).Push(ImGuiStyleVar.FrameRounding, 0);
+        width = CustomFilters(width);
+        ImGui.SetNextItemWidth(width);
+        var tmp = _filterValue;
+        if (ImGui.InputTextWithHint("##Filter", "Filter...", ref tmp, 128) && ChangeFilterInternal(tmp) && ChangeFilter(tmp))
+            SetFilterDirty();
+        style.Pop();
+    }
+
+    // Customization point on how a path should be filtered.
+    // Checks whether the FullName contains the current string by default.
+    // Is not called directly, but through ApplyFiltersAndState, which can be overwritten separately.
+    protected virtual bool ApplyFilters(FileSystem<T>.IPath path)
+        => _filterValue.Length != 0 && !path.FullName().Contains(_filterValue);
+
+    // Customization point to get the state associated with a given path.
+    // Is not called directly, but through ApplyFiltersAndState, which can be overwritten separately.
+    protected virtual TStateStorage GetState(FileSystem<T>.IPath path)
+        => default;
+
+    // If state and filtering are connected, you can overwrite this method.
+    // Otherwise it just calls both functions separately.
+    protected virtual bool ApplyFiltersAndState(FileSystem<T>.IPath path, out TStateStorage state)
+    {
+        state = GetState(path);
+        return ApplyFilters(path);
+    }
+
+    // Recursively apply filters.
+    // Folders are explored on their current expansion state as well as being filtered themselves.
+    // But if any of a folders descendants is visible, the folder will also remain visible.
+    private bool ApplyFiltersInternal(FileSystem<T>.IPath path, ref int idx, byte currentDepth)
+    {
+        var filtered = ApplyFiltersAndState(path, out var state);
+        // Insert at first so that subsequent objects can access the right index.
+        _state.Insert(idx, new StateStruct()
+        {
+            Depth        = currentDepth,
+            Path         = path,
+            StateStorage = state,
+        });
+
+        if (path is FileSystem<T>.Folder f && ImGui.GetStateStorage().GetBool(ImGui.GetID(path.Label())))
+            foreach (var child in f.GetChildren(SortMode))
+            {
+                ++idx;
+                filtered &= ApplyFiltersInternal(child, ref idx, (byte)(currentDepth + 1));
+            }
+
+        // Remove a completely filtered folder again.
+        if (filtered)
+            _state.RemoveAt(idx--);
+
+        return filtered;
+    }
+
+    // Non-recursive entry point for recreating filters if dirty.
+    private void ApplyFilters()
+    {
+        if (!_filterDirty)
+            return;
+
+        _state.Clear();
+        var idx = 0;
+        foreach (var child in FileSystem.Root.GetChildren(SortMode))
+        {
+            ApplyFiltersInternal(child, ref idx, 0);
+            ++idx;
+        }
+
+        _filterDirty = false;
+    }
+
+
+    // Add or remove descendants of the given folder depending on if it is opened or closed.
+    private void AddOrRemoveDescendants(FileSystem<T>.Folder folder, bool open)
+    {
+        if (open)
+        {
+            var idx = _currentIndex;
+            _fsActions.Enqueue(() => AddDescendants(folder, idx));
+        }
+        else
+        {
+            RemoveDescendants(_currentIndex);
+        }
+    }
+
+    // Given the cache-index to a folder, remove its descendants from the cache.
+    // Used when folders are collapsed.
+    private void RemoveDescendants(int parentIndex)
+    {
+        var start = parentIndex + 1;
+        var depth = _state[parentIndex].Depth;
+        var end   = start;
+        for (; end < _state.Count; ++end)
+        {
+            if (_state[end].Depth <= depth)
+                break;
+        }
+
+        _state.RemoveRange(start, end - start);
+    }
+
+    // Given a folder and its cache-index, add all its expanded and unfiltered descendants to the cache.
+    // Used when folders are expanded.
+    private void AddDescendants(FileSystem<T>.Folder f, int parentIndex)
+    {
+        var depth = (byte)(_state[parentIndex].Depth + 1);
+        foreach (var child in f.GetChildren(SortMode))
+        {
+            ++parentIndex;
+            ApplyFiltersInternal(child, ref parentIndex, depth);
+        }
+    }
+
+    // Any file system change also sets the filters dirty.
+    // Easier than checking specific changes.
+    private void EnableFileSystemSubscription()
+        => FileSystem.Changed += OnFileSystemChange;
+
+    private void OnFileSystemChange(FileSystemChangeType type, FileSystem<T>.IPath changedObject, FileSystem<T>.IPath? previousParent,
+        FileSystem<T>.IPath? newParent)
+    {
+        SetFilterDirty();
+    }
+}

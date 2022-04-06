@@ -3,12 +3,14 @@ using ImGuiNET;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 
-namespace OtterGui;
+namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage>
 {
-    public readonly string               MoveLabel = string.Empty;
-    private         FileSystem<T>.IPath? _movedPathDragDrop;
+    public readonly string MoveLabel = string.Empty; // Gets set by setting the label itself.
+
+    // The currently moved object.
+    private FileSystem<T>.IPath? _movedPathDragDrop;
 
     private void DragDropSource(FileSystem<T>.IPath path)
     {

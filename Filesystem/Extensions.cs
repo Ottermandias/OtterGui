@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OtterGui.Filesystem;
 
-internal static class Extensions
+public static class Extensions
 {
     // A filesystem name may not contain forward-slashes, as they are used to split paths.
     // The empty string as name signifies the root, so it can also not be used.
@@ -87,6 +87,28 @@ internal static class Extensions
         }
 
         return count;
+    }
+
+    // Obtain all parents in order.
+    public static IReadOnlyList<FileSystem<T>.Folder> Parents<T>(this FileSystem<T>.IPath path, int maximumDepth = 0) where T : class
+    {
+        if (path.Name.Length == 0 || path.Parent.Name.Length == 0)
+            return Array.Empty<FileSystem<T>.Folder>();
+
+        var list = new List<FileSystem<T>.Folder>();
+        if (maximumDepth <= 0)
+            maximumDepth = int.MaxValue;
+        else
+            list.Capacity = maximumDepth;
+
+        var parent  = path.Parent;
+        while (parent.Name.Length > 0 && maximumDepth-- > 0)
+        {
+            list.Insert(0, parent);
+            parent = parent.Parent;
+        }
+
+        return list;
     }
 
 

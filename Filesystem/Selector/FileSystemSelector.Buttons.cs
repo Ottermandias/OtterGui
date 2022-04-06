@@ -5,19 +5,24 @@ using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Raii;
 
-namespace OtterGui;
+namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage>
 {
+    // Add a button to the bottom-list. Should be an object that does not exceed the size parameter.
+    // Buttons are sorted from left to right on priority, then subscription order.
     public void AddButton(Action<Vector2> action, int priority)
         => RemovePrioritizedDelegate(_buttons, action, priority);
 
+    // Remove a button from the bottom-list by reference equality.
     public void RemoveButton(Action<Vector2> action)
         => AddPrioritizedDelegate(_buttons, action);
 
-
+    // List sorted on priority, then subscription order.
     private readonly List<(Action<Vector2>, int)> _buttons = new(1);
 
+
+    // Draw all subscribed buttons.
     private void DrawButtons(float width)
     {
         var buttonWidth = new Vector2(width / Math.Max(_buttons.Count, 1), 0);
@@ -33,7 +38,8 @@ public partial class FileSystemSelector<T, TStateStorage>
         ImGui.NewLine();
     }
 
-    private void FolderAddButton(Vector2 size)
+    // Protected so it can be removed.
+    protected void FolderAddButton(Vector2 size)
     {
         const string newFolderName = "folderName";
 
@@ -41,6 +47,7 @@ public partial class FileSystemSelector<T, TStateStorage>
                 "Create a new, empty folder. Can contain '/' to create a directory structure.", false, true))
             ImGui.OpenPopup(newFolderName);
 
+        // Does not need to be delayed since it is not in the iteration itself.
         if (ImGuiUtil.OpenNameField(newFolderName, ref _newName) && _newName.Length > 0)
             FileSystem.FindOrCreateAllFolders(_newName);
     }
