@@ -99,10 +99,9 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
             _fsActions.Enqueue(() =>
             {
-                var stateStorage = ImGui.GetStateStorage();
-                var state        = stateStorage.GetInt(ImGui.GetID(folder.Label()), 0);
+                var oldLabel     = folder.Label();
                 FileSystem.RenameAndMove(folder, currentPath);
-                CopyStateStorage(stateStorage, state, folder);
+                CopyStateStorage(folder, oldLabel);
             });
 
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the folder. Creates all required parent directories, if possible.");
@@ -114,9 +113,9 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
             _fsActions.Enqueue(() =>
             {
-                var stateStorage = ImGui.GetStateStorage();
+                var oldLabel     = leaf.Parent.Label();
                 FileSystem.RenameAndMove(leaf, currentPath);
-                CopyStateStorage(stateStorage, 1, leaf.Parent);
+                CopyStateStorage(leaf.Parent, oldLabel);
             });
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the leaf. Creates all required parent directories, if possible.");
     }

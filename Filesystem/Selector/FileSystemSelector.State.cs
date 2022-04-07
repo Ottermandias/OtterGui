@@ -29,13 +29,15 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     }
 
     // The default filter string that is input.
-    private string _filterValue = string.Empty;
+    protected string FilterValue { get; private set; } = string.Empty;
 
     // If the filter was changed, recompute the state before the next draw iteration.
     private bool _filterDirty = true;
 
     protected void SetFilterDirty()
         => _filterDirty = true;
+
+    protected string FilterTooltip = string.Empty;
 
     // Customization point that gets triggered whenever FilterValue is changed.
     // Should return whether the filter is to be set dirty afterwards.
@@ -44,10 +46,10 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
 
     private bool ChangeFilterInternal(string filterValue)
     {
-        if (filterValue == _filterValue)
+        if (filterValue == FilterValue)
             return false;
 
-        _filterValue = filterValue;
+        FilterValue = filterValue;
         return true;
     }
 
@@ -60,21 +62,22 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     // Draw the default filter row of a given width.
     private void DrawFilterRow(float width)
     {
-        var       pos   = ImGui.GetCursorPos();
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).Push(ImGuiStyleVar.FrameRounding, 0);
         width = CustomFilters(width);
         ImGui.SetNextItemWidth(width);
-        var tmp = _filterValue;
+        var tmp = FilterValue;
         if (ImGui.InputTextWithHint("##Filter", "Filter...", ref tmp, 128) && ChangeFilterInternal(tmp) && ChangeFilter(tmp))
             SetFilterDirty();
         style.Pop();
+        if (FilterTooltip.Length > 0)
+            ImGuiUtil.HoverTooltip(FilterTooltip);
     }
 
     // Customization point on how a path should be filtered.
     // Checks whether the FullName contains the current string by default.
     // Is not called directly, but through ApplyFiltersAndState, which can be overwritten separately.
     protected virtual bool ApplyFilters(FileSystem<T>.IPath path)
-        => _filterValue.Length != 0 && !path.FullName().Contains(_filterValue);
+        => FilterValue.Length != 0 && !path.FullName().Contains(FilterValue);
 
     // Customization point to get the state associated with a given path.
     // Is not called directly, but through ApplyFiltersAndState, which can be overwritten separately.

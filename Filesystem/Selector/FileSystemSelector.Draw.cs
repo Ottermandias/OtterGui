@@ -33,8 +33,13 @@ public partial class FileSystemSelector<T, TStateStorage>
         DrawLeafName(leaf, state, leaf == SelectedLeaf);
         group.Dispose();
 
-        if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Left) && SelectedLeaf != leaf)
+        {
+            var oldData = SelectedLeaf?.Value;
             SelectedLeaf = leaf;
+            SelectionChanged?.Invoke(oldData, leaf.Value, state);
+        }
+
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
             ImGui.OpenPopup(leaf.Name);
 
@@ -123,13 +128,13 @@ public partial class FileSystemSelector<T, TStateStorage>
 
             // Draw the notch and increase the line length.
             var midPoint = (minRect.Y + maxRect.Y) / 2f - 1f;
-            drawList.AddLine(new Vector2(lineStart.X, midPoint), new Vector2(lineStart.X + lineSize, midPoint), TreeLineColor,
+            drawList.AddLine(new Vector2(lineStart.X, midPoint), new Vector2(lineStart.X + lineSize, midPoint), FolderLineColor,
                 ImGuiHelpers.GlobalScale);
             lineEnd.Y = midPoint;
         }
 
         // Finally, draw the folder line.
-        drawList.AddLine(lineStart, AdjustedLineEnd(lineEnd), TreeLineColor, ImGuiHelpers.GlobalScale);
+        drawList.AddLine(lineStart, AdjustedLineEnd(lineEnd), FolderLineColor, ImGuiHelpers.GlobalScale);
     }
 
     // Draw a folder. Handles
@@ -138,10 +143,11 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - expanding/collapsing
     private (Vector2, Vector2) DrawFolder(FileSystem<T>.Folder folder)
     {
-        using var color   = ImRaii.PushColor(ImGuiCol.Text, FolderNameColor);
-        var       recurse = ImGui.TreeNodeEx(folder.Name);
+        var       expandedState = ImGui.GetStateStorage().GetBool(ImGui.GetID(folder.Name), false);
+        using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
+        var       recurse       = ImGui.TreeNodeEx(folder.Name);
 
-        if (ImGui.IsItemToggledOpen())
+        if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
 
         color.Pop();

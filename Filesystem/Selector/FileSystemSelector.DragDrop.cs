@@ -34,7 +34,19 @@ public partial class FileSystemSelector<T, TStateStorage>
             return;
 
         var movedPath = _movedPathDragDrop;
-        _fsActions.Enqueue(() => FileSystem.Move(movedPath, path is FileSystem<T>.Folder f ? f : path.Parent));
+        _fsActions.Enqueue(() =>
+        {
+            if (movedPath is FileSystem<T>.Folder folder)
+            {
+                var oldLabel = movedPath.Label();
+                FileSystem.Move(folder, path is FileSystem<T>.Folder f ? f : path.Parent);
+                CopyStateStorage(folder, oldLabel);
+            }
+            else
+            {
+                FileSystem.Move(movedPath, path is FileSystem<T>.Folder f ? f : path.Parent);
+            }
+        });
         _movedPathDragDrop = null;
     }
 }

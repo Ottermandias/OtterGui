@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ImGuiNET;
 using OtterGui.Filesystem;
@@ -7,12 +8,17 @@ namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage> where T : class where TStateStorage : struct
 {
+    public delegate void SelectionChangeDelegate(T? oldSelection, T? newSelection, in TStateStorage state);
+
     // The currently selected leaf, if any.
     protected FileSystem<T>.Leaf? SelectedLeaf;
 
     // The currently selected value, if any
     public T? Selected
         => SelectedLeaf?.Value;
+
+    // Fired after the selected leaf changed.
+    public event SelectionChangeDelegate? SelectionChanged;
 
     protected readonly FileSystem<T> FileSystem;
 
@@ -35,12 +41,15 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     }
 
     // Default color for tree expansion lines.
-    protected virtual uint TreeLineColor
-        => 0xFFFFE0A0;
+    protected virtual uint FolderLineColor
+        => 0xFFFFFFFF;
 
     // Default color for folder names.
-    protected virtual uint FolderNameColor
-        => 0xFFFFE0A0;
+    protected virtual uint ExpandedFolderColor
+        => 0xFFFFFFFF;
+
+    protected virtual uint CollapsedFolderColor
+        => 0xFFFFFFFF;
 
     public FileSystemSelector(FileSystem<T> fileSystem, string label = "##FileSystemSelector")
     {

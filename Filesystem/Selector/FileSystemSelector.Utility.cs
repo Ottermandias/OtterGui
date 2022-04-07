@@ -62,8 +62,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     }
 
     // Set the expansion state of a specific folder and all its descendant folders to the given value.
-    // Can only be executed from the main selector window due to ID computation.
-    // So use this only in Enqueued actions.
+    // Can only be executed from the main selector window due to ID computation, so use this only in Enqueued actions.
     // Handles ImGui-state as well as cache-state.
     private void ToggleDescendants(FileSystem<T>.Folder folder, int stateIdx, int value)
     {
@@ -84,17 +83,26 @@ public partial class FileSystemSelector<T, TStateStorage>
             AddDescendants(folder, stateIdx);
     }
 
-    // Set the state of a given folder to either be closed,
-    // or set the state of the folder and all its parents to be open.
-    // Can only be executed from the main selector window due to ID computation.
-    // So use this only in Enqueued actions.
+    // Set the state of all parents of a given folder to open,
+    // and the folder itself and all its descendants to their previous state before renaming.
+    // Can only be executed from the main selector window due to ID computation, so use this only in Enqueued actions.
     // Handles only ImGui-state, since it is used for moves and renames which trigger a filter-recomputation anyway.
-    private static void CopyStateStorage(ImGuiStoragePtr stateStorage, int state, FileSystem<T>.Folder folder)
+    private static void CopyStateStorage(FileSystem<T>.Folder folder, string oldLabel)
     {
-        if (state == 0)
-            stateStorage.SetInt(ImGui.GetID(folder.Label()), 0);
+        var stateStorage = ImGui.GetStateStorage();
+        var mainLabel    = folder.Label();
+        // TODO: make more efficient.
+        foreach (var label in folder.AllLabels())
+            stateStorage.SetInt(ImGui.GetID(label), 1);
+        if (stateStorage.GetInt(ImGui.GetID(oldLabel), 0) == 0)
+            stateStorage.SetInt(ImGui.GetID(mainLabel), 0);
         else
-            foreach (var label in folder.AllLabels())
+            foreach (var desc in folder.GetAllDescendants(SortMode.Lexicographical).OfType<FileSystem<T>.Folder>())
+            {
+                var label = desc.Label();
+                var old   = label.Replace(mainLabel, oldLabel);
+                var state = stateStorage.GetInt(ImGui.GetID(old), 0);
                 stateStorage.SetInt(ImGui.GetID(label), state);
+            }
     }
 }

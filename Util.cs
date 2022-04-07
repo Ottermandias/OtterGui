@@ -6,6 +6,7 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Text;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui;
 
@@ -13,8 +14,8 @@ public static partial class ImGuiUtil
 {
     private static void DrawColorBox(string label, uint color, Vector2 iconSize, string description, bool push)
     {
-        using var c     = Raii.ImRaii.PushColor(ImGuiCol.ChildBg, color, push);
-        using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, ImGui.GetStyle().FrameRounding);
+        using var c     = ImRaii.PushColor(ImGuiCol.ChildBg, color, push);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, ImGui.GetStyle().FrameRounding);
         ImGui.BeginChild(label, iconSize, true);
         ImGui.EndChild();
         c.Pop();
@@ -25,8 +26,8 @@ public static partial class ImGuiUtil
         IDictionary<int, uint> colors, out int newColorIdx)
     {
         newColorIdx = -1;
-        using var group = Raii.ImRaii.NewGroup();
-        using var id    = Raii.ImRaii.PushId(label);
+        using var group = ImRaii.NewGroup();
+        using var id    = ImRaii.PushId(label);
         if (colors.TryGetValue(currentColorIdx, out var currentColor))
             DrawColorBox("##preview", currentColor, iconSize, $"{currentColorIdx} - {ColorBytes(currentColor)}\nRight-click to clear.", true);
         else
@@ -58,7 +59,7 @@ public static partial class ImGuiUtil
 
         if (ImGui.BeginPopupContextWindow("##popup"))
         {
-            using var end     = Raii.ImRaii.DeferredEnd(ImGui.EndPopup);
+            using var end     = ImRaii.DeferredEnd(ImGui.EndPopup);
             var       counter = 0;
             foreach (var (idx, value) in colors)
             {
@@ -80,8 +81,8 @@ public static partial class ImGuiUtil
 
     public static bool DrawDisabledButton(string label, Vector2 size, string description, bool disabled, bool icon = false)
     {
-        using var alpha = Raii.ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
-        using var font  = Raii.ImRaii.PushFont(UiBuilder.IconFont, icon);
+        using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
+        using var font  = ImRaii.PushFont(UiBuilder.IconFont, icon);
         var       ret   = ImGui.Button(label, size);
         alpha.Pop();
         font.Pop();
@@ -91,7 +92,7 @@ public static partial class ImGuiUtil
 
     public static void DrawTextButton(string text, Vector2 size, uint buttonColor)
     {
-        using var color = Raii.ImRaii.PushColor(ImGuiCol.Button, buttonColor)
+        using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
             .Push(ImGuiCol.ButtonActive,  buttonColor)
             .Push(ImGuiCol.ButtonHovered, buttonColor);
         ImGui.Button(text, size);
@@ -99,7 +100,7 @@ public static partial class ImGuiUtil
 
     public static void DrawTextButton(string text, Vector2 size, uint buttonColor, uint textColor)
     {
-        using var color = Raii.ImRaii.PushColor(ImGuiCol.Button, buttonColor)
+        using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
             .Push(ImGuiCol.ButtonActive,  buttonColor)
             .Push(ImGuiCol.ButtonHovered, buttonColor)
             .Push(ImGuiCol.Text,          textColor);
@@ -147,7 +148,7 @@ public static partial class ImGuiUtil
         var       ret = false;
         var       old = ImGui.ColorConvertU32ToFloat4(current);
         var       tmp = old;
-        using var _   = Raii.ImRaii.PushId(label);
+        using var _   = ImRaii.PushId(label);
         ImGui.BeginGroup();
         if (ImGui.ColorEdit4("", ref tmp, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.NoInputs) && tmp != old)
         {
@@ -156,7 +157,7 @@ public static partial class ImGuiUtil
         }
 
         ImGui.SameLine();
-        using var alpha = Raii.ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, current == standard);
+        using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, current == standard);
         if (ImGui.Button("Default") && current != standard)
         {
             setter(standard);
@@ -164,11 +165,19 @@ public static partial class ImGuiUtil
         }
 
         alpha.Pop();
-        HoverTooltip($"Reset this color to {ColorBytes(standard)}.");
+        if (ImGui.IsItemHovered())
+        {
+            using var tt = ImRaii.Tooltip();
+            ImGui.AlignTextToFramePadding();
+            ImGui.Text($"Reset this color to {ColorBytes(standard)}.");
+            var standardV4 = ImGui.ColorConvertU32ToFloat4(current);
+            ImGui.SameLine();
+            ImGui.ColorEdit4("", ref standardV4, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.NoInputs);
+        }
 
         ImGui.SameLine();
         ImGui.Text(label);
-        if (tooltip.Any())
+        if (tooltip.Length > 0)
             HoverTooltip(tooltip);
         ImGui.EndGroup();
 
@@ -180,8 +189,8 @@ public static partial class ImGuiUtil
     {
         newText = current;
         var       tmpEdit = edit;
-        using var style   = Raii.ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing / 2);
-        using var _       = Raii.ImRaii.PushId(id);
+        using var style   = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemSpacing / 2);
+        using var _       = ImRaii.PushId(id);
         if (DrawDisabledButton(FontAwesomeIcon.Edit.ToIconString(), buttonSize, "Rename", edit, true))
             edit = true;
         ImGui.SameLine();
@@ -276,7 +285,7 @@ public static partial class ImGuiUtil
         if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
             ImGui.CloseCurrentPopup();
 
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndPopup);
+        using var end = ImRaii.DeferredEnd(ImGui.EndPopup);
         ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
         var enterPressed = ImGui.InputTextWithHint("##newName", "Enter New Name...", ref newName, 64, ImGuiInputTextFlags.EnterReturnsTrue);
         if (ImGui.IsWindowAppearing())
@@ -291,9 +300,9 @@ public static partial class ImGuiUtil
 
     public static bool DrawChatTypeSelector(string label, string description, XivChatType currentValue, Action<XivChatType> setter)
     {
-        using var id  = Raii.ImRaii.PushId(label);
+        using var id  = ImRaii.PushId(label);
         var       ret = ImGui.BeginCombo(label, currentValue.ToString());
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndCombo, ret);
+        using var end = ImRaii.DeferredEnd(ImGui.EndCombo, ret);
         HoverTooltip(description);
         if (ret)
             ret = false;
@@ -315,9 +324,9 @@ public static partial class ImGuiUtil
     public static bool KeySelector(string label, string description, VirtualKey currentValue, Action<VirtualKey> setter,
         IReadOnlyList<VirtualKey> keys)
     {
-        using var id  = Raii.ImRaii.PushId(label);
+        using var id  = ImRaii.PushId(label);
         var       ret = ImGui.BeginCombo(label, currentValue.GetFancyName());
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndCombo, ret);
+        using var end = ImRaii.DeferredEnd(ImGui.EndCombo, ret);
         HoverTooltip(description);
         if (ret)
             ret = false;
@@ -343,14 +352,14 @@ public static partial class ImGuiUtil
         Action<ModifiableHotkey> setter,
         IReadOnlyList<VirtualKey> keys)
     {
-        using var id   = Raii.ImRaii.PushId(label);
+        using var id   = ImRaii.PushId(label);
         var       copy = currentValue;
         ImGui.SetNextItemWidth(width);
         var changes = KeySelector(label, description, currentValue.Hotkey, k => copy.SetHotkey(k), keys);
 
         if (currentValue.Hotkey != VirtualKey.NO_KEY)
         {
-            using var indent = Raii.ImRaii.PushIndent();
+            using var indent = ImRaii.PushIndent();
             ImGui.SetNextItemWidth(width - indent.Indentation);
             changes |= ModifierSelector("Modifier", "Set an optional modifier key to be used in conjunction with the selected hotkey.",
                 currentValue.Modifier1,             k => copy.SetModifier1(k));
