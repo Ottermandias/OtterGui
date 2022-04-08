@@ -106,7 +106,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
             StateStorage = state,
         });
 
-        if (path is FileSystem<T>.Folder f && ImGui.GetStateStorage().GetBool(ImGui.GetID(path.Label())))
+        if (path is FileSystem<T>.Folder f && GetPathState(path))
             foreach (var child in f.GetChildren(SortMode))
             {
                 ++idx;

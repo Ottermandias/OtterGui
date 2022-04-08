@@ -3,13 +3,12 @@ using ImGuiNET;
 
 namespace OtterGui.Raii;
 
+// Push an arbitrary amount of fonts into an object that are all popped when it is disposed.
+// If condition is false, no font is pushed.
 public static partial class ImRaii
 {
-    public static Font PushFont(ImFontPtr font)
-        => new(font);
-
-    public static Font PushFont(ImFontPtr font, bool enable)
-        => enable ? new Font(font) : new Font();
+    public static Font PushFont(ImFontPtr font, bool condition = false)
+        => condition ? new Font().Push(font) : new Font();
 
     public sealed class Font : IDisposable
     {
@@ -17,9 +16,6 @@ public static partial class ImRaii
 
         public Font()
             => _count = 0;
-
-        public Font(ImFontPtr font)
-            => Push(font);
 
         public Font Push(ImFontPtr font)
         {

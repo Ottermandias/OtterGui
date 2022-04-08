@@ -22,7 +22,7 @@ public partial class FileSystem<T>
     //     - SuccessNothingDone (fixed newName identical to old name)
     //     - ItemExists (an item of the fixed newName already exists in childs parent)
     //     - Success (item was successfully renamed).
-    private Result RenameChild(IPath child, string newName)
+    private Result RenameChild(IWritePath child, string newName)
     {
         if (child.Name.Length == 0)
             return Result.InvalidOperation;
@@ -40,7 +40,7 @@ public partial class FileSystem<T>
         if (newIdx > currentIdx)
             --newIdx;
         child.Parent.Children.Move(currentIdx, newIdx);
-        child.Rename(newName);
+        child.SetName(newName, false);
         return Result.Success;
     }
 
@@ -52,7 +52,7 @@ public partial class FileSystem<T>
     //     - ItemExists (an item of fixed newName already exists in newParent)
     //     - CircularReference (newParent is a descendant of child)
     //     - Success (the child was correctly moved and renamed)
-    private Result MoveChild(IPath child, Folder newParent, out Folder oldParent, out int newIdx, string? newName = null)
+    private Result MoveChild(IWritePath child, Folder newParent, out Folder oldParent, out int newIdx, string? newName = null)
     {
         newIdx = 0;
         if (child.Name.Length == 0)
@@ -75,7 +75,7 @@ public partial class FileSystem<T>
 
         RemoveChild(oldParent, child, Search(oldParent, child.Name));
         newIdx = ~newIdx;
-        child.Rename(actualNewName);
+        child.SetName(actualNewName, false);
         SetChild(newParent, child, newIdx);
         return Result.Success;
     }
@@ -91,7 +91,7 @@ public partial class FileSystem<T>
         var result = Result.SuccessNothingDone;
         foreach (var name in names)
         {
-            var folder    = new Folder(last, name);
+            var folder    = new Folder(last, name, IdCounter++);
             var midResult = SetChild(last, folder, out var idx);
             if (midResult == Result.ItemExists)
             {
@@ -129,45 +129,49 @@ public partial class FileSystem<T>
     }
 
 
-    // Remove a child at position idx from its parent. Does not change child.Parent.
-    private static void RemoveChild(Folder parent, IPath child, int idx)
+    private static void ApplyDescendantChanges(Folder parent, IWritePath child, int idx, bool removed)
     {
-        parent.Children.RemoveAt(idx);
-        switch (child)
+        var (descendants, leaves) = (child, removed) switch
         {
-            case Folder f:
-                parent.TotalDescendants -= f.TotalDescendants + 1;
-                parent.TotalLeaves   -= f.TotalLeaves;
+            (Folder f, true)  => (f.TotalDescendants + 1, f.TotalLeaves),
+            (Folder f, false) => (-f.TotalDescendants - 1, -f.TotalLeaves),
+            (_, true)         => (-1, -1),
+            _                 => (1, 1),
+        };
+
+        while (true)
+        {
+            parent.TotalDescendants += descendants;
+            parent.TotalLeaves      += leaves;
+            if (parent.IsRoot)
                 break;
-            case Leaf:
-                --parent.TotalDescendants;
-                --parent.TotalLeaves;
-                break;
+
+            parent = parent.Parent;
         }
+
+        for (var i = idx; i < parent.Children.Count; i++)
+            parent.Children[i].UpdateIndex(i);
     }
 
-    // Add a child to its new parent at position idx. Does not change child.Parent.
-    private static void SetChild(Folder parent, IPath child, int idx)
+    // Remove a child at position idx from its parent. Does not change child.Parent.
+    private static void RemoveChild(Folder parent, IWritePath child, int idx)
+    {
+        parent.Children.RemoveAt(idx);
+        ApplyDescendantChanges(parent, child, idx, true);
+    }
+
+    // Add a child to its new parent at position idx
+    private static void SetChild(Folder parent, IWritePath child, int idx)
     {
         parent.Children.Insert(idx, child);
-        switch (child)
-        {
-            case Folder f:
-                f.Parent             =  parent;
-                parent.TotalDescendants += f.TotalDescendants + 1;
-                parent.TotalLeaves   += f.TotalLeaves;
-                break;
-            case Leaf l:
-                l.Parent = parent;
-                ++parent.TotalDescendants;
-                ++parent.TotalLeaves;
-                break;
-        }
+        child.SetParent(parent);
+        child.UpdateDepth();
+        ApplyDescendantChanges(parent, child, idx, false);
     }
 
     // Add a child to its new parent and return its new idx.
     // Returns ItemExists if a child of that name already exists in parent or Success otherwise.
-    private Result SetChild(Folder parent, IPath child, out int idx)
+    private Result SetChild(Folder parent, IWritePath child, out int idx)
     {
         idx = Search(parent, child.Name);
         if (idx >= 0)
@@ -183,7 +187,7 @@ public partial class FileSystem<T>
     //     - InvalidOperation (child is Root)
     //     - SuccessNothingDone (child is not set as a child of child.Parent, should not happen as its invalid state)
     //     - Success (child was successfully removed from its Parent. Does not change child.Parent)
-    private Result RemoveChild(IPath child)
+    private Result RemoveChild(IWritePath child)
     {
         if (child.Name.Length == 0)
             return Result.InvalidOperation;

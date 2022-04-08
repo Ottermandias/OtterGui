@@ -4,6 +4,8 @@ using ImGuiNET;
 
 namespace OtterGui.Raii;
 
+// Push an arbitrary amount of colors into an object that are all popped when it is disposed.
+// If condition is false, no color is pushed.
 public static partial class ImRaii
 {
     public static Color PushColor(ImGuiCol idx, uint color, bool condition = true)

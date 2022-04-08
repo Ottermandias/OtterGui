@@ -9,9 +9,10 @@ namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage>
 {
-    private int _currentDepth = 0;
-    private int _currentIndex = 0;
-    private int _currentEnd   = 0;
+    private ImGuiStoragePtr _stateStorage;
+    private int             _currentDepth;
+    private int             _currentIndex;
+    private int             _currentEnd;
 
     private (Vector2, Vector2) DrawStateStruct(StateStruct state)
     {
@@ -54,22 +55,18 @@ public partial class FileSystemSelector<T, TStateStorage>
     private void DrawPseudoFolders()
     {
         var first   = _state[_currentIndex]; // The first object drawn during this iteration
-        var parents = first.Path.Parents(first.Depth);
-
+        var parents = first.Path.Parents();
         // Push IDs in order and indent.
-        foreach (var p in parents)
-            ImGui.PushID(p.Name);
-        ImGui.Indent(ImGui.GetStyle().IndentSpacing * parents.Count);
+        ImGui.Indent(ImGui.GetStyle().IndentSpacing * parents.Length);
 
         // Get start point for the lines (top of the selector).
         var lineStart = ImGui.GetCursorScreenPos();
 
         // For each pseudo-parent in reverse order draw its children as usual, starting from _currentIndex.
-        for (_currentDepth = parents.Count; _currentDepth > 0; --_currentDepth)
+        for (_currentDepth = parents.Length; _currentDepth > 0; --_currentDepth)
         {
             DrawChildren(lineStart);
             lineStart.X -= ImGui.GetStyle().IndentSpacing;
-            ImGui.PopID();
             ImGui.Unindent();
         }
     }
@@ -143,9 +140,9 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - expanding/collapsing
     private (Vector2, Vector2) DrawFolder(FileSystem<T>.Folder folder)
     {
-        var       expandedState = ImGui.GetStateStorage().GetBool(ImGui.GetID(folder.Name), false);
+        var       expandedState = GetPathState(folder);
         using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse       = ImGui.TreeNodeEx(folder.Name);
+        var       recurse       = ImGui.TreeNodeEx((IntPtr)folder.Identifier, ImGuiTreeNodeFlags.NoTreePushOnOpen, folder.Name);
 
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
@@ -161,15 +158,16 @@ public partial class FileSystemSelector<T, TStateStorage>
         var rect = (ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
         // If the folder is expanded, draw its children one tier deeper.
-        if (recurse)
-        {
-            ++_currentDepth;
-            ++_currentIndex;
-            DrawChildren(ImGui.GetCursorScreenPos());
-            ImGui.TreePop();
-            --_currentIndex;
-            --_currentDepth;
-        }
+        if (!recurse)
+            return rect;
+
+        ++_currentDepth;
+        ++_currentIndex;
+        ImGui.Indent();
+        DrawChildren(ImGui.GetCursorScreenPos());
+        ImGui.Unindent();
+        --_currentIndex;
+        --_currentDepth;
 
         return rect;
     }
@@ -186,6 +184,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (!_)
             return false;
 
+        _stateStorage = ImGui.GetStateStorage();
         style.Pop();
         style.Push(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
             .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))

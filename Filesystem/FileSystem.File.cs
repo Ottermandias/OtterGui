@@ -77,6 +77,7 @@ public partial class FileSystem<T>
     // and a function that corresponds a data value not stored in the saved filesystem to its name.
     protected bool Load(FileInfo file, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
     {
+        IdCounter = 1;
         Root.Children.Clear();
         if (!File.Exists(file.FullName))
             return true;
@@ -103,21 +104,21 @@ public partial class FileSystem<T>
                         continue;
                     }
 
-                    var leaf = new Leaf(folder, split[^1], value);
-                    while (SetChild(folder, leaf, out var idx) == Result.ItemExists)
+                    var leaf = new Leaf(folder, split[^1], value, IdCounter++);
+                    while (SetChild(folder, leaf, out _) == Result.ItemExists)
                     {
-                        leaf.Name = FixDuplicateName(leaf.Name);
-                        changes   = true;
+                        leaf.SetName(FixDuplicateName(leaf.Name));
+                        changes = true;
                     }
                 }
                 else
                 {
                     // Add a new leaf using the given toName function.
-                    var leaf = new Leaf(Root, toName(value), value);
-                    while (SetChild(Root, leaf, out var idx) == Result.ItemExists)
+                    var leaf = new Leaf(Root, toName(value), value, IdCounter++);
+                    while (SetChild(Root, leaf, out _) == Result.ItemExists)
                     {
-                        leaf.Name = FixDuplicateName(leaf.Name);
-                        changes   = true;
+                        leaf.SetName(FixDuplicateName(leaf.Name));
+                        changes = true;
                     }
                 }
             }

@@ -76,7 +76,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.MenuItem("Expand All Descendants"))
         {
             var idx = _currentIndex;
-            _fsActions.Enqueue(() => ToggleDescendants(folder, idx, 1));
+            _fsActions.Enqueue(() => ToggleDescendants(folder, idx, true));
         }
 
         ImGuiUtil.HoverTooltip("Successively expand all folders that descend from this folder, including itself.");
@@ -87,7 +87,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.MenuItem("Collapse All Descendants"))
         {
             var idx = _currentIndex;
-            _fsActions.Enqueue(() => ToggleDescendants(folder, idx, 0));
+            _fsActions.Enqueue(() => ToggleDescendants(folder, idx, false));
         }
 
         ImGuiUtil.HoverTooltip("Successively collapse all folders that descend from this folder, including itself.");
@@ -99,9 +99,8 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
             _fsActions.Enqueue(() =>
             {
-                var oldLabel     = folder.Label();
                 FileSystem.RenameAndMove(folder, currentPath);
-                CopyStateStorage(folder, oldLabel);
+                ExpandAncestors(folder);
             });
 
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the folder. Creates all required parent directories, if possible.");
@@ -113,9 +112,8 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
             _fsActions.Enqueue(() =>
             {
-                var oldLabel     = leaf.Parent.Label();
                 FileSystem.RenameAndMove(leaf, currentPath);
-                CopyStateStorage(leaf.Parent, oldLabel);
+                ExpandAncestors(leaf);
             });
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the leaf. Creates all required parent directories, if possible.");
     }

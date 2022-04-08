@@ -3,12 +3,17 @@ using ImGuiNET;
 
 namespace OtterGui.Raii;
 
+// Push an arbitrary amount of ids into an object that are all popped when it is disposed.
+// If condition is false, no id is pushed.
 public static partial class ImRaii
 {
     public static Id PushId(string id, bool enabled = true)
         => enabled ? new Id().Push(id) : new Id();
 
     public static Id PushId(int id, bool enabled = true)
+        => enabled ? new Id().Push(id) : new Id();
+
+    public static Id PushId(IntPtr id, bool enabled = true)
         => enabled ? new Id().Push(id) : new Id();
 
     public sealed class Id : IDisposable
@@ -27,6 +32,17 @@ public static partial class ImRaii
         }
 
         public Id Push(int id, bool condition = true)
+        {
+            if (condition)
+            {
+                ImGui.PushID(id);
+                ++_count;
+            }
+
+            return this;
+        }
+
+        public Id Push(IntPtr id, bool condition = true)
         {
             if (condition)
             {

@@ -109,7 +109,7 @@ public static partial class ImGuiUtil
 
     public static void HoverTooltip(string tooltip)
     {
-        if (tooltip.Any() && ImGui.IsItemHovered())
+        if (tooltip.Length > 0 && ImGui.IsItemHovered())
             ImGui.SetTooltip(tooltip);
     }
 

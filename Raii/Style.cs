@@ -4,6 +4,9 @@ using ImGuiNET;
 
 namespace OtterGui.Raii;
 
+// Push an arbitrary amount of styles into an object that are all popped when it is disposed.
+// If condition is false, no style is pushed.
+// In debug mode, checks that the type of the value given for the style is valid.
 public static partial class ImRaii
 {
     public static Style PushStyle(ImGuiStyleVar idx, float value, bool condition = true)

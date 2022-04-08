@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Filesystem;
 using OtterGui.Raii;
 
 namespace OtterGui.FileSystem.Selector;
@@ -48,8 +49,12 @@ public partial class FileSystemSelector<T, TStateStorage>
             ImGui.OpenPopup(newFolderName);
 
         // Does not need to be delayed since it is not in the iteration itself.
+        FileSystem<T>.Folder? folder = null;
         if (ImGuiUtil.OpenNameField(newFolderName, ref _newName) && _newName.Length > 0)
-            FileSystem.FindOrCreateAllFolders(_newName);
+            folder = FileSystem.FindOrCreateAllFolders(_newName);
+
+        if (folder != null)
+            ExpandAncestors(folder);
     }
 
     private void InitDefaultButtons()

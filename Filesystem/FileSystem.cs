@@ -22,7 +22,8 @@ public partial class FileSystem<T> where T : class
     public event ChangeDelegate? Changed;
 
     private readonly NameComparer _nameComparer;
-    public           Folder       Root = Folder.CreateRoot();
+    public           Folder       Root      = Folder.CreateRoot();
+    public           uint         IdCounter = 1;
 
     // The string comparer passed will be used to compare the names of siblings.
     // If none is supplied, they will be compared with InvariantCultureIgnoreCase.
@@ -65,7 +66,7 @@ public partial class FileSystem<T> where T : class
     // Returns the leaf and its index in parent.
     public (Leaf, int) CreateLeaf(Folder parent, string name, T data)
     {
-        var leaf = new Leaf(parent, name, data);
+        var leaf = new Leaf(parent, name, data, IdCounter++);
         if (SetChild(parent, leaf, out var idx) == Result.ItemExists)
             throw new Exception($"Could not add leaf {leaf.Name} to {parent.FullName()}: Child of that name already exists.");
 
@@ -78,7 +79,7 @@ public partial class FileSystem<T> where T : class
     // Returns the folder and its index in parent.
     public (Folder, int) CreateFolder(Folder parent, string name)
     {
-        var folder = new Folder(parent, name);
+        var folder = new Folder(parent, name, IdCounter++);
         if (SetChild(parent, folder, out var idx) == Result.ItemExists)
             throw new Exception($"Could not add folder {folder.Name} to {parent.FullName()}: Child of that name already exists.");
 
@@ -91,7 +92,7 @@ public partial class FileSystem<T> where T : class
     // Returns the pre-existing or newly created folder and its index in parent.
     public (Folder, int) FindOrCreateFolder(Folder parent, string name)
     {
-        var folder = new Folder(parent, name);
+        var folder = new Folder(parent, name, IdCounter++);
         if (SetChild(parent, folder, out var idx) == Result.ItemExists)
         {
             if (parent.Children[idx] is Folder f)
@@ -144,11 +145,11 @@ public partial class FileSystem<T> where T : class
         switch (res)
         {
             case Result.Success:
-                MoveChild(child, folder, out _, out _, fileName); // Can not fail since the parent folder is new.
+                MoveChild((IWritePath)child, folder, out _, out _, fileName); // Can not fail since the parent folder is new.
                 Changed?.Invoke(FileSystemChangeType.ObjectMoved, child, oldParent, folder);
                 break;
             case Result.SuccessNothingDone:
-                res = MoveChild(child, folder, out _, out _, fileName);
+                res = MoveChild((IWritePath)child, folder, out _, out _, fileName);
                 if (res == Result.ItemExists)
                     throw new Exception($"Could not move {oldPath} to {newPath}: An object of name {fileName} already exists.");
 
@@ -164,7 +165,7 @@ public partial class FileSystem<T> where T : class
     // Throws if child is Root or an item of that name already exists in child's parent.
     public void Rename(IPath child, string newName)
     {
-        switch (RenameChild(child, newName))
+        switch (RenameChild((IWritePath)child, newName))
         {
             case Result.InvalidOperation: throw new Exception("Can not rename root directory.");
             case Result.ItemExists:
@@ -180,7 +181,7 @@ public partial class FileSystem<T> where T : class
     // Throws if child is Root.
     public void Delete(IPath child)
     {
-        switch (RemoveChild(child))
+        switch (RemoveChild((IWritePath)child))
         {
             case Result.InvalidOperation: throw new Exception("Can not delete root directory.");
             case Result.Success:
@@ -194,7 +195,7 @@ public partial class FileSystem<T> where T : class
     // If a child of child's name already exists in newParent and is a folder, it will try to merge child into this folder instead.
     public void Move(IPath child, Folder newParent)
     {
-        switch (MoveChild(child, newParent, out var oldParent, out var newIdx))
+        switch (MoveChild((IWritePath)child, newParent, out var oldParent, out var newIdx))
         {
             case Result.Success:
                 Changed?.Invoke(FileSystemChangeType.ObjectMoved, child, oldParent, newParent);
