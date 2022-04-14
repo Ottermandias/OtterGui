@@ -61,6 +61,7 @@ public partial class FileSystem<T>
         }
     }
 
+    // Internally used to write things regardless of Folder/Leaf.
     internal interface IWritePath : IPath
     {
         public void SetParent(Folder parent);
@@ -69,6 +70,7 @@ public partial class FileSystem<T>
         public void UpdateDepth();
         public void UpdateIndex(int idx);
     }
+
 
     // A search path just to be used for comparison between siblings.
     internal struct SearchPath : IWritePath

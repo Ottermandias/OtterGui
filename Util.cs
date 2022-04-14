@@ -12,6 +12,12 @@ namespace OtterGui;
 
 public static partial class ImGuiUtil
 {
+    public static void TextColored(uint color, string text)
+    {
+        using var _ = ImRaii.PushColor(ImGuiCol.Text, color);
+        ImGui.Text(text);
+    }
+
     private static void DrawColorBox(string label, uint color, Vector2 iconSize, string description, bool push)
     {
         using var c     = ImRaii.PushColor(ImGuiCol.ChildBg, color, push);

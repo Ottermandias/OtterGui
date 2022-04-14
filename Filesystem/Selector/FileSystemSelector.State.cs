@@ -34,7 +34,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     // If the filter was changed, recompute the state before the next draw iteration.
     private bool _filterDirty = true;
 
-    protected void SetFilterDirty()
+    public void SetFilterDirty()
         => _filterDirty = true;
 
     protected string FilterTooltip = string.Empty;
@@ -189,5 +189,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         FileSystem<T>.IPath? newParent)
     {
         SetFilterDirty();
+        if (type == FileSystemChangeType.ObjectRemoved && changedObject == SelectedLeaf)
+            ClearSelection();
     }
 }

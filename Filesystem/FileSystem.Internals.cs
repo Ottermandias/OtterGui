@@ -36,10 +36,20 @@ public partial class FileSystem<T>
             return Result.ItemExists;
 
         newIdx = ~newIdx;
-        var currentIdx = Search(child.Parent, child.Name);
-        if (newIdx > currentIdx)
+        if (newIdx > child.IndexInParent)
+        {
+            for (var i = child.IndexInParent + 1; i < newIdx; ++i)
+                child.Parent.Children[i].UpdateIndex(i - 1);
             --newIdx;
-        child.Parent.Children.Move(currentIdx, newIdx);
+        }
+        else
+        {
+            for (var i = newIdx; i < child.IndexInParent; ++i)
+                child.Parent.Children[i].UpdateIndex(i + 1);
+        }
+
+        child.Parent.Children.Move(child.IndexInParent, newIdx);
+        child.UpdateIndex(newIdx);
         child.SetName(newName, false);
         return Result.Success;
     }
@@ -133,8 +143,8 @@ public partial class FileSystem<T>
     {
         var (descendants, leaves) = (child, removed) switch
         {
-            (Folder f, true)  => (f.TotalDescendants + 1, f.TotalLeaves),
-            (Folder f, false) => (-f.TotalDescendants - 1, -f.TotalLeaves),
+            (Folder f, false) => (f.TotalDescendants + 1, f.TotalLeaves),
+            (Folder f, true)  => (-f.TotalDescendants - 1, -f.TotalLeaves),
             (_, true)         => (-1, -1),
             _                 => (1, 1),
         };

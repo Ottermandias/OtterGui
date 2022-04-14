@@ -110,6 +110,12 @@ public static partial class ImRaii
     public static IEndObject Table(string table, int numColumns, ImGuiTableFlags flags, Vector2 outerSize, float innerWidth)
         => new EndConditionally(ImGui.EndTable, ImGui.BeginTable(table, numColumns, flags, outerSize, innerWidth));
 
+    public static IEndObject TabBar(string label)
+        => new EndConditionally(ImGui.EndTabBar, ImGui.BeginTabBar(label));
+
+    public static IEndObject TabBar(string label, ImGuiTabBarFlags flags)
+        => new EndConditionally(ImGui.EndTabBar, ImGui.BeginTabBar(label, flags));
+
     public static IEndObject TabItem(string label)
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label));
 

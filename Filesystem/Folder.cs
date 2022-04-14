@@ -20,11 +20,11 @@ public partial class FileSystem<T>
         public int TotalChildren
             => Children.Count;
 
-        public   Folder      Parent        { get; internal set; }
-        public   string      Name          { get; private set; }
-        public   uint        Identifier    { get; }
-        public   ushort      IndexInParent { get; internal set; }
-        public   byte        Depth         { get; internal set; }
+        public Folder Parent        { get; internal set; }
+        public string Name          { get; private set; }
+        public uint   Identifier    { get; }
+        public ushort IndexInParent { get; internal set; }
+        public byte   Depth         { get; internal set; }
 
         public bool IsRoot
             => Depth == RootDepth;
@@ -102,6 +102,16 @@ public partial class FileSystem<T>
                     foreach (var child in Children.OfType<Folder>().Reverse())
                         yield return child;
 
+                    break;
+                case SortMode.InternalOrder:
+                    foreach (var child in Children.OrderBy(c => c.Identifier))
+                        yield return child;
+
+                    break;
+
+                case SortMode.InternalOrderInverse:
+                    foreach (var child in Children.OrderByDescending(c => c.Identifier))
+                        yield return child;
 
                     break;
                 default: throw new InvalidEnumArgumentException();

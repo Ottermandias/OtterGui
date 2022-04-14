@@ -12,6 +12,7 @@ public enum FileSystemChangeType
     ObjectMoved,
     FolderMerged,
     PartialMerge,
+    Reload,
 }
 
 // The public facing filesystem methods all throw descriptive exceptions if they are unsuccessful.

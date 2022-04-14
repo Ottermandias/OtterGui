@@ -13,12 +13,22 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     // The currently selected leaf, if any.
     protected FileSystem<T>.Leaf? SelectedLeaf;
 
-    // The currently selected value, if any
+    // The currently selected value, if any.
     public T? Selected
         => SelectedLeaf?.Value;
 
     // Fired after the selected leaf changed.
     public event SelectionChangeDelegate? SelectionChanged;
+
+    public void ClearSelection()
+    {
+        if (SelectedLeaf == null)
+            return;
+
+        var old = SelectedLeaf?.Value;
+        SelectedLeaf = null;
+        SelectionChanged?.Invoke(old, null, default);
+    }
 
     protected readonly FileSystem<T> FileSystem;
 

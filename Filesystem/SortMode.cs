@@ -8,4 +8,6 @@ public enum SortMode : byte
     InverseLexicographical = 0x03,
     FoldersLast            = 0x04,
     InverseFoldersLast     = 0x05,
+    InternalOrder          = 0x06,
+    InternalOrderInverse   = 0x07,
 }
