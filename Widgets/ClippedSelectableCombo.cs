@@ -4,8 +4,9 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Raii;
 
-namespace OtterGui;
+namespace OtterGui.Widgets;
 
 public class ClippedSelectableCombo<T>
 {
@@ -34,15 +35,12 @@ public class ClippedSelectableCombo<T>
     private bool DrawList(string currentName, out int selectedIdx)
     {
         selectedIdx = -1;
-        var height = ImGui.GetTextLineHeightWithSpacing();
-        if (!ImGui.BeginChild("##List", new Vector2(_previewSize * ImGuiHelpers.GlobalScale, height * ItemsAtOnce)))
-        {
-            ImGui.EndChild();
+        var       height = ImGui.GetTextLineHeightWithSpacing();
+        using var child  = ImRaii.Child("##List", new Vector2(_previewSize * ImGuiHelpers.GlobalScale, height * ItemsAtOnce));
+        if (!child)
             return false;
-        }
 
-        using var end    = Raii.ImRaii.DeferredEnd(ImGui.EndChild);
-        var       tmpIdx = selectedIdx;
+        var tmpIdx = selectedIdx;
 
         void DrawItemInternal((string, int) p)
         {
@@ -51,7 +49,7 @@ public class ClippedSelectableCombo<T>
                 tmpIdx = p.Item2;
         }
 
-        ImGuiUtil.ClippedDraw(_remainingItems, DrawItemInternal, height);
+        ImGuiClip.ClippedDraw(_remainingItems, DrawItemInternal, height);
         if (tmpIdx == selectedIdx)
             return false;
 
@@ -63,10 +61,11 @@ public class ClippedSelectableCombo<T>
     public bool Draw(string currentName, out int newIdx, ImGuiComboFlags flags = ImGuiComboFlags.None)
     {
         newIdx = -1;
-        using var id = Raii.ImRaii.PushId(_pushId);
+        using var id = ImRaii.PushId(_pushId);
         ImGui.SetNextItemWidth(_previewSize);
 
-        if (!ImGui.BeginCombo(_label, currentName, flags | ImGuiComboFlags.HeightLargest))
+        using var combo = ImRaii.Combo(_label, currentName, flags | ImGuiComboFlags.HeightLargest);
+        if (!combo)
             return false;
 
         if (ImGui.IsWindowAppearing())
@@ -74,8 +73,6 @@ public class ClippedSelectableCombo<T>
             ImGui.SetKeyboardFocusHere();
             UpdateFilter(string.Empty);
         }
-
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndCombo);
 
         ImGui.SetNextItemWidth(-1);
         var tmp   = _filter;

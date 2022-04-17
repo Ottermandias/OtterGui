@@ -7,7 +7,7 @@ namespace OtterGui.Raii;
 // If condition is false, no font is pushed.
 public static partial class ImRaii
 {
-    public static Font PushFont(ImFontPtr font, bool condition = false)
+    public static Font PushFont(ImFontPtr font, bool condition = true)
         => condition ? new Font().Push(font) : new Font();
 
     public sealed class Font : IDisposable

@@ -1,52 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using ImGuiNET;
 
 namespace OtterGui.Raii;
 
+// Most ImGui widgets with IDisposable interface that automatically destroys them
+// when created with using variables.
 public static partial class ImRaii
 {
-    public static EndStack DeferredEnd(Action a, bool condition = true)
-        => new EndStack().Push(a, condition);
-
-    public static EndStack NewGroup()
-    {
-        ImGui.BeginGroup();
-        return DeferredEnd(ImGui.EndGroup);
-    }
-
-    public static EndStack NewTooltip()
-    {
-        ImGui.BeginTooltip();
-        return DeferredEnd(ImGui.EndTooltip);
-    }
-
-    public sealed class EndStack : IDisposable
-    {
-        private readonly Stack<Action> _cleanActions = new();
-
-        public EndStack Push(Action a, bool condition = true)
-        {
-            if (condition)
-                _cleanActions.Push(a);
-
-            return this;
-        }
-
-
-        public EndStack Pop(int num = 1)
-        {
-            while (num-- > 0 && _cleanActions.TryPop(out var action))
-                action.Invoke();
-
-            return this;
-        }
-
-        public void Dispose()
-            => Pop(_cleanActions.Count);
-    }
-
     public static IEndObject Child(string strId)
         => new EndUnconditionally(ImGui.EndChild, ImGui.BeginChild(strId));
 
@@ -73,6 +34,12 @@ public static partial class ImRaii
 
     public static IEndObject Popup(string id, ImGuiWindowFlags flags)
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopup(id, flags));
+
+    public static IEndObject ContextPopup(string id)
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextWindow(id));
+
+    public static IEndObject ContextPopup(string id, ImGuiPopupFlags flags)
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextWindow(id, flags));
 
     public static IEndObject Combo(string label, string previewValue)
         => new EndConditionally(ImGui.EndCombo, ImGui.BeginCombo(label, previewValue));
@@ -131,6 +98,7 @@ public static partial class ImRaii
     public static IEndObject TreeNode(string label, ImGuiTreeNodeFlags flags)
         => new EndConditionally(ImGui.TreePop, ImGui.TreeNodeEx(label, flags));
 
+    // Exported interface for RAII.
     public interface IEndObject : IDisposable
     {
         public bool Success { get; }
@@ -145,6 +113,8 @@ public static partial class ImRaii
             => !i.Success;
     }
 
+    // Use end-function regardless of success.
+    // Used by Child, Group and Tooltip.
     private struct EndUnconditionally : IEndObject
     {
         private Action EndAction { get; }
@@ -168,6 +138,7 @@ public static partial class ImRaii
         }
     }
 
+    // Use end-function only on success.
     private struct EndConditionally : IEndObject
     {
         private Action EndAction { get; }

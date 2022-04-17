@@ -1,40 +1,45 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Dalamud.Game.ClientState.Keys;
 using Newtonsoft.Json;
 
 namespace OtterGui;
 
+// A wrapper to combine a single regular key with up to two modifier keys.
 public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
 {
     public VirtualKey     Hotkey    { get; private set; } = VirtualKey.NO_KEY;
     public ModifierHotkey Modifier1 { get; private set; } = VirtualKey.NO_KEY;
     public ModifierHotkey Modifier2 { get; private set; } = VirtualKey.NO_KEY;
 
-
     public ModifiableHotkey()
     { }
 
     public ModifiableHotkey(VirtualKey hotkey, VirtualKey[]? validKeys = null)
     {
-        SetHotkey(hotkey);
+        SetHotkey(hotkey, validKeys);
     }
 
     public ModifiableHotkey(VirtualKey hotkey, ModifierHotkey modifier1, VirtualKey[]? validKeys = null)
     {
-        SetHotkey(hotkey);
+        SetHotkey(hotkey, validKeys);
         SetModifier1(modifier1);
     }
 
     [JsonConstructor]
     public ModifiableHotkey(VirtualKey hotkey, ModifierHotkey modifier1, ModifierHotkey modifier2, VirtualKey[]? validKeys = null)
     {
-        SetHotkey(hotkey);
+        SetHotkey(hotkey, validKeys);
         SetModifier1(modifier1);
         SetModifier2(modifier2);
     }
 
+    // Try to set the given hotkey.
+    // If validKeys is given, the hotkey has to be contained in it.
+    // If the key is empty, both modifiers will be reset.
+    // Returns true if any change took place.
     public bool SetHotkey(VirtualKey key, IReadOnlyList<VirtualKey>? validKeys = null)
     {
         if (Hotkey == key || validKeys != null && !validKeys.Contains(key))
@@ -50,6 +55,9 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
         return true;
     }
 
+    // Try to set the first modifier.
+    // If the modifier is empty, the second modifier will be reset.
+    // Returns true if any change took place.
     public bool SetModifier1(ModifierHotkey key)
     {
         if (Modifier1 == key)
@@ -62,6 +70,9 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
         return true;
     }
 
+    // Try to set the second modifier.
+    // Returns true if any change took place.
+    // If the first modifier is already the given key, resets this one instead.
     public bool SetModifier2(ModifierHotkey key)
     {
         if (Modifier2 == key)

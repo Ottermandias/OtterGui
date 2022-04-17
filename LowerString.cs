@@ -90,19 +90,19 @@ public readonly struct LowerString : IEquatable<LowerString>, IComparable<LowerS
         => lhs.Equals(rhs);
 
     public static bool operator !=(LowerString lhs, LowerString rhs)
-        => lhs.Equals(rhs);
+        => !lhs.Equals(rhs);
 
     public static bool operator ==(LowerString lhs, string rhs)
         => lhs.Equals(rhs);
 
     public static bool operator !=(LowerString lhs, string rhs)
-        => lhs.Equals(rhs);
+        => !lhs.Equals(rhs);
 
     public static bool operator ==(string lhs, LowerString rhs)
         => rhs.Equals(lhs);
 
     public static bool operator !=(string lhs, LowerString rhs)
-        => rhs.Equals(lhs);
+        => !rhs.Equals(lhs);
 
     private class Converter : JsonConverter<LowerString>
     {

@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Game.Text;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
 using ImGuiNET;
 using OtterGui.Raii;
 
@@ -12,77 +9,72 @@ namespace OtterGui;
 
 public static partial class ImGuiUtil
 {
+    // Go to the next column, then enter text.
+    public static void TextNextColumn(string text)
+    {
+        ImGui.TableNextColumn();
+        ImGui.TextUnformatted(text);
+    }
+
+    // Draw a single piece of text in the given color.
     public static void TextColored(uint color, string text)
     {
         using var _ = ImRaii.PushColor(ImGuiCol.Text, color);
-        ImGui.Text(text);
+        ImGui.TextUnformatted(text);
     }
 
-    private static void DrawColorBox(string label, uint color, Vector2 iconSize, string description, bool push)
+    // Create a selectable that copies its text to clipboard when clicked.
+    // Also adds a tooltip on hover.
+    public static void CopyOnClickSelectable(string text)
     {
-        using var c     = ImRaii.PushColor(ImGuiCol.ChildBg, color, push);
-        using var style = ImRaii.PushStyle(ImGuiStyleVar.ChildRounding, ImGui.GetStyle().FrameRounding);
-        ImGui.BeginChild(label, iconSize, true);
-        ImGui.EndChild();
-        c.Pop();
-        HoverTooltip(description);
+        if (ImGui.Selectable(text))
+            ImGui.SetClipboardText(text);
+
+        HoverTooltip("Click to copy to clipboard.");
     }
 
-    public static bool PaletteColorPicker(string label, Vector2 iconSize, int currentColorIdx, int defaultColorIdx,
-        IDictionary<int, uint> colors, out int newColorIdx)
+    // Draw a single FontAwesomeIcon.
+    public static void PrintIcon(FontAwesomeIcon icon)
     {
-        newColorIdx = -1;
-        using var group = ImRaii.NewGroup();
-        using var id    = ImRaii.PushId(label);
-        if (colors.TryGetValue(currentColorIdx, out var currentColor))
-            DrawColorBox("##preview", currentColor, iconSize, $"{currentColorIdx} - {ColorBytes(currentColor)}\nRight-click to clear.", true);
-        else
-            DrawColorBox("##preview", 0, iconSize, "None", false);
-        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+        using var font = ImRaii.PushFont(UiBuilder.IconFont);
+        ImGui.TextUnformatted(icon.ToIconString());
+    }
+
+    // Draw a help marker, followed by a label.
+    public static void LabeledHelpMarker(string label, string tooltip)
+    {
+        ImGuiComponents.HelpMarker(tooltip);
+        ImGui.SameLine();
+        ImGui.Text(label);
+        HoverTooltip(tooltip);
+    }
+
+    // Drag between min and max with the given speed and format.
+    // Has width of width.
+    // Returns true if the item was edited but is not active anymore.
+    public static bool DragFloat(string label, ref float value, float width, float speed, float min, float max, string format)
+    {
+        ImGui.SetNextItemWidth(width);
+        if (ImGui.DragFloat(label, ref value, speed, min, max, format))
         {
-            newColorIdx = -1;
-            return currentColorIdx != -1;
+            value = Math.Clamp(value, min, max);
         }
 
-        if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-            ImGui.OpenPopup("##popup");
-        if (colors.TryGetValue(defaultColorIdx, out var def))
+        return ImGui.IsItemDeactivatedAfterEdit();
+    }
+
+    // Drag between min and max with the given speed and format.
+    // Has width of width.
+    // Returns true if the item was edited but is not active anymore.
+    public static bool DragInt(string label, ref int value, float width, float speed, int min, int max, string format)
+    {
+        ImGui.SetNextItemWidth(width);
+        if (ImGui.DragInt(label, ref value, speed, min, max, format))
         {
-            ImGui.SameLine();
-            if (DrawDisabledButton("Default", Vector2.Zero, $"Reset this color to {defaultColorIdx} ({ColorBytes(def)}).",
-                    currentColorIdx == defaultColorIdx))
-            {
-                newColorIdx = defaultColorIdx;
-                return true;
-            }
+            value = Math.Clamp(value, min, max);
         }
 
-        if (label.Length > 0 && !label.StartsWith("##"))
-        {
-            ImGui.SameLine();
-            ImGui.Text(label);
-        }
-
-        if (ImGui.BeginPopupContextWindow("##popup"))
-        {
-            using var end     = ImRaii.DeferredEnd(ImGui.EndPopup);
-            var       counter = 0;
-            foreach (var (idx, value) in colors)
-            {
-                var text = $"{idx} - {ColorBytes(value)}";
-                DrawColorBox(text, value, iconSize, text, true);
-                if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-                {
-                    newColorIdx = idx;
-                    ImGui.CloseCurrentPopup();
-                }
-
-                if (counter++ % 10 != 9)
-                    ImGui.SameLine();
-            }
-        }
-
-        return newColorIdx != -1;
+        return ImGui.IsItemDeactivatedAfterEdit();
     }
 
     public static bool DrawDisabledButton(string label, Vector2 size, string description, bool disabled, bool icon = false)
@@ -137,59 +129,6 @@ public static partial class ImGuiUtil
         ImGui.Text(text);
     }
 
-    public static uint ReorderColor(uint seColor)
-    {
-        var fa = seColor & 255;
-        var fb = (seColor >> 8) & 255;
-        var fg = (seColor >> 16) & 255;
-        var fr = seColor >> 24;
-        return fr | (fg << 8) | (fb << 16) | (fa << 24);
-    }
-
-    private static string ColorBytes(uint color)
-        => $"#{(byte)(color & 0xFF):X2}{(byte)(color >> 8):X2}{(byte)(color >> 16):X2}{(byte)(color >> 24):X2}";
-
-    public static bool ColorPicker(string label, string tooltip, uint current, Action<uint> setter, uint standard)
-    {
-        var       ret = false;
-        var       old = ImGui.ColorConvertU32ToFloat4(current);
-        var       tmp = old;
-        using var _   = ImRaii.PushId(label);
-        ImGui.BeginGroup();
-        if (ImGui.ColorEdit4("", ref tmp, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.NoInputs) && tmp != old)
-        {
-            setter(ImGui.ColorConvertFloat4ToU32(tmp));
-            ret = true;
-        }
-
-        ImGui.SameLine();
-        using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, current == standard);
-        if (ImGui.Button("Default") && current != standard)
-        {
-            setter(standard);
-            ret = true;
-        }
-
-        alpha.Pop();
-        if (ImGui.IsItemHovered())
-        {
-            using var tt = ImRaii.Tooltip();
-            ImGui.AlignTextToFramePadding();
-            ImGui.Text($"Reset this color to {ColorBytes(standard)}.");
-            var standardV4 = ImGui.ColorConvertU32ToFloat4(current);
-            ImGui.SameLine();
-            ImGui.ColorEdit4("", ref standardV4, ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.NoInputs);
-        }
-
-        ImGui.SameLine();
-        ImGui.Text(label);
-        if (tooltip.Length > 0)
-            HoverTooltip(tooltip);
-        ImGui.EndGroup();
-
-        return ret;
-    }
-
     public static bool DrawEditButtonText(int id, string current, out string newText, ref bool edit, Vector2 buttonSize, float inputWidth,
         uint maxLength = 256)
     {
@@ -222,32 +161,6 @@ public static partial class ImGuiUtil
         return false;
     }
 
-    public static void ClippedDraw<T>(IReadOnlyList<T> data, Action<T> func, float lineHeight)
-    {
-        ImGuiListClipperPtr clipper;
-        unsafe
-        {
-            clipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
-        }
-
-        clipper.Begin(data.Count, lineHeight);
-        while (clipper.Step())
-        {
-            for (var actualRow = clipper.DisplayStart; actualRow < clipper.DisplayEnd; actualRow++)
-            {
-                if (actualRow >= data.Count)
-                    return;
-
-                if (actualRow < 0)
-                    continue;
-
-                func(data[actualRow]);
-            }
-        }
-
-        clipper.End();
-    }
-
     public static void HoverIcon(ImGuiScene.TextureWrap icon, Vector2 iconSize)
     {
         var size = new Vector2(icon.Width, icon.Height);
@@ -260,14 +173,6 @@ public static partial class ImGuiUtil
         ImGui.EndTooltip();
     }
 
-    public static uint MiddleColor(uint c1, uint c2)
-    {
-        var r = ((c1 & 0xFF) + (c2 & 0xFF)) / 2;
-        var g = (((c1 >> 8) & 0xFF) + ((c2 >> 8) & 0xFF)) / 2;
-        var b = (((c1 >> 16) & 0xFF) + ((c2 >> 16) & 0xFF)) / 2;
-        var a = (((c1 >> 24) & 0xFF) + ((c2 >> 24) & 0xFF)) / 2;
-        return r | (g << 8) | (b << 16) | (a << 24);
-    }
 
     public static void RightAlign(string text)
     {
@@ -285,13 +190,13 @@ public static partial class ImGuiUtil
 
     public static bool OpenNameField(string popupName, ref string newName)
     {
-        if (!ImGui.BeginPopup(popupName))
+        using var popup = ImRaii.Popup(popupName);
+        if (!popup)
             return false;
 
         if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
             ImGui.CloseCurrentPopup();
 
-        using var end = ImRaii.DeferredEnd(ImGui.EndPopup);
         ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
         var enterPressed = ImGui.InputTextWithHint("##newName", "Enter New Name...", ref newName, 64, ImGuiInputTextFlags.EnterReturnsTrue);
         if (ImGui.IsWindowAppearing())
@@ -302,86 +207,6 @@ public static partial class ImGuiUtil
 
         ImGui.CloseCurrentPopup();
         return true;
-    }
-
-    public static bool DrawChatTypeSelector(string label, string description, XivChatType currentValue, Action<XivChatType> setter)
-    {
-        using var id  = ImRaii.PushId(label);
-        var       ret = ImGui.BeginCombo(label, currentValue.ToString());
-        using var end = ImRaii.DeferredEnd(ImGui.EndCombo, ret);
-        HoverTooltip(description);
-        if (ret)
-            ret = false;
-        else
-            return false;
-
-        foreach (var type in Enum.GetValues<XivChatType>())
-        {
-            if (!ImGui.Selectable(type.ToString(), currentValue == type) || type == currentValue)
-                continue;
-
-            setter(type);
-            ret = true;
-        }
-
-        return ret;
-    }
-
-    public static bool KeySelector(string label, string description, VirtualKey currentValue, Action<VirtualKey> setter,
-        IReadOnlyList<VirtualKey> keys)
-    {
-        using var id  = ImRaii.PushId(label);
-        var       ret = ImGui.BeginCombo(label, currentValue.GetFancyName());
-        using var end = ImRaii.DeferredEnd(ImGui.EndCombo, ret);
-        HoverTooltip(description);
-        if (ret)
-            ret = false;
-        else
-            return false;
-
-        foreach (var key in keys)
-        {
-            if (!ImGui.Selectable(key.GetFancyName(), currentValue == key) || currentValue == key)
-                continue;
-
-            setter(key);
-            ret = true;
-        }
-
-        return ret;
-    }
-
-    public static bool ModifierSelector(string label, string description, ModifierHotkey currentValue, Action<ModifierHotkey> setter)
-        => KeySelector(label, description, currentValue, k => setter(k), ModifierHotkey.ValidKeys);
-
-    public static bool ModifiableKeySelector(string label, string description, float width, ModifiableHotkey currentValue,
-        Action<ModifiableHotkey> setter,
-        IReadOnlyList<VirtualKey> keys)
-    {
-        using var id   = ImRaii.PushId(label);
-        var       copy = currentValue;
-        ImGui.SetNextItemWidth(width);
-        var changes = KeySelector(label, description, currentValue.Hotkey, k => copy.SetHotkey(k), keys);
-
-        if (currentValue.Hotkey != VirtualKey.NO_KEY)
-        {
-            using var indent = ImRaii.PushIndent();
-            ImGui.SetNextItemWidth(width - indent.Indentation);
-            changes |= ModifierSelector("Modifier", "Set an optional modifier key to be used in conjunction with the selected hotkey.",
-                currentValue.Modifier1,             k => copy.SetModifier1(k));
-
-            if (currentValue.Modifier1 != VirtualKey.NO_KEY)
-            {
-                ImGui.SetNextItemWidth(width - indent.Indentation);
-                changes |= ModifierSelector("Additional Modifier",
-                    "Set another optional modifier key to be used in conjunction with the selected hotkey and the first modifier.",
-                    currentValue.Modifier2, k => copy.SetModifier2(k));
-            }
-        }
-
-        if (changes)
-            setter(copy);
-        return changes;
     }
 
     internal static unsafe bool IsDropping(string name)

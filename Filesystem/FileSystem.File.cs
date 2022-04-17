@@ -65,12 +65,14 @@ public partial class FileSystem<T>
     }
 
     // Check if a path ends in a duplicate number already and increment if so, otherwise add (2).
-    private static readonly Regex DuplicateRegex = new(@"\((?'Number'\d+)\)$", RegexOptions.Compiled);
+    private static readonly Regex DuplicateRegex = new(@"(?'Name'.*) \((?'Number'\d+)\)$", RegexOptions.Compiled);
 
     private static string FixDuplicateName(string name)
     {
         var match = DuplicateRegex.Match(name);
-        return $"{name} ({(match.Success ? int.Parse(match.Groups["Number"].Value) + 1 : 2)})";
+        return match.Success
+            ? $"{match.Groups["Name"].Value} ({int.Parse(match.Groups["Number"].Value) + 1})"
+            : $"{name} (2)";
     }
 
     // Load a given FileSystem from file, using an enumeration of data values, a function that corresponds a data value to its identifier

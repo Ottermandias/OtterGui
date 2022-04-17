@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 
 namespace OtterGui;
 
+// A virtual key wrapper for classical modifier keys only,
+// i.e. Control, Alt and Shift.
 public readonly struct ModifierHotkey : IEquatable<ModifierHotkey>
 {
     public static readonly ModifierHotkey NoKey = new(VirtualKey.NO_KEY);

@@ -1,20 +1,24 @@
 using System;
 using System.Collections.Generic;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui;
 
 public static class ImGuiTable
 {
-    public static void DrawTable<T>(string label, IEnumerable<T> data, Action<T> drawRow, ImGuiTableFlags flags = ImGuiTableFlags.None, params string[] columnTitles)
+    // Draw a simple table with the given data using the drawRow action.
+    // Headers and thus columns and column count are defined by columnTitles.
+    public static void DrawTable<T>(string label, IEnumerable<T> data, Action<T> drawRow, ImGuiTableFlags flags = ImGuiTableFlags.None,
+        params string[] columnTitles)
     {
         if (columnTitles.Length == 0)
             return;
 
-        if (!ImGui.BeginTable(label, columnTitles.Length, flags))
+        using var table = ImRaii.Table(label, columnTitles.Length, flags);
+        if (!table)
             return;
 
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndTable);
         foreach (var title in columnTitles)
         {
             ImGui.TableNextColumn();
@@ -28,6 +32,8 @@ public static class ImGuiTable
         }
     }
 
+    // Draw a simple table with the given data using the drawRow action inside a collapsing header.
+    // Headers and thus columns and column count are defined by columnTitles.
     public static void DrawTabbedTable<T>(string label, IEnumerable<T> data, Action<T> drawRow, ImGuiTableFlags flags = ImGuiTableFlags.None,
         params string[] columnTitles)
     {

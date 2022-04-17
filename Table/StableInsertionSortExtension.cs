@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace OtterGui.Table;
 
+
+// A naive, stable, in-place insertion sort on lists.
 public static class StableInsertionSortExtension
 {
     public static void StableSort<T>(this IList<T> list, Comparison<T> comp)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui;
 
@@ -92,10 +93,9 @@ public class ItemSelector<T>
 
     public void CreateDropSource<TData>(TData data, string tooltip)
     {
-        if (!ImGui.BeginDragDropSource())
+        using var source = ImRaii.DragDropSource();
+        if (!source)
             return;
-
-        using var raii = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropSource);
 
         _dragDropData = data;
         ImGui.SetDragDropPayload(DragDropLabel, IntPtr.Zero, 0);
@@ -104,9 +104,9 @@ public class ItemSelector<T>
 
     public bool CreateDropTarget<TData>(Action<TData> action)
     {
-        if (!ImGui.BeginDragDropTarget())
+        using var target = ImRaii.DragDropTarget();
+        if (!target)
             return false;
-        using var raii = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropTarget);
 
         if (!ImGuiUtil.IsDropping(DragDropLabel))
             return false;
@@ -120,9 +120,9 @@ public class ItemSelector<T>
 
     public bool CreateDropTarget<TData>(Func<TData, bool> func)
     {
-        if (!ImGui.BeginDragDropTarget())
+        using var target = ImRaii.DragDropTarget();
+        if (!target)
             return false;
-        using var raii = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropTarget);
 
         if (!ImGuiUtil.IsDropping(DragDropLabel))
             return false;
@@ -215,19 +215,26 @@ public class ItemSelector<T>
         }
 
         // If the ItemSelector supports Move, every item is a Move-DragDropSource. The data is the index of the dragged element.
-        if (_flags.HasFlag(Flags.Move) && ImGui.BeginDragDropSource())
+        if (_flags.HasFlag(Flags.Move))
         {
-            using var source = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropSource);
-            _dragDropData = idx;
-            ImGui.SetDragDropPayload(MoveLabel, IntPtr.Zero, 0);
-            ImGui.Text($"Reordering {idx + 1}...");
+            using var source = ImRaii.DragDropSource();
+            if (source)
+            {
+                _dragDropData = idx;
+                ImGui.SetDragDropPayload(MoveLabel, IntPtr.Zero, 0);
+                ImGui.Text($"Reordering {idx + 1}...");
+            }
         }
 
         // If the ItemSelector supports Move or Drop, every item is a DragDropTarget.
-        if ((_flags & (Flags.Move | Flags.Drop)) == Flags.None || !ImGui.BeginDragDropTarget())
+        if ((_flags & (Flags.Move | Flags.Drop)) == Flags.None)
             return;
 
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndDragDropTarget);
+        using var target = ImRaii.DragDropTarget();
+        if (!target)
+            return;
+
+        // Handle drops.
         if (ImGuiUtil.IsDropping(DragDropLabel))
         {
             OnDrop(_dragDropData, idx);
@@ -247,7 +254,7 @@ public class ItemSelector<T>
             return;
 
         var       newFilter = Filter;
-        using var style     = Raii.ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+        using var style     = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
         ImGui.SetNextItemWidth(width);
         var enterPressed = ImGui.InputTextWithHint(string.Empty, "Filter...", ref newFilter, 64, ImGuiInputTextFlags.EnterReturnsTrue);
         if (newFilter != Filter)
@@ -296,7 +303,7 @@ public class ItemSelector<T>
 
         if (ImGui.Button(FontAwesomeIcon.Plus.ToIconString(), Vector2.UnitX * width))
             ImGui.OpenPopup(newNamePopupAdd);
-        using var font = Raii.ImRaii.PushFont(UiBuilder.DefaultFont);
+        using var font = ImRaii.PushFont(UiBuilder.DefaultFont);
         ImGuiUtil.HoverTooltip("Add New");
 
         if (!OpenNameField(newNamePopupAdd, out var newName))
@@ -315,7 +322,7 @@ public class ItemSelector<T>
 
         if (ImGui.Button(FontAwesomeIcon.Clipboard.ToIconString(), Vector2.UnitX * width))
             ImGui.OpenPopup(newNamePopupImport);
-        using var font = Raii.ImRaii.PushFont(UiBuilder.DefaultFont);
+        using var font = ImRaii.PushFont(UiBuilder.DefaultFont);
         ImGuiUtil.HoverTooltip("Import from Clipboard");
 
         if (!OpenNameField(newNamePopupImport, out var newName))
@@ -349,7 +356,7 @@ public class ItemSelector<T>
         if (ImGui.Button(FontAwesomeIcon.Clone.ToIconString(), Vector2.UnitX * width))
             ImGui.OpenPopup(newNamePopupDuplicate);
 
-        using var font = Raii.ImRaii.PushFont(UiBuilder.DefaultFont);
+        using var font = ImRaii.PushFont(UiBuilder.DefaultFont);
         ImGuiUtil.HoverTooltip("Duplicate Current Selection");
 
         if (!OpenNameField(newNamePopupDuplicate, out var newName))
@@ -364,13 +371,16 @@ public class ItemSelector<T>
 
     private void DrawDeleteButton(float width)
     {
-        if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), Vector2.UnitX * width) && ImGui.GetIO().KeyCtrl && CurrentIdx >= 0 && OnDelete(CurrentIdx))
+        if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), Vector2.UnitX * width)
+         && ImGui.GetIO().KeyCtrl
+         && CurrentIdx >= 0
+         && OnDelete(CurrentIdx))
         {
             FilterDirty = true;
             SetCurrent(CurrentIdx > 0 ? CurrentIdx - 1 : CurrentIdx);
         }
 
-        using var font = Raii.ImRaii.PushFont(UiBuilder.DefaultFont);
+        using var font = ImRaii.PushFont(UiBuilder.DefaultFont);
         ImGuiUtil.HoverTooltip("Delete Current Selection. Hold Control while clicking.");
     }
 
@@ -379,7 +389,7 @@ public class ItemSelector<T>
         if (_numButtons == 0)
             return;
 
-        using var font        = Raii.ImRaii.PushFont(UiBuilder.IconFont);
+        using var font        = ImRaii.PushFont(UiBuilder.IconFont);
         var       buttonWidth = width / _numButtons;
 
         if (_flags.HasFlag(Flags.Add))
@@ -411,26 +421,22 @@ public class ItemSelector<T>
 
     public void Draw(float width)
     {
-        using var id    = Raii.ImRaii.PushId(Label);
-        using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        using var _     = Raii.ImRaii.NewGroup();
-        if (!ImGui.BeginChild(string.Empty, new Vector2(width, -ImGui.GetFrameHeight()), true))
-        {
-            ImGui.EndChild();
+        using var id    = ImRaii.PushId(Label);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        using var group = ImRaii.Group();
+        using var child = ImRaii.Child(string.Empty, new Vector2(width, -ImGui.GetFrameHeight()), true);
+        if (!child)
             return;
-        }
 
         style.Pop();
 
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndChild);
-
         DrawFilter(width);
         UpdateFilteredItems();
-        ImGuiUtil.ClippedDraw(FilteredItems, InternalDraw, ImGui.GetTextLineHeightWithSpacing());
+        ImGuiClip.ClippedDraw(FilteredItems, InternalDraw, ImGui.GetTextLineHeightWithSpacing());
         style.Push(ImGuiStyleVar.FrameRounding, 0)
             .Push(ImGuiStyleVar.WindowPadding, Vector2.Zero)
             .Push(ImGuiStyleVar.ItemSpacing,   Vector2.Zero);
-        end.Pop();
+        child.Dispose();
         DrawButtons(width);
     }
 }
@@ -439,17 +445,14 @@ public static class ItemDetailsWindow
 {
     public static void Draw(string label, Action drawHeader, Action drawDetails)
     {
-        using var group = Raii.ImRaii.NewGroup();
-        using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        using var id    = Raii.ImRaii.PushId(label);
-        if (!ImGui.BeginChild(string.Empty, ImGui.GetContentRegionAvail(), true, ImGuiWindowFlags.MenuBar))
-        {
-            ImGui.EndChild();
+        using var group = ImRaii.Group();
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        using var id    = ImRaii.PushId(label);
+        using var child = ImRaii.Child(string.Empty, ImGui.GetContentRegionAvail(), true, ImGuiWindowFlags.MenuBar);
+        if (!child)
             return;
-        }
+
         style.Pop();
-        using var end        = Raii.ImRaii.DeferredEnd(ImGui.EndChild);
-        var       headerSize = new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetFrameHeight());
 
         if (ImGui.BeginMenuBar())
         {
@@ -460,8 +463,7 @@ public static class ItemDetailsWindow
         ImGui.Dummy(ImGui.GetStyle().WindowPadding * Vector2.UnitY);
         ImGui.Dummy(ImGui.GetStyle().WindowPadding);
         ImGui.SameLine();
-        ImGui.BeginGroup();
-        group.Push(ImGui.EndGroup);
+        using var detailGroup = ImRaii.Group();
         drawDetails();
     }
 }

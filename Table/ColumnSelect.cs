@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui.Table;
 
@@ -24,14 +25,13 @@ public class ColumnSelect<T, TItem> : Column<TItem> where T : struct, Enum, IEqu
 
     public override bool DrawFilter()
     {
-        var       tmp   = Idx;
         using var id    = Raii.ImRaii.PushId(FilterLabel);
         using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
         ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
-        if (!ImGui.BeginCombo(string.Empty, Idx < 0 ? Label : Names[Idx]))
+        using var combo = ImRaii.Combo(string.Empty, Idx < 0 ? Label : Names[Idx]);
+        if(!combo)
             return false;
 
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndCombo);
         var       ret = false;
         for (var i = 0; i < Names.Length; ++i)
         {

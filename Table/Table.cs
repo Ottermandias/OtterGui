@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui.Table;
 
@@ -126,11 +127,10 @@ public class Table<T>
 
     private void DrawTableInternal()
     {
-        if (!ImGui.BeginTable("Table", Headers.Length, Flags,
-                ImGui.GetContentRegionAvail() - ExtraHeight * Vector2.UnitY * ImGuiHelpers.GlobalScale))
+        using var table = ImRaii.Table("Table", Headers.Length, Flags,
+            ImGui.GetContentRegionAvail() - ExtraHeight * Vector2.UnitY * ImGuiHelpers.GlobalScale);
+        if (!table)
             return;
-
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndTable);
 
         PreDraw();
         ImGui.TableSetupScrollFreeze(1, 1);
@@ -154,6 +154,6 @@ public class Table<T>
 
         SortInternal();
         _currentIdx = 0;
-        ImGuiUtil.ClippedDraw(FilteredItems, DrawItem, ItemHeight);
+        ImGuiClip.ClippedDraw(FilteredItems, DrawItem, ItemHeight);
     }
 }

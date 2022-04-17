@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui.Table;
 
@@ -23,17 +24,16 @@ public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
 
     public override bool DrawFilter()
     {
-        using var id    = Raii.ImRaii.PushId(FilterLabel);
-        using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+        using var id    = ImRaii.PushId(FilterLabel);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
         ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
         var       all   = FilterValue.HasFlag(AllFlags);
-        using var color = Raii.ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
-        if (!ImGui.BeginCombo(string.Empty, Label, ImGuiComboFlags.NoArrowButton))
+        using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
+        using var combo = ImRaii.Combo(string.Empty, Label, ImGuiComboFlags.NoArrowButton);
+        if (!combo)
             return false;
 
         color.Pop();
-
-        using var end = Raii.ImRaii.DeferredEnd(ImGui.EndCombo);
 
         var ret = false;
         if (ImGui.Checkbox("Enable All", ref all))
