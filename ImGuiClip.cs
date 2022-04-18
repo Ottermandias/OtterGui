@@ -108,9 +108,10 @@ public static class ImGuiClip
 
     // Draw non-random-access data that gets filtered without storing state.
     // Use GetNecessarySkips first and use its return value for skips.
+    // checkFilter should return true for items that should be displayed and false for those that should be skipped.
     // startIndex can be set if using multiple separate chunks of data with different filter or draw functions (of the same height).
     // Returns either the non-negative remaining objects in data that could not be drawn due to being out of the visible area,
     // or the bitwise-inverse of the next startIndex for subsequent collections, if there is still room for more visible objects.
-    public static int FilteredClippedDraw<T>(IEnumerable<T> data, int skips, Func<T, bool> filter, Action<T> draw, int startIndex = 0)
-        => ClippedDraw(data.Where(filter), skips, draw, null, startIndex);
+    public static int FilteredClippedDraw<T>(IEnumerable<T> data, int skips, Func<T, bool> checkFilter, Action<T> draw, int startIndex = 0)
+        => ClippedDraw(data.Where(checkFilter), skips, draw, null, startIndex);
 }

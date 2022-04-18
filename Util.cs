@@ -56,9 +56,7 @@ public static partial class ImGuiUtil
     {
         ImGui.SetNextItemWidth(width);
         if (ImGui.DragFloat(label, ref value, speed, min, max, format))
-        {
             value = Math.Clamp(value, min, max);
-        }
 
         return ImGui.IsItemDeactivatedAfterEdit();
     }
@@ -70,9 +68,7 @@ public static partial class ImGuiUtil
     {
         ImGui.SetNextItemWidth(width);
         if (ImGui.DragInt(label, ref value, speed, min, max, format))
-        {
             value = Math.Clamp(value, min, max);
-        }
 
         return ImGui.IsItemDeactivatedAfterEdit();
     }
@@ -174,11 +170,17 @@ public static partial class ImGuiUtil
     }
 
 
-    public static void RightAlign(string text)
+    public static void RightAlign(string text, float offset = 0)
     {
-        var offset = ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(text).X;
+        offset = ImGui.GetContentRegionAvail().X - offset - ImGui.CalcTextSize(text).X;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
         ImGui.Text(text);
+    }
+
+    public static void RightJustify(string text, uint color)
+    {
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.CalcTextSize(text).X);
+        TextColored(color, text);
     }
 
     public static void Center(string text)

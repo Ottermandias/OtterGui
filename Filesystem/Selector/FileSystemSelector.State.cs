@@ -189,7 +189,12 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         FileSystem<T>.IPath? newParent)
     {
         SetFilterDirty();
-        if (type == FileSystemChangeType.ObjectRemoved && changedObject == SelectedLeaf)
-            ClearSelection();
+        switch (type)
+        {
+            case FileSystemChangeType.ObjectRemoved when changedObject == SelectedLeaf:
+            case FileSystemChangeType.Reload:
+                ClearSelection();
+                break;
+        }
     }
 }
