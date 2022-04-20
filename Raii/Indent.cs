@@ -10,8 +10,8 @@ public static partial class ImRaii
     public static Indent PushIndent(float f, bool scaled = true, bool condition = true)
         => new Indent().Push(f, scaled, condition);
 
-    public static Indent PushIndent(int i = 1, bool scaled = true, bool condition = true)
-        => new Indent().Push(i, scaled, condition);
+    public static Indent PushIndent(int i = 1, bool condition = true)
+        => new Indent().Push(i, condition);
 
     public sealed class Indent : IDisposable
     {
@@ -19,26 +19,24 @@ public static partial class ImRaii
 
         public Indent Push(float indent, bool scaled = true, bool condition = true)
         {
-            Debug.Assert(indent >= 0f);
             if (condition)
             {
                 if (scaled)
                     indent *= ImGuiHelpers.GlobalScale;
 
-                ImGui.Indent(indent);
+                IndentInternal(indent);
                 Indentation += indent;
             }
 
             return this;
         }
 
-        public Indent Push(int i = 1, bool scaled = true, bool condition = true)
+        public Indent Push(int i = 1, bool condition = true)
         {
             if (condition)
             {
-                var spacing = i * ImGui.GetStyle().IndentSpacing * (scaled ? ImGuiHelpers.GlobalScale : 1f);
-                Debug.Assert(spacing >= 0);
-                ImGui.Indent(spacing);
+                var spacing = i * ImGui.GetStyle().IndentSpacing;
+                IndentInternal(spacing);
                 Indentation += spacing;
             }
 
@@ -50,17 +48,23 @@ public static partial class ImRaii
             if (scaled)
                 indent *= ImGuiHelpers.GlobalScale;
 
-            Debug.Assert(indent >= 0f);
-            ImGui.Unindent(indent);
+            IndentInternal(-indent);
             Indentation -= indent;
         }
 
-        public void Pop(int i, bool scaled = true)
+        public void Pop(int i)
         {
-            var spacing = i * ImGui.GetStyle().IndentSpacing * (scaled ? ImGuiHelpers.GlobalScale : 1f);
-            Debug.Assert(spacing >= 0);
-            ImGui.Unindent(spacing);
+            var spacing = i * ImGui.GetStyle().IndentSpacing;
+            IndentInternal(-spacing);
             Indentation -= spacing;
+        }
+
+        private static void IndentInternal(float indent)
+        {
+            if (indent < 0)
+                ImGui.Unindent(-indent);
+            else
+                ImGui.Indent(indent);
         }
 
         public void Dispose()

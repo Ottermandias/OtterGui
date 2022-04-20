@@ -211,6 +211,6 @@ public static partial class ImGuiUtil
         return true;
     }
 
-    internal static unsafe bool IsDropping(string name)
+    public static unsafe bool IsDropping(string name)
         => ImGui.AcceptDragDropPayload(name).NativePtr != null;
 }

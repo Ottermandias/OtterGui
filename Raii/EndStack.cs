@@ -96,7 +96,7 @@ public static partial class ImRaii
         => new EndConditionally(ImGui.TreePop, ImGui.TreeNodeEx(label));
 
     public static IEndObject TreeNode(string label, ImGuiTreeNodeFlags flags)
-        => new EndConditionally(ImGui.TreePop, ImGui.TreeNodeEx(label, flags));
+        => new EndConditionally(flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen) ? Nop : ImGui.TreePop, ImGui.TreeNodeEx(label, flags));
 
     // Exported interface for RAII.
     public interface IEndObject : IDisposable
@@ -111,6 +111,12 @@ public static partial class ImRaii
 
         public static bool operator !(IEndObject i)
             => !i.Success;
+
+        public static bool operator &(IEndObject i, bool value)
+            => i.Success && value;
+
+        public static bool operator |(IEndObject i, bool value)
+            => i.Success || value;
     }
 
     // Use end-function regardless of success.
@@ -162,4 +168,8 @@ public static partial class ImRaii
             Disposed = true;
         }
     }
+
+    // Used to avoid tree pops when flag for no push is set.
+    private static void Nop()
+    { }
 }

@@ -188,12 +188,22 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     private void OnFileSystemChange(FileSystemChangeType type, FileSystem<T>.IPath changedObject, FileSystem<T>.IPath? previousParent,
         FileSystem<T>.IPath? newParent)
     {
-        SetFilterDirty();
         switch (type)
         {
+            case FileSystemChangeType.ObjectMoved:
+                EnqueueFsAction(() =>
+                {
+                    ExpandAncestors(changedObject);
+                    SetFilterDirty();
+                });
+                break;
             case FileSystemChangeType.ObjectRemoved when changedObject == SelectedLeaf:
             case FileSystemChangeType.Reload:
                 ClearSelection();
+                SetFilterDirty();
+                break;
+            default:
+                SetFilterDirty();
                 break;
         }
     }
