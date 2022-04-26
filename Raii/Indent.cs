@@ -63,7 +63,7 @@ public static partial class ImRaii
         {
             if (indent < 0)
                 ImGui.Unindent(-indent);
-            else
+            else if (indent > 0)
                 ImGui.Indent(indent);
         }
 

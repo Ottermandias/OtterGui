@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
+using System.Linq;
 using ImGuiNET;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
@@ -72,7 +74,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     }
 
     // Default flags to use for custom leaf nodes.
-    protected const ImGuiTreeNodeFlags LeafFlags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.Bullet;
+    protected const ImGuiTreeNodeFlags LeafFlags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen;
 
     // Customization point: Should always create a tree node using LeafFlags (with possible selection.)
     // But can add additional icons or buttons if wanted.
@@ -92,6 +94,24 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
             if (width < 0)
                 width = ImGui.GetWindowWidth() - width;
             DrawButtons(width);
+        }
+    }
+
+    // Select a specific leaf in the file system by its value.
+    // If a corresponding leaf can be found, also expand its ancestors.
+    public void SelectByValue(T value)
+    {
+        var leaf = FileSystem.Root.GetAllDescendants(SortMode.Lexicographical).OfType<FileSystem<T>.Leaf>()
+            .FirstOrDefault(l => l.Value == value);
+        if (leaf != null)
+        {
+            var oldSelection = SelectedLeaf;
+            EnqueueFsAction(() =>
+            {
+                ExpandAncestors(leaf);
+                SelectedLeaf = leaf;
+                SelectionChanged?.Invoke(oldSelection?.Value, leaf.Value, GetState(leaf));
+            });
         }
     }
 }

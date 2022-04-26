@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Dalamud.Game.ClientState.Keys;
 using ImGuiNET;
+using OtterGui.Classes;
 using OtterGui.Raii;
 
 namespace OtterGui.Widgets;

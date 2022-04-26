@@ -17,10 +17,14 @@ public static partial class ImRaii
         public Font()
             => _count = 0;
 
-        public Font Push(ImFontPtr font)
+        public Font Push(ImFontPtr font, bool condition = true)
         {
-            ImGui.PushFont(font);
-            ++_count;
+            if (condition)
+            {
+                ImGui.PushFont(font);
+                ++_count;
+            }
+
             return this;
         }
 

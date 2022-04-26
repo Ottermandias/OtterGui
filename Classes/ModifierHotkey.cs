@@ -3,7 +3,7 @@ using System.Linq;
 using Dalamud.Game.ClientState.Keys;
 using Newtonsoft.Json;
 
-namespace OtterGui;
+namespace OtterGui.Classes;
 
 // A virtual key wrapper for classical modifier keys only,
 // i.e. Control, Alt and Shift.

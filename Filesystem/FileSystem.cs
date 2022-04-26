@@ -31,7 +31,7 @@ public partial class FileSystem<T> where T : class
     public FileSystem(IComparer<string>? comparer = null)
         => _nameComparer = new NameComparer(comparer ?? StringComparer.InvariantCultureIgnoreCase);
 
-    // Find a folder using the given comparer.
+    // Find a child-index inside a folder using the given comparer.
     private int Search(Folder parent, string name)
         => parent.Children.BinarySearch((SearchPath)name, _nameComparer);
 
@@ -40,7 +40,7 @@ public partial class FileSystem<T> where T : class
     // The out parameter will contain the furthest existing folder.
     public bool Find(string fullPath, out IPath child)
     {
-        var split  = fullPath.Split();
+        var split  = fullPath.SplitDirectories();
         var folder = Root;
         child = Root;
         foreach (var part in split)

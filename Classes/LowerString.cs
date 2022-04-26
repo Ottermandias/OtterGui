@@ -2,7 +2,7 @@ using System;
 using ImGuiNET;
 using Newtonsoft.Json;
 
-namespace OtterGui;
+namespace OtterGui.Classes;
 
 // A string that always keeps a lower-cased version of itself
 // Does automatically compare case-insensitive to other LowerStrings and regular strings.

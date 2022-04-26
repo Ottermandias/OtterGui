@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using ImGuiNET;
+using OtterGui.Widgets;
 
 namespace OtterGui.Raii;
 
@@ -86,6 +87,9 @@ public static partial class ImRaii
     public static IEndObject TabItem(string label)
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label));
 
+    public static unsafe IEndObject TabItem(byte* label, ImGuiTabItemFlags flags)
+        => new EndConditionally(ImGuiNative.igEndTabItem, ImGuiNative.igBeginTabItem(label, null, flags) != 0);
+
     public static IEndObject TabItem(string label, ref bool open)
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label, ref open));
 
@@ -97,6 +101,18 @@ public static partial class ImRaii
 
     public static IEndObject TreeNode(string label, ImGuiTreeNodeFlags flags)
         => new EndConditionally(flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen) ? Nop : ImGui.TreePop, ImGui.TreeNodeEx(label, flags));
+
+    public static IEndObject FramedGroup(string label)
+    {
+        Widget.BeginFramedGroup(label, Vector2.Zero);
+        return new EndUnconditionally(Widget.EndFramedGroup, true);
+    }
+
+    public static IEndObject FramedGroup(string label, Vector2 minSize, string description = "")
+    {
+        Widget.BeginFramedGroup(label, minSize, description);
+        return new EndUnconditionally(Widget.EndFramedGroup, true);
+    }
 
     // Exported interface for RAII.
     public interface IEndObject : IDisposable
@@ -117,6 +133,9 @@ public static partial class ImRaii
 
         public static bool operator |(IEndObject i, bool value)
             => i.Success || value;
+
+        // Empty end object.
+        public static readonly IEndObject Empty = new EndConditionally(Nop, false);
     }
 
     // Use end-function regardless of success.

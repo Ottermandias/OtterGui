@@ -30,10 +30,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - selection.
     private (Vector2, Vector2) DrawLeaf(FileSystem<T>.Leaf leaf, in TStateStorage state)
     {
-        using var group = ImRaii.Group();
         DrawLeafName(leaf, state, leaf == SelectedLeaf);
-        group.Dispose();
-
         if (ImGui.IsItemClicked(ImGuiMouseButton.Left) && SelectedLeaf != leaf)
         {
             var oldData = SelectedLeaf?.Value;

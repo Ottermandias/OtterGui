@@ -1,25 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Dalamud.Interface.Components;
 using ImGuiNET;
+using OtterGui.Raii;
 
 namespace OtterGui.Widgets;
 
 public static partial class Widget
 {
-    public static void BeginFramedGroup(string label)
-        => BeginFramedGroupInternal(ref label, Vector2.Zero, false);
+    public static void BeginFramedGroup(string label, string description = "")
+        => BeginFramedGroupInternal(ref label, Vector2.Zero, description, false);
 
-    public static void BeginFramedGroup(string label, Vector2 minSize)
-        => BeginFramedGroupInternal(ref label, minSize, false);
+    public static void BeginFramedGroup(string label, Vector2 minSize, string description = "")
+        => BeginFramedGroupInternal(ref label, minSize, description, false);
 
-    public static bool BeginFramedGroupEdit(ref string label)
-        => BeginFramedGroupInternal(ref label, Vector2.Zero, true);
+    public static bool BeginFramedGroupEdit(ref string label, string description = "")
+        => BeginFramedGroupInternal(ref label, Vector2.Zero, description, true);
 
-    public static bool BeginFramedGroupEdit(ref string label, Vector2 minSize)
-        => BeginFramedGroupInternal(ref label, minSize, true);
+    public static bool BeginFramedGroupEdit(ref string label, Vector2 minSize, string description = "")
+        => BeginFramedGroupInternal(ref label, minSize, description, true);
 
-    private static bool BeginFramedGroupInternal(ref string label, Vector2 minSize, bool edit)
+    private static bool BeginFramedGroupInternal(ref string label, Vector2 minSize, string description, bool edit)
     {
         var itemSpacing     = ImGui.GetStyle().ItemSpacing;
         var frameHeight     = ImGui.GetFrameHeight();
@@ -27,8 +29,8 @@ public static partial class Widget
 
         ImGui.BeginGroup(); // First group
 
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, Vector2.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing,  Vector2.Zero);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.FramePadding, Vector2.Zero)
+            .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
         ImGui.BeginGroup(); // Second group
 
@@ -48,11 +50,21 @@ public static partial class Widget
 
         // Label block
         ImGui.SameLine();
-        var ret = false;
+        var       ret   = false;
+        using var group = ImRaii.Group();
         if (edit)
             ret = ResizingTextInput(ref label, 1024);
         else
             ImGui.TextUnformatted(label);
+        if (description.Length > 0)
+        {
+            ImGui.SameLine();
+            ImGui.Dummy(itemSpacing);
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker(description);
+        }
+
+        group.Dispose();
 
         var labelMin = ImGui.GetItemRectMin();
         var labelMax = ImGui.GetItemRectMax();
@@ -62,8 +74,7 @@ public static partial class Widget
 
         ImGui.BeginGroup(); // Fourth Group.
 
-        ImGui.PopStyleVar(2);
-
+        style.Pop(2);
         // This seems wrong?
         //ImGui.SetWindowSize( new Vector2( ImGui.GetWindowSize().X - frameHeight, ImGui.GetWindowSize().Y ) );
 
@@ -90,8 +101,8 @@ public static partial class Widget
 
         ImGui.PopItemWidth();
 
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, Vector2.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing,  Vector2.Zero);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.FramePadding, Vector2.Zero)
+            .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
         ImGui.EndGroup(); // Close fourth group
         ImGui.EndGroup(); // Close third group
@@ -127,7 +138,7 @@ public static partial class Widget
         DrawClippedRect(new Vector2(currentLabelMin.X, currentLabelMax.Y), new Vector2(currentLabelMax.X, float.MaxValue), frameMin,
             frameMax,                                                      borderColor,                                    halfFrame.X);
 
-        ImGui.PopStyleVar(2);
+        style.Pop(2);
         // This seems wrong?
         // ImGui.SetWindowSize( new Vector2( ImGui.GetWindowSize().X + frameHeight, ImGui.GetWindowSize().Y ) );
         ImGui.Dummy(Vector2.Zero);

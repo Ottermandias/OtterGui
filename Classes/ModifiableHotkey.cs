@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Dalamud.Game.ClientState.Keys;
 using Newtonsoft.Json;
 
-namespace OtterGui;
+namespace OtterGui.Classes;
 
 // A wrapper to combine a single regular key with up to two modifier keys.
 public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
