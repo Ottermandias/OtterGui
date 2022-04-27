@@ -51,7 +51,14 @@ public partial class FileSystemSelector<T, TStateStorage>
         // Does not need to be delayed since it is not in the iteration itself.
         FileSystem<T>.Folder? folder = null;
         if (ImGuiUtil.OpenNameField(newFolderName, ref _newName) && _newName.Length > 0)
-            folder = FileSystem.FindOrCreateAllFolders(_newName);
+            try
+            {
+                folder = FileSystem.FindOrCreateAllFolders(_newName);
+            }
+            catch
+            {
+                // Ignored
+            }
 
         if (folder != null)
             ExpandAncestors(folder);
