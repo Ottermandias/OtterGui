@@ -166,6 +166,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         }
 
         _state.RemoveRange(start, end - start);
+        _currentEnd -= end - start;
     }
 
     // Given a folder and its cache-index, add all its expanded and unfiltered descendants to the cache.
