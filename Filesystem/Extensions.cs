@@ -74,11 +74,16 @@ public static class Extensions
         return false;
     }
 
-    // Obtain a unique file name with appended numbering if the file name exists already.
+    // Obtain a unique file name with appended numbering if the file or directory name exists already.
     // Returns an empty string if the given string is empty or if the maximum amount of accepted duplicates is reached.
     public static string ObtainUniqueFile(this string name, int maxDuplicates = int.MaxValue)
+        => ObtainUniqueString(name, s => File.Exists(s) || Directory.Exists(s), maxDuplicates);
+
+    // Obtain a unique string with appended numbering if the name is not unique as determined by the predicate.
+    // Returns an empty string if the given string is empty or if the maximum amount of accepted duplicates is reached.
+    public static string ObtainUniqueString(this string name, Predicate<string> isDuplicate, int maxDuplicates = int.MaxValue)
     {
-        if (name.Length == 0 || !(File.Exists(name) || Directory.Exists(name)))
+        if (name.Length == 0 || !isDuplicate(name))
             return name;
 
         if (!name.IsDuplicateName(out var baseName, out _))
@@ -86,7 +91,7 @@ public static class Extensions
 
         var idx     = 2;
         var newName = $"{baseName} ({idx})";
-        while (File.Exists(newName) || Directory.Exists(newName))
+        while (!isDuplicate(newName))
         {
             newName = $"{baseName} ({++idx})";
             if (idx == maxDuplicates)
@@ -95,6 +100,11 @@ public static class Extensions
 
         return newName;
     }
+
+    // Increment the duplication part of a given name.
+    // If the name does not end in a duplication part, appends (2).
+    public static string IncrementDuplicate(this string name)
+        => name.IsDuplicateName(out var baseName, out var idx) ? $"{baseName} ({idx})" : $"{name} (2)";
 
     // Data.
     private static readonly HashSet<char> Invalid            = new(Path.GetInvalidFileNameChars());

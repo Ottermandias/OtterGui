@@ -64,17 +64,6 @@ public partial class FileSystem<T>
         j.WriteEndObject();
     }
 
-    // Check if a path ends in a duplicate number already and increment if so, otherwise add (2).
-    private static readonly Regex DuplicateRegex = new(@"(?'Name'.*) \((?'Number'\d+)\)$", RegexOptions.Compiled);
-
-    private static string FixDuplicateName(string name)
-    {
-        var match = DuplicateRegex.Match(name);
-        return match.Success
-            ? $"{match.Groups["Name"].Value} ({int.Parse(match.Groups["Number"].Value) + 1})"
-            : $"{name} (2)";
-    }
-
     // Load a given FileSystem from file, using an enumeration of data values, a function that corresponds a data value to its identifier
     // and a function that corresponds a data value not stored in the saved filesystem to its name.
     protected bool Load(FileInfo file, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
@@ -109,7 +98,7 @@ public partial class FileSystem<T>
                         var leaf = new Leaf(folder, split[^1], value, IdCounter++);
                         while (SetChild(folder, leaf, out _) == Result.ItemExists)
                         {
-                            leaf.SetName(FixDuplicateName(leaf.Name));
+                            leaf.SetName(leaf.Name.IncrementDuplicate());
                             changes = true;
                         }
                     }
@@ -119,7 +108,7 @@ public partial class FileSystem<T>
                         var leaf = new Leaf(Root, toName(value), value, IdCounter++);
                         while (SetChild(Root, leaf, out _) == Result.ItemExists)
                         {
-                            leaf.SetName(FixDuplicateName(leaf.Name));
+                            leaf.SetName(leaf.Name.IncrementDuplicate());
                             changes = true;
                         }
                     }
