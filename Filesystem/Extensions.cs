@@ -104,7 +104,7 @@ public static class Extensions
     // Increment the duplication part of a given name.
     // If the name does not end in a duplication part, appends (2).
     public static string IncrementDuplicate(this string name)
-        => name.IsDuplicateName(out var baseName, out var idx) ? $"{baseName} ({idx})" : $"{name} (2)";
+        => name.IsDuplicateName(out var baseName, out var idx) ? $"{baseName} ({idx + 1})" : $"{name} (2)";
 
     // Data.
     private static readonly HashSet<char> Invalid            = new(Path.GetInvalidFileNameChars());

@@ -115,7 +115,7 @@ public partial class FileSystem<T>
                 }
 
                 // Add all empty folders.
-                foreach (var split in emptyFolders.Concat(data.Values).Select(folder => folder.SplitDirectories()))
+                foreach (var split in emptyFolders.Select(folder => folder.SplitDirectories()))
                 {
                     var (result, _) = CreateAllFolders(split);
                     if (result is not Result.Success and not Result.SuccessNothingDone)
