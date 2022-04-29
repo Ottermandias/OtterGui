@@ -51,7 +51,9 @@ public readonly struct SubList<T> : IEnumerable<T>
     }
 
     public IEnumerator<T> GetEnumerator()
-        => BaseList.Skip(StartIndex).Take(Count).GetEnumerator();
+        => StartIndex == 0 ?
+            BaseList.Take(Count).GetEnumerator() :
+            BaseList.Skip(StartIndex).Take(Count).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();

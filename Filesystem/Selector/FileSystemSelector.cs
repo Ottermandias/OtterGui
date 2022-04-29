@@ -87,13 +87,25 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 
     public void Draw(float width)
     {
-        using var group = ImRaii.Group();
-        if (DrawList(width))
+        try
         {
-            ImGui.PopStyleVar();
-            if (width < 0)
-                width = ImGui.GetWindowWidth() - width;
-            DrawButtons(width);
+            using var group = ImRaii.Group();
+            if (DrawList(width))
+            {
+                ImGui.PopStyleVar();
+                if (width < 0)
+                    width = ImGui.GetWindowWidth() - width;
+                DrawButtons(width);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Exception during FileSystemSelector rendering:\n"
+              + $"{_currentIndex} Current Index\n"
+              + $"{_currentDepth} Current Depth\n"
+              + $"{_currentEnd} Current End\n"
+              + $"{_state.Count} Current State Count\n"
+              + $"{_filterDirty} Filter Dirty", e);
         }
     }
 
