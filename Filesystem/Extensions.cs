@@ -91,7 +91,7 @@ public static class Extensions
 
         var idx     = 2;
         var newName = $"{baseName} ({idx})";
-        while (!isDuplicate(newName))
+        while (isDuplicate(newName))
         {
             newName = $"{baseName} ({++idx})";
             if (idx == maxDuplicates)
