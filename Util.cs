@@ -45,7 +45,7 @@ public static partial class ImGuiUtil
     {
         ImGuiComponents.HelpMarker(tooltip);
         ImGui.SameLine();
-        ImGui.Text(label);
+        ImGui.TextUnformatted(label);
         HoverTooltip(tooltip);
     }
 
@@ -122,7 +122,7 @@ public static partial class ImGuiUtil
     public static void DrawTableColumn(string text)
     {
         ImGui.TableNextColumn();
-        ImGui.Text(text);
+        ImGui.TextUnformatted(text);
     }
 
     public static bool DrawEditButtonText(int id, string current, out string newText, ref bool edit, Vector2 buttonSize, float inputWidth,
@@ -174,7 +174,7 @@ public static partial class ImGuiUtil
     {
         offset = ImGui.GetContentRegionAvail().X - offset - ImGui.CalcTextSize(text).X;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-        ImGui.Text(text);
+        ImGui.TextUnformatted(text);
     }
 
     public static void RightJustify(string text, uint color)
@@ -187,7 +187,7 @@ public static partial class ImGuiUtil
     {
         var offset = (ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(text).X) / 2;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
-        ImGui.Text(text);
+        ImGui.TextUnformatted(text);
     }
 
     public static bool OpenNameField(string popupName, ref string newName)

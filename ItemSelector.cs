@@ -99,7 +99,7 @@ public class ItemSelector<T>
 
         _dragDropData = data;
         ImGui.SetDragDropPayload(DragDropLabel, IntPtr.Zero, 0);
-        ImGui.Text(tooltip);
+        ImGui.TextUnformatted(tooltip);
     }
 
     public bool CreateDropTarget<TData>(Action<TData> action)
@@ -222,7 +222,7 @@ public class ItemSelector<T>
             {
                 _dragDropData = idx;
                 ImGui.SetDragDropPayload(MoveLabel, IntPtr.Zero, 0);
-                ImGui.Text($"Reordering {idx + 1}...");
+                ImGui.TextUnformatted($"Reordering {idx + 1}...");
             }
         }
 

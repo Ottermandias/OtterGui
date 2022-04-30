@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.RegularExpressions;
 using Dalamud.Interface;
 using ImGuiNET;
@@ -52,6 +52,6 @@ public class ColumnString<TItem> : Column<TItem>
 
     public override void DrawColumn(TItem item, int _)
     {
-        ImGui.Text(ToName(item));
+        ImGui.TextUnformatted(ToName(item));
     }
 }

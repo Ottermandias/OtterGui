@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+using ImGuiNET;
 
 namespace OtterGui.Table;
 
@@ -15,7 +15,7 @@ public class Column<TItem>
 
     public virtual bool DrawFilter()
     {
-        ImGui.Text(Label);
+        ImGui.TextUnformatted(Label);
         return false;
     }
 

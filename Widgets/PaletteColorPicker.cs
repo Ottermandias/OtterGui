@@ -53,7 +53,7 @@ public static partial class Widget
         if (label.Length > 0 && !label.StartsWith("##"))
         {
             ImGui.SameLine();
-            ImGui.Text(label);
+            ImGui.TextUnformatted(label);
         }
         group.Dispose();
 

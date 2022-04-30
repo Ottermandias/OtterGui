@@ -20,7 +20,7 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         var pathName = path.FullName();
         ImGui.SetDragDropPayload(MoveLabel, IntPtr.Zero, 0);
-        ImGui.Text($"Moving {pathName}...");
+        ImGui.TextUnformatted($"Moving {pathName}...");
         _movedPathDragDrop = path;
     }
 

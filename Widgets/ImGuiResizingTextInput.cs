@@ -10,7 +10,7 @@ public static partial class Widget
         if (editable)
             return ResizingTextInput(label, ref text, maxLength);
 
-        ImGui.Text(text);
+        ImGui.TextUnformatted(text);
         return false;
     }
 
