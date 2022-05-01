@@ -1,3 +1,5 @@
+using System;
+
 namespace OtterGui;
 
 public static class Functions
@@ -37,4 +39,29 @@ public static class Functions
         var a = (uint)(a1 + a2) / 2;
         return r | (g << 8) | (b << 16) | (a << 24);
     }
+
+    // Return a human readable form of the size using the given format (which should be a float identifier followed by a placeholder).
+    public static string HumanReadableSize(long size, string format = "{0:0.#} {1}")
+    {
+        var    order = 0;
+        double s     = size;
+        while (s >= 1024 && order < ByteAbbreviations.Length - 1)
+        {
+            order++;
+            s /= 1024;
+        }
+
+        return string.Format(format, s, ByteAbbreviations[order]);
+    }
+
+    private static readonly string[] ByteAbbreviations =
+    {
+        "B",
+        "KB",
+        "MB",
+        "GB",
+        "TB",
+        "PB",
+        "EB",
+    };
 }

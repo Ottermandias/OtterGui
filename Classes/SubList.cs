@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace OtterGui.Classes;
@@ -51,9 +52,9 @@ public readonly struct SubList<T> : IEnumerable<T>
     }
 
     public IEnumerator<T> GetEnumerator()
-        => StartIndex == 0 ?
-            BaseList.Take(Count).GetEnumerator() :
-            BaseList.Skip(StartIndex).Take(Count).GetEnumerator();
+        => Count == 0       ? Enumerable.Empty<T>().GetEnumerator() :
+            StartIndex == 0 ? BaseList.Take(Count).GetEnumerator() :
+                              BaseList.Skip(StartIndex).Take(Count).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
