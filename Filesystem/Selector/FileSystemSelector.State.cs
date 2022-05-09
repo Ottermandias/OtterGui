@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using ImGuiNET;
@@ -95,10 +96,9 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     // Recursively apply filters.
     // Folders are explored on their current expansion state as well as being filtered themselves.
     // But if any of a folders descendants is visible, the folder will also remain visible.
-    private bool ApplyFiltersInternal(FileSystem<T>.IPath path, ref int idx, byte currentDepth)
+    private bool ApplyFiltersAddInternal(FileSystem<T>.IPath path, ref int idx, byte currentDepth)
     {
         var filtered = ApplyFiltersAndState(path, out var state);
-        // Insert at first so that subsequent objects can access the right index.
         _state.Insert(idx, new StateStruct()
         {
             Depth        = currentDepth,
@@ -106,18 +106,35 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
             StateStorage = state,
         });
 
-        if (path is FileSystem<T>.Folder f && GetPathState(path))
-            foreach (var child in f.GetChildren(SortMode))
-            {
-                ++idx;
-                filtered &= ApplyFiltersInternal(child, ref idx, (byte)(currentDepth + 1));
-            }
+        if (path is FileSystem<T>.Folder f)
+        {
+            if (GetPathState(f))
+                foreach (var child in f.GetChildren(SortMode))
+                {
+                    ++idx;
+                    filtered &= ApplyFiltersAddInternal(child, ref idx, (byte)(currentDepth + 1));
+                }
+            else
+                filtered = ApplyFiltersScanInternal(path);
+        }
 
         // Remove a completely filtered folder again.
         if (filtered)
             _state.RemoveAt(idx--);
 
         return filtered;
+    }
+
+    // Scan for visible descendants of an uncollapsed folder.
+    private bool ApplyFiltersScanInternal(FileSystem<T>.IPath path)
+    {
+        if (!ApplyFiltersAndState(path, out var state))
+            return false;
+
+        if (path is FileSystem<T>.Folder f)
+            return f.GetChildren(SortMode.Lexicographical).All(ApplyFiltersScanInternal);
+
+        return true;
     }
 
     // Non-recursive entry point for recreating filters if dirty.
@@ -130,7 +147,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         var idx = 0;
         foreach (var child in FileSystem.Root.GetChildren(SortMode))
         {
-            ApplyFiltersInternal(child, ref idx, 0);
+            ApplyFiltersAddInternal(child, ref idx, 0);
             ++idx;
         }
 
@@ -177,7 +194,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         foreach (var child in f.GetChildren(SortMode))
         {
             ++parentIndex;
-            ApplyFiltersInternal(child, ref parentIndex, depth);
+            ApplyFiltersAddInternal(child, ref parentIndex, depth);
         }
     }
 
