@@ -42,7 +42,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     }
 
     // Used for buttons and context menu entries.
-    private void RemovePrioritizedDelegate<TDelegate>(List<(TDelegate, int)> list, TDelegate action, int priority)
+    private static void RemovePrioritizedDelegate<TDelegate>(List<(TDelegate, int)> list, TDelegate action, int priority)
         where TDelegate : Delegate
     {
         var idxAction = list.FindIndex(p => p.Item1 == action);

@@ -33,7 +33,12 @@ public partial class FileSystem<T>
 
         var newIdx = Search(child.Parent, newName);
         if (newIdx >= 0)
-            return Result.ItemExists;
+        {
+            if (newIdx != child.IndexInParent)
+                return Result.ItemExists;
+            child.SetName(newName, false);
+            return Result.Success;
+        }
 
         newIdx = ~newIdx;
         if (newIdx > child.IndexInParent)
@@ -81,7 +86,13 @@ public partial class FileSystem<T>
         var actualNewName = newName?.FixName() ?? child.Name;
         newIdx = Search(newParent, actualNewName);
         if (newIdx >= 0)
-            return Result.ItemExists;
+        {
+            if (newIdx != child.IndexInParent)
+                return Result.ItemExists;
+
+            child.SetName(actualNewName, false);
+            return Result.Success;
+        }
 
         RemoveChild(oldParent, child, Search(oldParent, child.Name));
         newIdx = ~newIdx;
@@ -149,6 +160,9 @@ public partial class FileSystem<T>
             _                 => (1, 1),
         };
 
+        for (var i = idx; i < parent.Children.Count; i++)
+            parent.Children[i].UpdateIndex(i);
+
         while (true)
         {
             parent.TotalDescendants += descendants;
@@ -158,9 +172,6 @@ public partial class FileSystem<T>
 
             parent = parent.Parent;
         }
-
-        for (var i = idx; i < parent.Children.Count; i++)
-            parent.Children[i].UpdateIndex(i);
     }
 
     // Remove a child at position idx from its parent. Does not change child.Parent.
