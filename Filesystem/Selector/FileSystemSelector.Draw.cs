@@ -39,7 +39,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         }
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-            ImGui.OpenPopup(leaf.Name);
+            ImGui.OpenPopup(leaf.Identifier.ToString());
 
         DragDropSource(leaf);
         DragDropTarget(leaf);
@@ -147,7 +147,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         color.Pop();
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-            ImGui.OpenPopup(folder.Name);
+            ImGui.OpenPopup(folder.Identifier.ToString());
         DragDropSource(folder);
         DragDropTarget(folder);
         RightClickContext(folder);

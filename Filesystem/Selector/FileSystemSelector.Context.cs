@@ -29,7 +29,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     // Draw all context menu items for folders.
     private void RightClickContext(FileSystem<T>.Folder folder)
     {
-        using var _ = ImRaii.Popup(folder.Name);
+        using var _ = ImRaii.Popup(folder.Identifier.ToString());
         if (!_)
             return;
 
@@ -40,7 +40,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     // Draw all context menu items for leaves.
     private void RightClickContext(FileSystem<T>.Leaf leaf)
     {
-        using var _ = ImRaii.Popup(leaf.Name);
+        using var _ = ImRaii.Popup(leaf.Identifier.ToString());
         if (!_)
             return;
 
