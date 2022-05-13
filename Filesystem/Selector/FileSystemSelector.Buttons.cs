@@ -39,6 +39,10 @@ public partial class FileSystemSelector<T, TStateStorage>
         ImGui.NewLine();
     }
 
+    // Draw necessary popups from buttons outside of pushed styles.
+    protected virtual void DrawPopups()
+    {}
+
     // Protected so it can be removed.
     protected void FolderAddButton(Vector2 size)
     {

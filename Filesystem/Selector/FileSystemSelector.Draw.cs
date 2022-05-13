@@ -203,12 +203,12 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         using var _     = ImRaii.Child(Label, new Vector2(width, -ImGui.GetFrameHeight()), true);
+        style.Pop();
         MainContext();
         if (!_)
             return false;
 
         _stateStorage = ImGui.GetStateStorage();
-        style.Pop();
         style.Push(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
             .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
             .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y));

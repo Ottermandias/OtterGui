@@ -89,6 +89,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     {
         try
         {
+            DrawPopups();
             using var group = ImRaii.Group();
             if (DrawList(width))
             {
