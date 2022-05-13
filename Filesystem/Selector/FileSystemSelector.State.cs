@@ -171,10 +171,11 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
 
     // Given the cache-index to a folder, remove its descendants from the cache.
     // Used when folders are collapsed.
+    // ParentIndex == -1 indicates Root.
     private void RemoveDescendants(int parentIndex)
     {
         var start = parentIndex + 1;
-        var depth = _state[parentIndex].Depth;
+        var depth = parentIndex < 0 ? -1 : _state[parentIndex].Depth;
         var end   = start;
         for (; end < _state.Count; ++end)
         {
@@ -188,9 +189,10 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
 
     // Given a folder and its cache-index, add all its expanded and unfiltered descendants to the cache.
     // Used when folders are expanded.
+    // ParentIndex == -1 indicates Root.
     private void AddDescendants(FileSystem<T>.Folder f, int parentIndex)
     {
-        var depth = (byte)(_state[parentIndex].Depth + 1);
+        var depth = (byte) (parentIndex == -1 ? 0 : _state[parentIndex].Depth + 1);
         foreach (var child in f.GetChildren(SortMode))
         {
             ++parentIndex;

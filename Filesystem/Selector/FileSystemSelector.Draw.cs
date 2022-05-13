@@ -169,6 +169,31 @@ public partial class FileSystemSelector<T, TStateStorage>
         return rect;
     }
 
+    // Open a collapse/expand context menu when right-clicking the selector without a selected item.
+    private void MainContext()
+    {
+        const string mainContext = "MainContext";
+        if (!ImGui.IsAnyItemHovered() && ImGui.IsMouseClicked(ImGuiMouseButton.Right) && ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows))
+        {
+            if (!ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows))
+                ImGui.SetWindowFocus(Label);
+            ImGui.OpenPopup(mainContext);
+        }
+
+        using var pop = ImRaii.Popup(mainContext);
+        if (!pop)
+            return;
+
+        if (ImGui.Selectable("Expand All Directories"))
+            _fsActions.Enqueue(() => ToggleDescendants(FileSystem.Root, -1, true));
+        if (ImGui.Selectable("Collapse All Directories"))
+            _fsActions.Enqueue(() =>
+            {
+                ToggleDescendants(FileSystem.Root, -1, false);
+                AddDescendants(FileSystem.Root, -1);
+            });
+    }
+
 
     // Draw the whole list.
     private bool DrawList(float width)
@@ -178,6 +203,7 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         using var _     = ImRaii.Child(Label, new Vector2(width, -ImGui.GetFrameHeight()), true);
+        MainContext();
         if (!_)
             return false;
 
