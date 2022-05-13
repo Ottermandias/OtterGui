@@ -23,6 +23,14 @@ public static partial class ImGuiUtil
         ImGui.TextUnformatted(text);
     }
 
+    public static void BulletTextColored(uint color, string text)
+    {
+        using var g = ImRaii.Group();
+        ImGui.Bullet();
+        ImGui.SameLine();
+        TextColored(color, text);
+    }
+
     // Create a selectable that copies its text to clipboard when clicked.
     // Also adds a tooltip on hover.
     public static void CopyOnClickSelectable(string text)
