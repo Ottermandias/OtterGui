@@ -81,6 +81,25 @@ public static partial class ImGuiUtil
         return ImGui.IsItemDeactivatedAfterEdit();
     }
 
+    // Create a centered, modal help popup with the given content for the given label.
+    // It has a centered 'Understood' button to close the window.
+    public static void HelpPopup(string label, Vector2 size, Action content)
+    {
+        ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter(), ImGuiCond.Always, new Vector2(0.5f));
+        ImGui.SetNextWindowSize(size);
+        using var pop = ImRaii.Popup(label, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove);
+        if (pop)
+        {
+            content();
+            const string buttonText   = "Understood";
+            var          buttonSize   = Math.Max(size.X / 5, ImGui.CalcTextSize(buttonText).X + 2 * ImGui.GetStyle().FramePadding.X);
+            var          buttonCenter = (size.X - buttonSize) / 2 - ImGui.GetStyle().WindowPadding.X;
+            ImGui.SetCursorPos(new Vector2(buttonCenter, size.Y - ImGui.GetFrameHeight() * 1.75f));
+            if (ImGui.Button(buttonText, new Vector2(buttonSize, 0)))
+                ImGui.CloseCurrentPopup();
+        }
+    }
+
     public static bool DrawDisabledButton(string label, Vector2 size, string description, bool disabled, bool icon = false)
     {
         using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
