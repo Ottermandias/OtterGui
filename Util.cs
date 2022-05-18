@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
@@ -100,6 +103,36 @@ public static partial class ImGuiUtil
         }
     }
 
+    // Draw a selectable combo box for a generic enumerable.
+    // Uses the supplied toString function if any, otherwise ToString.
+    // Can specify enum values to skip at start or end and gives all those enum values as options.
+    public static bool GenericEnumCombo<T>(string label, float width, T current, out T newValue,
+        Func<T, string>? toString = null, int skip = 0, int skipEnd = 0) where T : struct, Enum
+        => GenericEnumCombo(label, width, current, out newValue, Enum.GetValues<T>().Skip(skip).SkipLast(skipEnd), toString);
+
+    // Draw a selectable combo box for a generic enumerable.
+    // Uses the supplied toString function if any, otherwise ToString.
+    // Can specify the options to supply.
+    public static bool GenericEnumCombo<T>(string label, float width, T current, out T newValue,
+        IEnumerable<T> options, Func<T, string>? toString = null) where T : struct, Enum
+    {
+        ImGui.SetNextItemWidth(width);
+        using var combo = ImRaii.Combo(label, toString?.Invoke(current) ?? current.ToString());
+        if (combo)
+            foreach (var data in options)
+            {
+                var name = toString?.Invoke(data) ?? data.ToString();
+                if (name.Length == 0 || !ImGui.Selectable(name, data.Equals(current)) || data.Equals(current))
+                    continue;
+
+                newValue = data;
+                return true;
+            }
+
+        newValue = current;
+        return false;
+    }
+
     public static bool DrawDisabledButton(string label, Vector2 size, string description, bool disabled, bool icon = false)
     {
         using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
@@ -131,7 +164,10 @@ public static partial class ImGuiUtil
     public static void HoverTooltip(string tooltip)
     {
         if (tooltip.Length > 0 && ImGui.IsItemHovered())
-            ImGui.SetTooltip(tooltip);
+        {
+            using var tt = ImRaii.Tooltip();
+            ImGui.TextUnformatted(tooltip);
+        }
     }
 
     public static bool Checkbox(string label, string description, bool current, Action<bool> setter)
