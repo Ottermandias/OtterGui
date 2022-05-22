@@ -24,7 +24,7 @@ public class Table<T>
     protected readonly Column<T>[] Headers;
 
     protected float ItemHeight  { get; init; }
-    protected float ExtraHeight { get; set; } = 0;
+    public    float ExtraHeight { get; set; } = 0;
 
     private int _currentIdx = 0;
 
@@ -45,13 +45,25 @@ public class Table<T>
       | ImGuiTableFlags.BordersInnerV
       | ImGuiTableFlags.NoBordersInBodyUntilResize;
 
+    public int TotalItems
+        => Items.Count;
+
+    public int CurrentItems
+        => FilteredItems.Count;
+
+    public int TotalColumns
+        => Headers.Length;
+
+    public int VisibleColumns { get; private set; }
+
     public Table(string label, ICollection<T> items, float itemHeight, params Column<T>[] headers)
     {
-        Label         = label;
-        Items         = items;
-        ItemHeight    = itemHeight;
-        Headers       = headers;
-        FilteredItems = new List<(T, int)>(Items.Count);
+        Label          = label;
+        Items          = items;
+        ItemHeight     = itemHeight;
+        Headers        = headers;
+        FilteredItems  = new List<(T, int)>(Items.Count);
+        VisibleColumns = Headers.Length;
     }
 
     public void Draw()
@@ -134,13 +146,18 @@ public class Table<T>
 
         PreDraw();
         ImGui.TableSetupScrollFreeze(1, 1);
+
         foreach (var header in Headers)
             ImGui.TableSetupColumn(header.Label, header.Flags, header.Width);
+
         ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
         var i = 0;
+        VisibleColumns = 0;
         foreach (var header in Headers)
         {
             using var id = Raii.ImRaii.PushId(i);
+            if (ImGui.TableGetColumnFlags(i).HasFlag(ImGuiTableColumnFlags.IsEnabled))
+                ++VisibleColumns;
             if (!ImGui.TableSetColumnIndex(i++))
                 continue;
 
