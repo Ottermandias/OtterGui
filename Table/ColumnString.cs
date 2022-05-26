@@ -25,7 +25,7 @@ public class ColumnString<TItem> : Column<TItem>
 
         ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
         var tmp = FilterValue;
-        if (!ImGui.InputTextWithHint(FilterLabel, Label, ref tmp, 64) || tmp == FilterValue)
+        if (!ImGui.InputTextWithHint(FilterLabel, Label, ref tmp, 256) || tmp == FilterValue)
             return false;
 
         FilterValue = tmp;
