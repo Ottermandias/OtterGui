@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
 using ImGuiNET;
 using OtterGui.Filesystem;
 using OtterGui.Raii;

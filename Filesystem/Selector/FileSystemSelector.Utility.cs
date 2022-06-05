@@ -92,7 +92,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     }
 
     private bool GetPathState(FileSystem<T>.IPath path)
-        => _stateStorage.GetBool(ImGui.GetID((IntPtr)path.Identifier), false);
+        => _stateStorage.GetBool(ImGui.GetID((IntPtr)path.Identifier), FoldersDefaultOpen);
 
     private void SetFolderState(FileSystem<T>.Folder path, bool state)
         => _stateStorage.SetBool(ImGui.GetID((IntPtr)path.Identifier), state);

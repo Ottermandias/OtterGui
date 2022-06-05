@@ -63,6 +63,10 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     protected virtual uint CollapsedFolderColor
         => 0xFFFFFFFF;
 
+    // Whether all folders should be opened by default or closed.
+    protected virtual bool FoldersDefaultOpen
+        => false;
+
     public FileSystemSelector(FileSystem<T> fileSystem, string label = "##FileSystemSelector")
     {
         FileSystem = fileSystem;

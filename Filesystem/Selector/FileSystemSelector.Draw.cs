@@ -137,9 +137,10 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - expanding/collapsing
     private (Vector2, Vector2) DrawFolder(FileSystem<T>.Folder folder)
     {
+        var       flags = ImGuiTreeNodeFlags.NoTreePushOnOpen | (FoldersDefaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
         var       expandedState = GetPathState(folder);
         using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse       = ImGui.TreeNodeEx((IntPtr)folder.Identifier, ImGuiTreeNodeFlags.NoTreePushOnOpen, folder.Name);
+        var       recurse       = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name);
 
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
