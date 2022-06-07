@@ -11,20 +11,29 @@ public partial class FileSystemSelector<T, TStateStorage>
     // Add a right-click context menu item to folder context menus at the given priority.
     // Context menu items are sorted from top to bottom on priority, then subscription order.
     public void SubscribeRightClickFolder(Action<FileSystem<T>.Folder> action, int priority = 0)
-        => RemovePrioritizedDelegate(_rightClickOptionsFolder, action, priority);
+        => AddPrioritizedDelegate(_rightClickOptionsFolder, action, priority);
 
     // Add a right-click context menu item to leaf context menus at the given priority.
     // Context menu items are sorted from top to bottom on priority, then subscription order.
     public void SubscribeRightClickLeaf(Action<FileSystem<T>.Leaf> action, int priority = 0)
-        => RemovePrioritizedDelegate(_rightClickOptionsLeaf, action, priority);
+        => AddPrioritizedDelegate(_rightClickOptionsLeaf, action, priority);
+
+    // Add a right-click context menu item to the main context menu at the given priority.
+    // Context menu items are sorted from top to bottom on priority, then subscription order.
+    public void SubscribeRightClickMain(Action action, int priority = 0)
+        => AddPrioritizedDelegate(_rightClickOptionsMain, action, priority);
 
     // Remove a right-click context menu item from the folder context menu by reference equality.
     public void UnsubscribeRightClickFolder(Action<FileSystem<T>.Folder> action)
-        => AddPrioritizedDelegate(_rightClickOptionsFolder, action);
+        => RemovePrioritizedDelegate(_rightClickOptionsFolder, action);
 
     // Remove a right-click context menu item from the leaf context menu by reference equality.
     public void UnsubscribeRightClickLeaf(Action<FileSystem<T>.Leaf> action)
-        => AddPrioritizedDelegate(_rightClickOptionsLeaf, action);
+        => RemovePrioritizedDelegate(_rightClickOptionsLeaf, action);
+
+    // Remove a right-click context menu item from the main context menu by reference equality.
+    public void UnsubscribeRightClickMain(Action action)
+        => RemovePrioritizedDelegate(_rightClickOptionsMain, action);
 
     // Draw all context menu items for folders.
     private void RightClickContext(FileSystem<T>.Folder folder)
@@ -48,10 +57,18 @@ public partial class FileSystemSelector<T, TStateStorage>
             action.Item1.Invoke(leaf);
     }
 
+    // Draw all context menu items for the main context.
+    private void RightClickMainContext()
+    {
+        foreach (var action in _rightClickOptionsMain)
+            action.Item1.Invoke();
+    }
+
 
     // Lists are sorted on priority, then subscription order.
     private readonly List<(Action<FileSystem<T>.Folder>, int)> _rightClickOptionsFolder = new(4);
     private readonly List<(Action<FileSystem<T>.Leaf>, int)>   _rightClickOptionsLeaf   = new(1);
+    private readonly List<(Action, int)>                       _rightClickOptionsMain   = new(4);
 
     private void InitDefaultContext()
     {
@@ -60,6 +77,8 @@ public partial class FileSystemSelector<T, TStateStorage>
         SubscribeRightClickFolder(CollapseAllDescendants, 100);
         SubscribeRightClickFolder(RenameFolder,           1000);
         SubscribeRightClickLeaf(RenameLeaf, 1000);
+        SubscribeRightClickMain(ExpandAll,   1);
+        SubscribeRightClickMain(CollapseAll, 1);
     }
 
     // Default entries for the folder context menu.
@@ -116,5 +135,21 @@ public partial class FileSystemSelector<T, TStateStorage>
                 ExpandAncestors(leaf);
             });
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the leaf. Creates all required parent directories, if possible.");
+    }
+
+    protected void ExpandAll()
+    {
+        if (ImGui.Selectable("Expand All Directories"))
+            _fsActions.Enqueue(() => ToggleDescendants(FileSystem.Root, -1, true));
+    }
+
+    protected void CollapseAll()
+    {
+        if (ImGui.Selectable("Collapse All Directories"))
+            _fsActions.Enqueue(() =>
+            {
+                ToggleDescendants(FileSystem.Root, -1, false);
+                AddDescendants(FileSystem.Root, -1);
+            });
     }
 }

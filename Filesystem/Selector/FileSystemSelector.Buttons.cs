@@ -13,11 +13,11 @@ public partial class FileSystemSelector<T, TStateStorage>
     // Add a button to the bottom-list. Should be an object that does not exceed the size parameter.
     // Buttons are sorted from left to right on priority, then subscription order.
     public void AddButton(Action<Vector2> action, int priority)
-        => RemovePrioritizedDelegate(_buttons, action, priority);
+        => AddPrioritizedDelegate(_buttons, action, priority);
 
     // Remove a button from the bottom-list by reference equality.
     public void RemoveButton(Action<Vector2> action)
-        => AddPrioritizedDelegate(_buttons, action);
+        => RemovePrioritizedDelegate(_buttons, action);
 
     // List sorted on priority, then subscription order.
     private readonly List<(Action<Vector2>, int)> _buttons = new(1);

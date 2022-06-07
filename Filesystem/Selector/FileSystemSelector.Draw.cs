@@ -185,14 +185,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (!pop)
             return;
 
-        if (ImGui.Selectable("Expand All Directories"))
-            _fsActions.Enqueue(() => ToggleDescendants(FileSystem.Root, -1, true));
-        if (ImGui.Selectable("Collapse All Directories"))
-            _fsActions.Enqueue(() =>
-            {
-                ToggleDescendants(FileSystem.Root, -1, false);
-                AddDescendants(FileSystem.Root, -1);
-            });
+        RightClickMainContext();
     }
 
 
