@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
-using Shell32;
 
 namespace OtterGui;
 
@@ -133,13 +132,15 @@ public static class Functions
 
             var shell = Activator.CreateInstance(shellAppType);
 
-            if (shellAppType.InvokeMember("NameSpace", BindingFlags.InvokeMethod, null, shell, new object[]
-                {
-                    "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}",
-                }) is not Folder2 obj)
+            object? obj = shellAppType.InvokeMember("NameSpace", BindingFlags.InvokeMethod, null, shell, new object[]
+            {
+                "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}",
+            });
+            if (obj == null)
                 return false;
 
-            foreach (FolderItem fi in obj.Items())
+
+            foreach (dynamic fi in ((dynamic) obj).Items())
             {
                 if (!fi.IsLink && !fi.IsFolder)
                     continue;
