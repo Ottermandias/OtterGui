@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
+using Shell32;
 
 namespace OtterGui;
 
@@ -116,4 +120,57 @@ public static class Functions
 
         return version;
     }
+
+    // Try to obtain the list of Quick Access folders from your system.
+    public static bool GetQuickAccessFolders(out List<(string Name, string Path)> folders)
+    {
+        folders = new List<(string Name, string Path)>();
+        try
+        {
+            var shellAppType = Type.GetTypeFromProgID("Shell.Application");
+            if (shellAppType == null)
+                return false;
+
+            var shell = Activator.CreateInstance(shellAppType);
+
+            if (shellAppType.InvokeMember("NameSpace", BindingFlags.InvokeMethod, null, shell, new object[]
+                {
+                    "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}",
+                }) is not Folder2 obj)
+                return false;
+
+            foreach (FolderItem fi in obj.Items())
+            {
+                if (!fi.IsLink && !fi.IsFolder)
+                    continue;
+
+                folders.Add((fi.Name, fi.Path));
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    // Try to obtain the Downloads folder from your system.
+    public static bool GetDownloadsFolder(out string folder)
+    {
+        folder = string.Empty;
+        try
+        {
+            var guid = new Guid("374DE290-123F-4565-9164-39C4925E467B");
+            folder = SHGetKnownFolderPath(guid, 0);
+            return folder.Length > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    [DllImport("shell32", CharSet = CharSet.Unicode, ExactSpelling = true, PreserveSig = false)]
+    private static extern string SHGetKnownFolderPath([MarshalAs(UnmanagedType.LPStruct)] Guid rfid, uint dwFlags, nint hToken = 0);
 }
