@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -12,6 +11,49 @@ namespace OtterGui;
 
 public static partial class ImGuiUtil
 {
+    // Draw the same text multiple times to simulate a shadowed text.
+    public static void TextShadowed(string text, uint foregroundColor, uint shadowColor, byte shadowWidth = 1)
+    {
+        var x = ImGui.GetCursorPosX();
+        var y = ImGui.GetCursorPosY();
+
+        for (var i = -shadowWidth; i < shadowWidth; i++)
+        {
+            for (var j = -shadowWidth; j < shadowWidth; j++)
+            {
+                if (i == 0 && j == 0)
+                    continue;
+
+                ImGui.SetCursorPosX(x + i);
+                ImGui.SetCursorPosY(y + j);
+                TextColored(shadowColor, text);
+            }
+        }
+
+        ImGui.SetCursorPosX(x);
+        ImGui.SetCursorPosY(y);
+        TextColored(foregroundColor, text);
+    }
+
+    // Draw the same text multiple times to simulate a shadowed text.
+    public static void TextShadowed(Vector2 position, string text, uint foregroundColor, uint shadowColor, byte shadowWidth = 1)
+    {
+        var drawList = ImGui.GetWindowDrawList();
+        for (var i = -shadowWidth; i < shadowWidth; i++)
+        {
+            for (var j = -shadowWidth; j < shadowWidth; j++)
+            {
+                if (i == 0 && j == 0)
+                    continue;
+
+                drawList.AddText(position + new Vector2(i, j), shadowColor, text);
+            }
+        }
+
+        drawList.AddText(position, foregroundColor, text);
+    }
+
+
     // Go to the next column, then enter text.
     public static void TextNextColumn(string text)
     {
