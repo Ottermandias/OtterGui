@@ -10,8 +10,8 @@ namespace OtterGui.Classes;
 public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
 {
     public VirtualKey     Hotkey    { get; private set; } = VirtualKey.NO_KEY;
-    public ModifierHotkey Modifier1 { get; private set; } = VirtualKey.NO_KEY;
-    public ModifierHotkey Modifier2 { get; private set; } = VirtualKey.NO_KEY;
+    public ModifierHotkey Modifier1 { get; private set; } = ModifierHotkey.NoKey;
+    public ModifierHotkey Modifier2 { get; private set; } = ModifierHotkey.NoKey;
 
     public ModifiableHotkey()
     { }
@@ -62,8 +62,8 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
         if (Modifier1 == key)
             return false;
 
-        if (key == VirtualKey.NO_KEY || key == Modifier2)
-            Modifier2 = VirtualKey.NO_KEY;
+        if (key == ModifierHotkey.NoKey || key == Modifier2)
+            Modifier2 = ModifierHotkey.NoKey;
 
         Modifier1 = key;
         return true;
@@ -77,7 +77,7 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
         if (Modifier2 == key)
             return false;
 
-        Modifier2 = Modifier1 == key ? VirtualKey.NO_KEY : key;
+        Modifier2 = Modifier1 == key ? ModifierHotkey.NoKey : key;
         return true;
     }
 

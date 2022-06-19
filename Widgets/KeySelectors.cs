@@ -39,6 +39,33 @@ public static partial class Widget
     public static bool ModifierSelector(string label, string description, ModifierHotkey currentValue, Action<ModifierHotkey> setter)
         => KeySelector(label, description, currentValue, k => setter(k), ModifierHotkey.ValidKeys);
 
+    // A selector widget for one or two modifiers.
+    // If the first modifier is set, shows a second modifier key selector.
+    // Returns true and calls the setter if any new key was selected.
+    // If an earlier key is set to No Key, all subsequent keys are set to No Key, too.
+    public static bool DoubleModifierSelector(string label, string description, float width, DoubleModifier currentValue,
+        Action<DoubleModifier> setter)
+    {
+        var       changes = false;
+        var       copy    = currentValue;
+        using var id      = ImRaii.PushId(label);
+        ImGui.SetNextItemWidth(width);
+        changes |= ModifierSelector(label, description, currentValue.Modifier1, k => copy.SetModifier1(k));
+
+        if (currentValue.Modifier1 != ModifierHotkey.NoKey)
+        {
+            using var indent = ImRaii.PushIndent();
+            ImGui.SetNextItemWidth(width - indent.Indentation);
+            changes |= ModifierSelector("Additional Modifier",
+                "Set another optional modifier key to be used in conjunction with the first modifier.",
+                currentValue.Modifier2, k => copy.SetModifier2(k));
+        }
+
+        if (changes)
+            setter(copy);
+        return changes;
+    }
+
     // A selector widget for a full modifiable key.
     // Shows a key selector for the given list of available keys.
     // If this key is set, shows a modifier key selector.

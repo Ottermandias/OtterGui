@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Dalamud.Game.ClientState.Keys;
+using ImGuiNET;
 using Newtonsoft.Json;
 
 namespace OtterGui.Classes;
@@ -9,7 +10,10 @@ namespace OtterGui.Classes;
 // i.e. Control, Alt and Shift.
 public readonly struct ModifierHotkey : IEquatable<ModifierHotkey>
 {
-    public static readonly ModifierHotkey NoKey = new(VirtualKey.NO_KEY);
+    public static readonly ModifierHotkey NoKey   = new(VirtualKey.NO_KEY);
+    public static readonly ModifierHotkey Shift   = new(VirtualKey.SHIFT);
+    public static readonly ModifierHotkey Control = new(VirtualKey.CONTROL);
+    public static readonly ModifierHotkey Alt     = new(VirtualKey.MENU);
 
     public static readonly ModifierHotkey[] ValidModifiers =
     {
@@ -62,4 +66,17 @@ public readonly struct ModifierHotkey : IEquatable<ModifierHotkey>
 
     public static bool operator !=(ModifierHotkey lhs, ModifierHotkey rhs)
         => lhs.Modifier != rhs.Modifier;
+
+    public override string ToString()
+        => Modifier.GetFancyName();
+
+    public bool IsActive()
+        => Modifier switch
+        {
+            VirtualKey.NO_KEY  => true,
+            VirtualKey.CONTROL => ImGui.GetIO().KeyCtrl,
+            VirtualKey.MENU    => ImGui.GetIO().KeyAlt,
+            VirtualKey.SHIFT   => ImGui.GetIO().KeyShift,
+            _                  => false,
+        };
 }
