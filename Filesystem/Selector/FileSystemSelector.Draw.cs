@@ -201,15 +201,15 @@ public partial class FileSystemSelector<T, TStateStorage>
         MainContext();
         if (!_)
             return false;
-
+        
         _stateStorage = ImGui.GetStateStorage();
         style.Push(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
             .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
             .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y));
-
-        // Check if filters are dirty and recompute them before the draw iteration if necessary.
+        //
+        //// Check if filters are dirty and recompute them before the draw iteration if necessary.
         ApplyFilters();
-
+        //
         ImGuiListClipperPtr clipper;
         unsafe
         {
@@ -217,7 +217,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         }
 
         clipper.Begin(_state.Count, ImGui.GetTextLineHeightWithSpacing());
-
+        
         // Draw the clipped list.
         while (clipper.Step())
         {
@@ -232,7 +232,9 @@ public partial class FileSystemSelector<T, TStateStorage>
             }
         }
 
-        // Handle all queued actions at the end of the iteration.
+        clipper.End();
+        clipper.Destroy();
+        //// Handle all queued actions at the end of the iteration.
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
         HandleActions();
         style.Push(ImGuiStyleVar.WindowPadding, Vector2.Zero);

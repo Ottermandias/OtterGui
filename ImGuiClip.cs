@@ -56,6 +56,7 @@ public static class ImGuiClip
         }
 
         clipper.End();
+        clipper.Destroy();
     }
 
     // Draw non-random-access data without storing state.
