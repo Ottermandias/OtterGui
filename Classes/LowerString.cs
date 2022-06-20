@@ -30,34 +30,34 @@ public readonly struct LowerString : IEquatable<LowerString>, IComparable<LowerS
         => Length == 0;
 
     public bool Equals(LowerString other)
-        => string.Equals(Lower, other.Lower, StringComparison.InvariantCulture);
+        => string.Equals(Lower, other.Lower, StringComparison.Ordinal);
 
     public bool Equals(string? other)
-        => string.Equals(Lower, other, StringComparison.InvariantCultureIgnoreCase);
+        => string.Equals(Lower, other, StringComparison.OrdinalIgnoreCase);
 
     public int CompareTo(LowerString other)
-        => string.Compare(Lower, other.Lower, StringComparison.InvariantCulture);
+        => string.Compare(Lower, other.Lower, StringComparison.Ordinal);
 
     public int CompareTo(string? other)
-        => string.Compare(Lower, other, StringComparison.InvariantCultureIgnoreCase);
+        => string.Compare(Lower, other, StringComparison.OrdinalIgnoreCase);
 
     public bool Contains(LowerString other)
-        => Lower.Contains(other.Lower, StringComparison.InvariantCulture);
+        => Lower.Contains(other.Lower, StringComparison.Ordinal);
 
     public bool Contains(string other)
-        => Lower.Contains(other, StringComparison.InvariantCultureIgnoreCase);
+        => Lower.Contains(other, StringComparison.OrdinalIgnoreCase);
 
     public bool StartsWith(LowerString other)
-        => Lower.StartsWith(other.Lower, StringComparison.InvariantCulture);
+        => Lower.StartsWith(other.Lower, StringComparison.Ordinal);
 
     public bool StartsWith(string other)
-        => Lower.StartsWith(other, StringComparison.InvariantCultureIgnoreCase);
+        => Lower.StartsWith(other, StringComparison.OrdinalIgnoreCase);
 
     public bool EndsWith(LowerString other)
-        => Lower.EndsWith(other.Lower, StringComparison.InvariantCulture);
+        => Lower.EndsWith(other.Lower, StringComparison.Ordinal);
 
     public bool EndsWith(string other)
-        => Lower.EndsWith(other, StringComparison.InvariantCultureIgnoreCase);
+        => Lower.EndsWith(other, StringComparison.OrdinalIgnoreCase);
 
     public override string ToString()
         => Text;

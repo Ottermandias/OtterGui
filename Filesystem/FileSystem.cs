@@ -27,9 +27,9 @@ public partial class FileSystem<T> where T : class
     public           uint         IdCounter = 1;
 
     // The string comparer passed will be used to compare the names of siblings.
-    // If none is supplied, they will be compared with InvariantCultureIgnoreCase.
+    // If none is supplied, they will be compared with OrdinalIgnoreCase.
     public FileSystem(IComparer<string>? comparer = null)
-        => _nameComparer = new NameComparer(comparer ?? StringComparer.InvariantCultureIgnoreCase);
+        => _nameComparer = new NameComparer(comparer ?? StringComparer.OrdinalIgnoreCase);
 
     // Find a child-index inside a folder using the given comparer.
     private int Search(Folder parent, string name)

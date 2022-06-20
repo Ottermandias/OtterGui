@@ -47,7 +47,7 @@ public class ColumnString<TItem> : Column<TItem>
         if (FilterValue.Length == 0)
             return true;
 
-        return FilterRegex?.IsMatch(name) ?? name.Contains(FilterValue, StringComparison.InvariantCultureIgnoreCase);
+        return FilterRegex?.IsMatch(name) ?? name.Contains(FilterValue, StringComparison.OrdinalIgnoreCase);
     }
 
     public override void DrawColumn(TItem item, int _)
