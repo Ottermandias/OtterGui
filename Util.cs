@@ -11,6 +11,14 @@ namespace OtterGui;
 
 public static partial class ImGuiUtil
 {
+    // Print unformatted text wrapped.
+    public static void TextWrapped(string text)
+    {
+        ImGui.PushTextWrapPos(0);
+        ImGui.TextUnformatted(text);
+        ImGui.PopTextWrapPos();
+    }
+
     // Draw the same text multiple times to simulate a shadowed text.
     public static void TextShadowed(string text, uint foregroundColor, uint shadowColor, byte shadowWidth = 1)
     {
