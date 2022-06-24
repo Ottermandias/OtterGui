@@ -68,7 +68,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     {
         SetFolderState(folder, open);
         RemoveDescendants(stateIdx);
-        foreach (var child in folder.GetAllDescendants(SortMode.Lexicographical).OfType<FileSystem<T>.Folder>())
+        foreach (var child in folder.GetAllDescendants(ISortMode<T>.Lexicographical).OfType<FileSystem<T>.Folder>())
             SetFolderState(child, open);
 
         if (open)

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace OtterGui.Filesystem;
@@ -15,7 +14,7 @@ public partial class FileSystem<T>
         public int TotalDescendants { get; internal set; } = 0;
         public int TotalLeaves      { get; internal set; } = 0;
 
-        internal List<IWritePath> Children = new();
+        internal readonly List<IWritePath> Children = new();
 
         public int TotalChildren
             => Children.Count;
@@ -60,66 +59,19 @@ public partial class FileSystem<T>
             Identifier = identifier;
         }
 
+        public IEnumerable<Folder> GetSubFolders()
+            => Children.OfType<Folder>();
+
+        public IEnumerable<Leaf> GetLeaves()
+            => Children.OfType<Leaf>();
+
+
         // Iterate through all direct children in sort order.
-        public IEnumerable<IPath> GetChildren(SortMode mode)
-        {
-            switch (mode)
-            {
-                case SortMode.FoldersFirst:
-                    foreach (var child in Children.OfType<Folder>())
-                        yield return child;
-                    foreach (var child in Children.OfType<Leaf>())
-                        yield return child;
-
-                    break;
-                case SortMode.FoldersLast:
-                    foreach (var child in Children.OfType<Leaf>())
-                        yield return child;
-                    foreach (var child in Children.OfType<Folder>())
-                        yield return child;
-
-                    break;
-                case SortMode.Lexicographical:
-                    foreach (var child in Children)
-                        yield return child;
-
-                    break;
-                case SortMode.InverseFoldersFirst:
-                    foreach (var child in Children.OfType<Folder>().Reverse())
-                        yield return child;
-                    foreach (var child in Children.OfType<Leaf>().Reverse())
-                        yield return child;
-
-                    break;
-                case SortMode.InverseLexicographical:
-                    foreach (var child in ((IReadOnlyList<IPath>)Children).Reverse())
-                        yield return child;
-
-                    break;
-                case SortMode.InverseFoldersLast:
-                    foreach (var child in Children.OfType<Leaf>().Reverse())
-                        yield return child;
-                    foreach (var child in Children.OfType<Folder>().Reverse())
-                        yield return child;
-
-                    break;
-                case SortMode.InternalOrder:
-                    foreach (var child in Children.OrderBy(c => c.Identifier))
-                        yield return child;
-
-                    break;
-
-                case SortMode.InternalOrderInverse:
-                    foreach (var child in Children.OrderByDescending(c => c.Identifier))
-                        yield return child;
-
-                    break;
-                default: throw new InvalidEnumArgumentException();
-            }
-        }
+        public IEnumerable<IPath> GetChildren(ISortMode<T> mode)
+            => mode.GetChildren(this);
 
         // Iterate through all Descendants in sort order, not including the folder itself.
-        public IEnumerable<IPath> GetAllDescendants(SortMode mode)
+        public IEnumerable<IPath> GetAllDescendants(ISortMode<T> mode)
         {
             return GetChildren(mode).SelectMany(p => p is Folder f
                 ? f.GetAllDescendants(mode).Prepend(f)

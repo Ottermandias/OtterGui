@@ -33,8 +33,8 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 
     protected readonly FileSystem<T> FileSystem;
 
-    public virtual SortMode SortMode
-        => SortMode.Lexicographical;
+    public virtual ISortMode<T> SortMode
+        => ISortMode<T>.Lexicographical;
 
     // Used by Add and AddFolder buttons.
     private string _newName = string.Empty;
@@ -117,7 +117,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     // If a corresponding leaf can be found, also expand its ancestors.
     public void SelectByValue(T value)
     {
-        var leaf = FileSystem.Root.GetAllDescendants(SortMode.Lexicographical).OfType<FileSystem<T>.Leaf>()
+        var leaf = FileSystem.Root.GetAllDescendants(ISortMode<T>.Lexicographical).OfType<FileSystem<T>.Leaf>()
             .FirstOrDefault(l => l.Value == value);
         if (leaf != null)
         {

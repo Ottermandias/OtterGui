@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -26,10 +25,10 @@ public partial class FileSystem<T>
         j.WriteStartObject();
         j.WritePropertyName("Data");
         j.WriteStartObject();
-        // Iterate lexicographically through all decendants, keep track of empty folders if necessary.
+        // Iterate lexicographically through all descendants, keep track of empty folders if necessary.
         // otherwise write all the paths that are given by the conversion function.
         if (Root.Children.Count > 0)
-            foreach (var path in Root.GetAllDescendants(SortMode.Lexicographical))
+            foreach (var path in Root.GetAllDescendants(ISortMode<T>.Lexicographical))
             {
                 switch (path)
                 {
