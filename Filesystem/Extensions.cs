@@ -7,6 +7,21 @@ namespace OtterGui.Filesystem;
 
 public static class Extensions
 {
+    // Add an object to a list if it does not exist yet, or replace the contained object comparing equal to it.
+    // Returns the index of the added or replaced object.
+    public static int AddOrReplace<T>(this List<T> list, T obj) where T : IEquatable<T>
+    {
+        var idx = list.FindIndex(obj.Equals);
+        if (idx < 0)
+        {
+            list.Add(obj);
+            return list.Count - 1;
+        }
+
+        list[idx] = obj;
+        return idx;
+    }
+
     // Move an item in a list from index 1 to index 2.
     // The indices are clamped to the valid range.
     // Other list entries are shifted accordingly.
