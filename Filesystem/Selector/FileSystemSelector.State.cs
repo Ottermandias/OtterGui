@@ -108,7 +108,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         if (path is FileSystem<T>.Folder f)
         {
             if (GetPathState(f))
-                foreach (var child in f.GetChildren(ISortMode<T>.Lexicographical))
+                foreach (var child in f.GetChildren(SortMode))
                 {
                     ++idx;
                     filtered &= ApplyFiltersAddInternal(child, ref idx, (byte)(currentDepth + 1));
