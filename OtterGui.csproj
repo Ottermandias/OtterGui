@@ -37,6 +37,10 @@
             <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
             <Private>False</Private>
         </Reference>
+        <Reference Include="Lumina">
+            <HintPath>$(appdata)\XIVLauncher\addon\Hooks\dev\Lumina.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
         <Reference Include="SDL2-CS">
             <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\SDL2-CS.dll</HintPath>
             <Private>False</Private>
