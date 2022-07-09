@@ -11,6 +11,40 @@ namespace OtterGui;
 
 public static class Functions
 {
+    // Iterate through a list executing actions on each element by its mode.
+    public static void IteratePairwise<T>(IReadOnlyList<T> list, Action<T> action1, Action inBetween, Action<T>? action2 = null)
+    {
+        var odd = (list.Count & 1) == 1;
+        var size = list.Count - 1;
+        action2 ??= action1;
+        for (var i = 0; i < size; i += 2)
+        {
+            action1(list[i]);
+            inBetween();
+            action2(list[i + 1]);
+        }
+
+        if (odd)
+            action1(list[size]);
+    }
+
+    // Iterate through a list executing bool returning functions on each element by its mode and return the or'd result.
+    public static bool IteratePairwise<T>(IReadOnlyList<T> list, Func<T, bool> func1, Action inBetween, Func<T, bool>? func2 = null)
+    {
+        var odd  = (list.Count & 1) == 1;
+        var size = list.Count - 1;
+        func2 ??= func1;
+        var ret = false;
+        for (var i = 0; i < size; i += 2)
+        {
+            ret |= func1(list[i]);
+            inBetween();
+            ret |= func2(list[i + 1]);
+        }
+
+        return ret | (odd && func1(list[size]));
+    }
+
     // Split a uint into four bytes, e.g. for RGBA colors.
     public static (byte Lowest, byte Second, byte Third, byte Highest) SplitBytes(uint value)
     {
