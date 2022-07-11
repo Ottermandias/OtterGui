@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ImGuiNET;
 
 namespace OtterGui.Raii;
@@ -10,8 +11,15 @@ public static partial class ImRaii
     public static Font PushFont(ImFontPtr font, bool condition = true)
         => condition ? new Font().Push(font) : new Font();
 
+    // Push the default font if any other font is currently pushed.
+    public static Font DefaultFont()
+        => new Font().Push(Font.DefaultPushed, Font.FontPushCounter > 0);
+
     public sealed class Font : IDisposable
     {
+        internal static int        FontPushCounter = 0;
+        internal static ImFontPtr DefaultPushed;
+
         private int _count;
 
         public Font()
@@ -21,6 +29,8 @@ public static partial class ImRaii
         {
             if (condition)
             {
+                if (FontPushCounter++ == 0)
+                    DefaultPushed = ImGui.GetFont();
                 ImGui.PushFont(font);
                 ++_count;
             }
@@ -30,8 +40,9 @@ public static partial class ImRaii
 
         public void Pop(int num = 1)
         {
-            num    =  Math.Min(num, _count);
-            _count -= num;
+            num             =  Math.Min(num, _count);
+            _count          -= num;
+            FontPushCounter -= num;
             while (num-- > 0)
                 ImGui.PopFont();
         }

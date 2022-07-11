@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using ImGuiNET;
 
@@ -14,14 +16,26 @@ public static partial class ImRaii
     public static Color PushColor(ImGuiCol idx, Vector4 color, bool condition = true)
         => new Color().Push(idx, color, condition);
 
+    // Push colors that revert all current color changes made temporarily.
+    public static Color DefaultColors()
+    {
+        var ret          = new Color();
+        var reverseStack = Color.Stack.GroupBy(p => p.Item1).Select(p => (p.Key, p.First().Item2)).ToArray();
+        foreach (var (idx, val) in reverseStack)
+            ret.Push(idx, val);
+        return ret;
+    }
+
     public sealed class Color : IDisposable
     {
-        private int _count;
+        internal static readonly List<(ImGuiCol, uint)> Stack = new();
+        private                  int                    _count;
 
         public Color Push(ImGuiCol idx, uint color, bool condition = true)
         {
             if (condition)
             {
+                Stack.Add((idx, ImGui.GetColorU32(idx)));
                 ImGui.PushStyleColor(idx, color);
                 ++_count;
             }
@@ -33,6 +47,7 @@ public static partial class ImRaii
         {
             if (condition)
             {
+                Stack.Add((idx, ImGui.GetColorU32(idx)));
                 ImGui.PushStyleColor(idx, color);
                 ++_count;
             }
@@ -45,6 +60,7 @@ public static partial class ImRaii
             num    =  Math.Min(num, _count);
             _count -= num;
             ImGui.PopStyleColor(num);
+            Stack.RemoveRange(Stack.Count - num, num);
         }
 
         public void Dispose()
