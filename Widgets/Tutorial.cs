@@ -151,4 +151,13 @@ public class Tutorial
 
         return EndStep;
     }
+
+    // Make sure you have as many tutorials registered as you intend to.
+    public Tutorial EnsureSize(int size)
+    {
+        if (_steps.Count != size)
+            throw new Exception("Tutorial size is incorrect.");
+
+        return this;
+    }
 }
