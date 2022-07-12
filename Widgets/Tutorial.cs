@@ -7,6 +7,7 @@ using Dalamud.Interface;
 using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Raii;
+using static OtterGui.Raii.ImRaii;
 
 namespace OtterGui.Widgets;
 
@@ -38,11 +39,17 @@ public class Tutorial
         return this;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public void Open(int id, int current, Action<int> setter)
     {
         if (current != id)
             return;
 
+        OpenWhenMatch(current, setter);
+    }
+
+    private void OpenWhenMatch(int current, Action<int> setter)
+    {
         var step = Steps[current];
 
         // Skip disabled tutorials.
@@ -51,9 +58,6 @@ public class Tutorial
             setter(NextId(current));
             return;
         }
-
-        if (id != current)
-            return;
 
         if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) || ImGui.IsWindowAppearing())
             ImGui.OpenPopup(PopupLabel);
@@ -74,16 +78,16 @@ public class Tutorial
 
     private void DrawPopup(Vector2 pos, Step step, int next, Action<int> setter)
     {
-        using var style = ImRaii.DefaultStyle()
+        using var style = DefaultStyle()
             .Push(ImGuiStyleVar.PopupBorderSize, 2 * ImGuiHelpers.GlobalScale)
             .Push(ImGuiStyleVar.PopupRounding,   5 * ImGuiHelpers.GlobalScale);
-        using var color = ImRaii.DefaultColors()
+        using var color = DefaultColors()
             .Push(ImGuiCol.Border,  BorderColor)
             .Push(ImGuiCol.PopupBg, 0xFF000000);
-        using var font = ImRaii.DefaultFont();
+        using var font = DefaultFont();
         ImGui.SetNextWindowPos(pos);
         ImGui.SetNextWindowSize(ImGuiHelpers.ScaledVector2(350, 0));
-        using var popup = ImRaii.Popup(PopupLabel, ImGuiWindowFlags.AlwaysAutoResize);
+        using var popup = Popup(PopupLabel, ImGuiWindowFlags.AlwaysAutoResize);
         if (!popup)
             return;
 

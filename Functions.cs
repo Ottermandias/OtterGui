@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Newtonsoft.Json;
@@ -46,6 +47,7 @@ public static class Functions
     }
 
     // Split a uint into four bytes, e.g. for RGBA colors.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static (byte Lowest, byte Second, byte Third, byte Highest) SplitBytes(uint value)
     {
         var byte4 = (byte)(value >> 24);
@@ -56,6 +58,7 @@ public static class Functions
     }
 
     // Obtain a descriptive hex-string of a RGBA color.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static string ColorBytes(uint color)
     {
         var (r, g, b, a) = SplitBytes(color);
@@ -63,6 +66,7 @@ public static class Functions
     }
 
     // Reorder a ABGR color to RGBA.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static uint ReorderColor(uint seColor)
     {
         var (a, b, g, r) = SplitBytes(seColor);
@@ -82,6 +86,7 @@ public static class Functions
     }
 
     // Return a human readable form of the size using the given format (which should be a float identifier followed by a placeholder).
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static string HumanReadableSize(long size, string format = "{0:0.#} {1}")
     {
         var    order = 0;

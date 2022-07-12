@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using ImGuiNET;
@@ -12,6 +13,7 @@ namespace OtterGui;
 public static partial class ImGuiUtil
 {
     // Print unformatted text wrapped.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextWrapped(string text)
     {
         ImGui.PushTextWrapPos(0);
@@ -63,6 +65,7 @@ public static partial class ImGuiUtil
 
 
     // Go to the next column, then enter text.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextNextColumn(string text)
     {
         ImGui.TableNextColumn();
@@ -70,6 +73,7 @@ public static partial class ImGuiUtil
     }
 
     // Draw a single piece of text in the given color.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextColored(uint color, string text)
     {
         using var _ = ImRaii.PushColor(ImGuiCol.Text, color);
@@ -86,6 +90,7 @@ public static partial class ImGuiUtil
 
     // Create a selectable that copies its text to clipboard when clicked.
     // Also adds a tooltip on hover.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(string text)
     {
         if (ImGui.Selectable(text))
@@ -95,6 +100,7 @@ public static partial class ImGuiUtil
     }
 
     // Draw a single FontAwesomeIcon.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void PrintIcon(FontAwesomeIcon icon)
     {
         using var font = ImRaii.PushFont(UiBuilder.IconFont);
@@ -102,6 +108,7 @@ public static partial class ImGuiUtil
     }
 
     // Draw a help marker, followed by a label.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void LabeledHelpMarker(string label, string tooltip)
     {
         ImGuiComponents.HelpMarker(tooltip);
@@ -183,6 +190,7 @@ public static partial class ImGuiUtil
         return false;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static bool DrawDisabledButton(string label, Vector2 size, string description, bool disabled, bool icon = false)
     {
         using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
@@ -194,6 +202,7 @@ public static partial class ImGuiUtil
         return ret && !disabled;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawTextButton(string text, Vector2 size, uint buttonColor)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
@@ -202,6 +211,7 @@ public static partial class ImGuiUtil
         ImGui.Button(text, size);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawTextButton(string text, Vector2 size, uint buttonColor, uint textColor)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
@@ -211,6 +221,7 @@ public static partial class ImGuiUtil
         ImGui.Button(text, size);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverTooltip(string tooltip)
     {
         if (tooltip.Length > 0 && ImGui.IsItemHovered())
@@ -232,6 +243,7 @@ public static partial class ImGuiUtil
         return true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawTableColumn(string text)
     {
         ImGui.TableNextColumn();
@@ -270,6 +282,7 @@ public static partial class ImGuiUtil
         return false;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(ImGuiScene.TextureWrap icon, Vector2 iconSize)
     {
         ImGui.Image(icon.ImGuiHandle, iconSize);
@@ -287,7 +300,7 @@ public static partial class ImGuiUtil
         ImGui.EndTooltip();
     }
 
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void RightAlign(string text, float offset = 0)
     {
         offset = ImGui.GetContentRegionAvail().X - offset - ImGui.CalcTextSize(text).X;
@@ -295,12 +308,14 @@ public static partial class ImGuiUtil
         ImGui.TextUnformatted(text);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void RightJustify(string text, uint color)
     {
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImGui.CalcTextSize(text).X);
         TextColored(color, text);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void Center(string text)
     {
         var offset = (ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize(text).X) / 2;
@@ -329,6 +344,7 @@ public static partial class ImGuiUtil
         return true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool IsDropping(string name)
         => ImGui.AcceptDragDropPayload(name).NativePtr != null;
 }
