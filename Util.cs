@@ -329,7 +329,7 @@ public static partial class ImGuiUtil
         if (!popup)
             return false;
 
-        if (ImGui.IsKeyPressed(ImGui.GetKeyIndex(ImGuiKey.Escape)))
+        if (ImGui.IsKeyPressed(ImGuiKey.Escape))
             ImGui.CloseCurrentPopup();
 
         ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
