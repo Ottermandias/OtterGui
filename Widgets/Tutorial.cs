@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Dalamud.Interface;
-using Dalamud.Logging;
 using ImGuiNET;
-using OtterGui.Raii;
 using static OtterGui.Raii.ImRaii;
 
 namespace OtterGui.Widgets;
@@ -19,7 +16,8 @@ public class Tutorial
     public uint   BorderColor    { get; init; } = 0xD00000FF;
     public string PopupLabel     { get; init; } = "Tutorial";
 
-    private readonly List<Step> _steps = new();
+    private readonly List<Step> _steps      = new();
+    private          int        _waitFrames = 0;
 
     public int EndStep
         => _steps.Count;
@@ -46,6 +44,7 @@ public class Tutorial
             return;
 
         OpenWhenMatch(current, setter);
+        --_waitFrames;
     }
 
     private void OpenWhenMatch(int current, Action<int> setter)
@@ -59,7 +58,9 @@ public class Tutorial
             return;
         }
 
-        if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) || ImGui.IsWindowAppearing())
+        if (_waitFrames > 0)
+            --_waitFrames;
+        else if (ImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows) && !ImGui.IsPopupOpen(PopupLabel))
             ImGui.OpenPopup(PopupLabel);
 
         var windowPos = HighlightObject();
@@ -71,8 +72,10 @@ public class Tutorial
         var offset = ImGuiHelpers.ScaledVector2(5, 4);
         var min    = ImGui.GetItemRectMin() - offset;
         var max    = ImGui.GetItemRectMax() + offset;
+        ImGui.GetForegroundDrawList().PushClipRect(ImGui.GetWindowPos() - offset, ImGui.GetWindowPos() + ImGui.GetWindowSize() + offset);
         ImGui.GetForegroundDrawList().AddRect(min, max, HighlightColor, 5 * ImGuiHelpers.GlobalScale, ImDrawFlags.RoundCornersAll,
             2 * ImGuiHelpers.GlobalScale);
+        ImGui.GetForegroundDrawList().PopClipRect();
         return max + new Vector2(ImGuiHelpers.GlobalScale);
     }
 
@@ -85,13 +88,29 @@ public class Tutorial
             .Push(ImGuiCol.Border,  BorderColor)
             .Push(ImGuiCol.PopupBg, 0xFF000000);
         using var font = DefaultFont();
+        // Prevent the window from opening outside of the screen.
+        var size = ImGuiHelpers.ScaledVector2(350, 0);
+        var diff = ImGui.GetWindowSize().X - size.X;
+        pos.X = diff < 0 ? ImGui.GetWindowPos().X : Math.Min(pos.X, ImGui.GetWindowPos().X + diff);
+
+        // Ensure the header line is visible with a button to go to next.
+        pos.Y = Math.Min(pos.Y, ImGui.GetWindowPos().Y + ImGui.GetWindowSize().Y - ImGui.GetFrameHeightWithSpacing());
+
         ImGui.SetNextWindowPos(pos);
-        ImGui.SetNextWindowSize(ImGuiHelpers.ScaledVector2(350, 0));
-        using var popup = Popup(PopupLabel, ImGuiWindowFlags.AlwaysAutoResize);
+        ImGui.SetNextWindowSize(size);
+        ImGui.SetNextWindowFocus();
+        using var popup = Popup(PopupLabel, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.Popup);
         if (!popup)
             return;
 
+        ImGui.AlignTextToFramePadding();
         ImGui.TextUnformatted(step.Name);
+        ImGui.SameLine(ImGui.GetContentRegionAvail().X - ImGui.GetTextLineHeight());
+        int? nextValue = ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.ArrowCircleRight.ToIconString(), new Vector2(ImGui.GetFrameHeight()),
+            "Go to next tutorial step.", false, true)
+            ? next
+            : null;
+
         ImGui.Separator();
         ImGui.PushTextWrapPos();
         foreach (var text in step.Text.Split('\n', StringSplitOptions.TrimEntries))
@@ -105,29 +124,20 @@ public class Tutorial
         ImGui.PopTextWrapPos();
         ImGui.NewLine();
         var buttonText = next == EndStep ? "Finish" : "Next";
-        if (ImGui.Button(buttonText))
-        {
-            setter(next);
-            ImGui.CloseCurrentPopup();
-        }
-
+        nextValue = ImGui.Button(buttonText) ? next : nextValue;
         ImGui.SameLine();
-        if (ImGui.Button("Skip Tutorial"))
-        {
-            setter(EndStep);
-            ImGui.CloseCurrentPopup();
-        }
-
+        nextValue = ImGui.Button("Skip Tutorial") ? EndStep : nextValue;
         ImGuiUtil.HoverTooltip("Skip all current tutorial entries, but show any new ones added later.");
-
         ImGui.SameLine();
-        if (ImGui.Button("Disable Tutorial"))
+        nextValue = ImGui.Button("Disable Tutorial") ? -1 : nextValue;
+        ImGuiUtil.HoverTooltip("Disable all tutorial entries.");
+
+        if (nextValue != null)
         {
-            setter(-1);
+            setter(nextValue.Value);
+            _waitFrames = 2;
             ImGui.CloseCurrentPopup();
         }
-
-        ImGuiUtil.HoverTooltip("Disable all tutorial entries.");
     }
 
     private int NextId(int current)
