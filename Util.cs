@@ -12,6 +12,19 @@ namespace OtterGui;
 
 public static partial class ImGuiUtil
 {
+    // Exception safe clipboard.
+    public static string GetClipboardText()
+    {
+        try
+        {
+            return ImGui.GetClipboardText();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
     // Print unformatted text wrapped.
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextWrapped(string text)

@@ -328,7 +328,7 @@ public class ItemSelector<T>
         if (!OpenNameField(newNamePopupImport, out var newName))
             return;
 
-        if (OnClipboardImport(newName, ImGui.GetClipboardText()))
+        if (OnClipboardImport(newName, ImGuiUtil.GetClipboardText()))
         {
             TryRestoreCurrent();
             SetFilterDirty();
