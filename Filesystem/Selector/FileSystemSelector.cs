@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.ClientState.Keys;
 using ImGuiNET;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
@@ -22,13 +23,17 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     public event SelectionChangeDelegate? SelectionChanged;
 
     public void ClearSelection()
+        => Select(null);
+
+    protected void Select(FileSystem<T>.Leaf? leaf, in TStateStorage storage = default)
     {
-        if (SelectedLeaf == null)
+        var oldV = SelectedLeaf?.Value;
+        var newV = leaf?.Value;
+        if (oldV == newV)
             return;
 
-        var old = SelectedLeaf?.Value;
-        SelectedLeaf = null;
-        SelectionChanged?.Invoke(old, null, default);
+        SelectedLeaf = leaf;
+        SelectionChanged?.Invoke(oldV, newV, storage);
     }
 
     protected readonly FileSystem<T> FileSystem;
@@ -66,10 +71,11 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     protected virtual bool FoldersDefaultOpen
         => false;
 
-    public FileSystemSelector(FileSystem<T> fileSystem, string label = "##FileSystemSelector")
+    public FileSystemSelector(FileSystem<T> fileSystem, KeyState keyState, string label = "##FileSystemSelector")
     {
         FileSystem = fileSystem;
         _state     = new List<StateStruct>(FileSystem.Root.TotalDescendants);
+        _keyState  = keyState;
         Label      = label;
         InitDefaultContext();
         InitDefaultButtons();
@@ -121,12 +127,10 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
             .FirstOrDefault(l => l.Value == value);
         if (leaf != null)
         {
-            var oldSelection = SelectedLeaf;
             EnqueueFsAction(() =>
             {
                 ExpandAncestors(leaf);
-                SelectedLeaf = leaf;
-                SelectionChanged?.Invoke(oldSelection?.Value, leaf.Value, GetState(leaf));
+                Select(leaf, GetState(leaf));
             });
         }
     }

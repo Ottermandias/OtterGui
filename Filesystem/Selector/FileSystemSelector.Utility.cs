@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Filesystem;
@@ -9,6 +10,8 @@ namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage>
 {
+    private readonly KeyState _keyState;
+
     // Some actions should not be done during due to changed collections
     // or dependency on ImGui IDs.
     protected void EnqueueFsAction(Action action)
@@ -78,17 +81,22 @@ public partial class FileSystemSelector<T, TStateStorage>
     // Expand all ancestors of a given path, used for when new objects are created.
     // Can only be executed from the main selector window due to ID computation.
     // Handles only ImGui-state.
-    private void ExpandAncestors(FileSystem<T>.IPath path)
+    // Returns if any state was changed.
+    private bool ExpandAncestors(FileSystem<T>.IPath path)
     {
         if (path.IsRoot || path.Parent.IsRoot)
-            return;
+            return false;
 
-        var parent = path.Parent;
+        var parent  = path.Parent;
+        var changes = false;
         while (!parent.IsRoot)
         {
+            changes |= !GetPathState(parent);
             SetFolderState(parent, true);
             parent = parent.Parent;
         }
+
+        return changes;
     }
 
     private bool GetPathState(FileSystem<T>.IPath path)

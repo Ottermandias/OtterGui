@@ -1,7 +1,10 @@
 using System;
+using System.Linq;
 using System.Numerics;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Classes;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 
@@ -13,6 +16,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     private int             _currentDepth;
     private int             _currentIndex;
     private int             _currentEnd;
+    private DateTimeOffset  _lastButtonTime = DateTimeOffset.UtcNow;
 
     private (Vector2, Vector2) DrawStateStruct(StateStruct state)
     {
@@ -31,12 +35,8 @@ public partial class FileSystemSelector<T, TStateStorage>
     private (Vector2, Vector2) DrawLeaf(FileSystem<T>.Leaf leaf, in TStateStorage state)
     {
         DrawLeafName(leaf, state, leaf == SelectedLeaf);
-        if (ImGui.IsItemClicked(ImGuiMouseButton.Left) && SelectedLeaf != leaf)
-        {
-            var oldData = SelectedLeaf?.Value;
-            SelectedLeaf = leaf;
-            SelectionChanged?.Invoke(oldData, leaf.Value, state);
-        }
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+            Select(leaf, state);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
             ImGui.OpenPopup(leaf.Identifier.ToString());
@@ -139,8 +139,8 @@ public partial class FileSystemSelector<T, TStateStorage>
     {
         var       flags = ImGuiTreeNodeFlags.NoTreePushOnOpen | (FoldersDefaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
         var       expandedState = GetPathState(folder);
-        using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse       = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name);
+        using var color = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
+        var       recurse = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name);
 
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
@@ -201,23 +201,25 @@ public partial class FileSystemSelector<T, TStateStorage>
         MainContext();
         if (!_)
             return false;
-        
+
         _stateStorage = ImGui.GetStateStorage();
         style.Push(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
             .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
             .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y));
-        //
         //// Check if filters are dirty and recompute them before the draw iteration if necessary.
         ApplyFilters();
-        //
+
         ImGuiListClipperPtr clipper;
         unsafe
         {
             clipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
         }
 
+        // TODO: do this right.
+        //HandleKeyNavigation();
+
         clipper.Begin(_state.Count, ImGui.GetTextLineHeightWithSpacing());
-        
+
         // Draw the clipped list.
         while (clipper.Step())
         {
@@ -234,10 +236,128 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         clipper.End();
         clipper.Destroy();
+
         //// Handle all queued actions at the end of the iteration.
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
         HandleActions();
         style.Push(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         return true;
+    }
+
+    private void HandleKeyNavigation()
+    {
+        if (!ImGui.IsWindowFocused() || (DateTimeOffset.UtcNow - _lastButtonTime).Milliseconds < 250)
+            return;
+
+        var current = _state.FindIndex(s => s.Path == SelectedLeaf);
+        if (current < 0)
+            current = 0;
+
+        var parent = SelectedLeaf?.Parent ?? FileSystem.Root;
+        var shuffleAround = _state.WithIndex().Skip(current + 1)
+            .Concat(_state.WithIndex().Take(current))
+            .Where(s => s.Item1.Path.Parent == parent && s.Item1.Path is FileSystem<T>.Leaf)
+            .Select(s => ((FileSystem<T>.Leaf)s.Item1.Path, s.Item2));
+        FileSystem<T>.Leaf? next = null;
+        var                 idx  = 0;
+        if (VirtualKey.DOWN.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault();
+        else if (VirtualKey.UP.IsPressed(_keyState))
+            (next, idx) = shuffleAround.LastOrDefault();
+        else if (VirtualKey.A.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'a' or 'A');
+        else if (VirtualKey.B.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'b' or 'B');
+        else if (VirtualKey.C.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'c' or 'C');
+        else if (VirtualKey.D.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'd' or 'D');
+        else if (VirtualKey.E.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'e' or 'E');
+        else if (VirtualKey.F.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'f' or 'F');
+        else if (VirtualKey.G.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'g' or 'G');
+        else if (VirtualKey.H.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'h' or 'H');
+        else if (VirtualKey.I.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'i' or 'I');
+        else if (VirtualKey.J.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'j' or 'J');
+        else if (VirtualKey.K.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'k' or 'K');
+        else if (VirtualKey.L.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'l' or 'L');
+        else if (VirtualKey.M.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'm' or 'M');
+        else if (VirtualKey.N.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'n' or 'N');
+        else if (VirtualKey.O.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'o' or 'O');
+        else if (VirtualKey.P.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'p' or 'P');
+        else if (VirtualKey.Q.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'q' or 'Q');
+        else if (VirtualKey.R.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'r' or 'R');
+        else if (VirtualKey.S.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 's' or 'S');
+        else if (VirtualKey.T.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 't' or 'T');
+        else if (VirtualKey.U.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'u' or 'U');
+        else if (VirtualKey.V.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'v' or 'V');
+        else if (VirtualKey.W.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'w' or 'W');
+        else if (VirtualKey.X.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'x' or 'X');
+        else if (VirtualKey.Y.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'y' or 'Y');
+        else if (VirtualKey.Z.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is 'z' or 'Z');
+        else if (VirtualKey.KEY_0.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '0');
+        else if (VirtualKey.KEY_1.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '1');
+        else if (VirtualKey.KEY_2.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '2');
+        else if (VirtualKey.KEY_3.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '3');
+        else if (VirtualKey.KEY_4.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '4');
+        else if (VirtualKey.KEY_5.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '5');
+        else if (VirtualKey.KEY_6.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '6');
+        else if (VirtualKey.KEY_7.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '7');
+        else if (VirtualKey.KEY_8.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '8');
+        else if (VirtualKey.KEY_9.IsPressed(_keyState))
+            (next, idx) = shuffleAround.FirstOrDefault(p => p.Item1.Name[0] is '9');
+
+        if (next != null)
+        {
+            _lastButtonTime = DateTimeOffset.UtcNow;
+            Select(next);
+            var max = ImGui.GetScrollMaxY();
+            if (max != 0)
+            {
+                var y      = ImGui.GetScrollY();
+
+                var offset = (idx * ImGui.GetTextLineHeightWithSpacing());
+                var space  = ImGui.GetContentRegionAvail().Y - ImGui.GetFrameHeight();
+                if (idx > current) // Movement downwards
+                {
+                    if (y + ImGui.GetContentRegionAvail().Y < offset + ImGui.GetTextLineHeightWithSpacing())
+                        ImGui.SetScrollY(Math.Clamp(offset - space / ImGui.GetTextLineHeightWithSpacing(), 0, max));
+                }
+                else if (y > offset) // Movement upwards
+                {
+                    ImGui.SetScrollY(Math.Clamp(offset, 0, max));
+                }
+            }
+        }
     }
 }

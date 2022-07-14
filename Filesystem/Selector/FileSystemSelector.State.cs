@@ -23,6 +23,9 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     // Only contains values not filtered out at any time.
     private readonly List<StateStruct> _state;
 
+    private FileSystem<T>.Leaf? _singleLeaf = null;
+    private int                 _leafCount  = 0;
+
     public virtual void Dispose()
     {
         FileSystem.Changed -= OnFileSystemChange;
@@ -116,6 +119,10 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
             else
                 filtered = ApplyFiltersScanInternal(path);
         }
+        else if (!filtered && _leafCount++ == 0)
+        {
+            _singleLeaf = path as FileSystem<T>.Leaf;
+        }
 
         // Remove a completely filtered folder again.
         if (filtered)
@@ -128,10 +135,15 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     private bool ApplyFiltersScanInternal(FileSystem<T>.IPath path)
     {
         if (!ApplyFiltersAndState(path, out var state))
+        {
+            if (path is FileSystem<T>.Leaf l && _leafCount++ == 0)
+                _singleLeaf = l;
             return false;
+        }
 
         if (path is FileSystem<T>.Folder f)
             return f.GetChildren(ISortMode<T>.Lexicographical).All(ApplyFiltersScanInternal);
+
 
         return true;
     }
@@ -142,6 +154,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         if (!_filterDirty)
             return;
 
+        _leafCount = 0;
         _state.Clear();
         var idx = 0;
         foreach (var child in FileSystem.Root.GetChildren(SortMode))
@@ -150,7 +163,15 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
             ++idx;
         }
 
-        _filterDirty = false;
+        if (_leafCount == 1 && _singleLeaf! != SelectedLeaf)
+        {
+            _filterDirty = ExpandAncestors(_singleLeaf!);
+            Select(_singleLeaf, GetState(_singleLeaf!));
+        }
+        else
+        {
+            _filterDirty = false;
+        }
     }
 
 
@@ -191,7 +212,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     // ParentIndex == -1 indicates Root.
     private void AddDescendants(FileSystem<T>.Folder f, int parentIndex)
     {
-        var depth = (byte) (parentIndex == -1 ? 0 : _state[parentIndex].Depth + 1);
+        var depth = (byte)(parentIndex == -1 ? 0 : _state[parentIndex].Depth + 1);
         foreach (var child in f.GetChildren(SortMode))
         {
             ++parentIndex;

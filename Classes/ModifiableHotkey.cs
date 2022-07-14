@@ -98,3 +98,10 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
     public static bool operator !=(ModifiableHotkey lhs, ModifiableHotkey rhs)
         => !lhs.Equals(rhs);
 }
+
+
+public static class VirtualKeyExtensions
+{
+    public static bool IsPressed(this VirtualKey key, KeyState state)
+        => state[key];
+}
