@@ -23,7 +23,7 @@ public class Table<T>
     protected readonly string      Label;
     protected readonly Column<T>[] Headers;
 
-    protected float ItemHeight  { get; init; }
+    protected float ItemHeight  { get; set; }
     public    float ExtraHeight { get; set; } = 0;
 
     private int _currentIdx = 0;
@@ -56,18 +56,18 @@ public class Table<T>
 
     public int VisibleColumns { get; private set; }
 
-    public Table(string label, ICollection<T> items, float itemHeight, params Column<T>[] headers)
+    public Table(string label, ICollection<T> items, params Column<T>[] headers)
     {
         Label          = label;
         Items          = items;
-        ItemHeight     = itemHeight;
         Headers        = headers;
         FilteredItems  = new List<(T, int)>(Items.Count);
         VisibleColumns = Headers.Length;
     }
 
-    public void Draw()
+    public void Draw(float itemHeight)
     {
+        ItemHeight = itemHeight;
         using var id = Raii.ImRaii.PushId(Label);
         UpdateFilter();
         DrawTableInternal();
@@ -155,13 +155,13 @@ public class Table<T>
         VisibleColumns = 0;
         foreach (var header in Headers)
         {
-            using var id = Raii.ImRaii.PushId(i);
+            using var id = ImRaii.PushId(i);
             if (ImGui.TableGetColumnFlags(i).HasFlag(ImGuiTableColumnFlags.IsEnabled))
                 ++VisibleColumns;
             if (!ImGui.TableSetColumnIndex(i++))
                 continue;
 
-            using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+            using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
             ImGui.TableHeader(string.Empty);
             ImGui.SameLine();
             style.Pop();
