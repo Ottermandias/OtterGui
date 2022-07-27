@@ -59,6 +59,9 @@ public readonly struct LowerString : IEquatable<LowerString>, IComparable<LowerS
     public bool EndsWith(string other)
         => Lower.EndsWith(other, StringComparison.OrdinalIgnoreCase);
 
+    public bool IsContained(string other)
+        => IsEmpty || other.Contains(Lower, StringComparison.OrdinalIgnoreCase);
+
     public override string ToString()
         => Text;
 
