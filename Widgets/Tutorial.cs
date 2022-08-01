@@ -91,10 +91,10 @@ public class Tutorial
         // Prevent the window from opening outside of the screen.
         var size = ImGuiHelpers.ScaledVector2(350, 0);
         var diff = ImGui.GetWindowSize().X - size.X;
-        pos.X = diff < 0 ? ImGui.GetWindowPos().X : Math.Min(pos.X, ImGui.GetWindowPos().X + diff);
+        pos.X = diff < 0 ? ImGui.GetWindowPos().X : Math.Clamp(pos.X, ImGui.GetWindowPos().X, ImGui.GetWindowPos().X + diff);
 
         // Ensure the header line is visible with a button to go to next.
-        pos.Y = Math.Min(pos.Y, ImGui.GetWindowPos().Y + ImGui.GetWindowSize().Y - ImGui.GetFrameHeightWithSpacing());
+        pos.Y = Math.Clamp(pos.Y, ImGui.GetWindowPos().Y + ImGui.GetFrameHeightWithSpacing(), ImGui.GetWindowPos().Y + ImGui.GetWindowSize().Y - ImGui.GetFrameHeightWithSpacing());
 
         ImGui.SetNextWindowPos(pos);
         ImGui.SetNextWindowSize(size);
