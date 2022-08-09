@@ -68,6 +68,7 @@ public static partial class ImRaii
                 ImGuiStyleVar.TabRounding         => type != typeof(float),
                 ImGuiStyleVar.ButtonTextAlign     => type != typeof(Vector2),
                 ImGuiStyleVar.SelectableTextAlign => type != typeof(Vector2),
+                ImGuiStyleVar.DisabledAlpha       => type != typeof(float),
                 _                                 => throw new ArgumentOutOfRangeException(nameof(idx), idx, null),
             };
 
@@ -104,6 +105,7 @@ public static partial class ImRaii
                 ImGuiStyleVar.TabRounding         => new Vector2(style.TabRounding,       float.NaN),
                 ImGuiStyleVar.ButtonTextAlign     => style.ButtonTextAlign,
                 ImGuiStyleVar.SelectableTextAlign => style.SelectableTextAlign,
+                ImGuiStyleVar.DisabledAlpha       => new Vector2(style.DisabledAlpha, float.NaN),
                 _                                 => throw new ArgumentOutOfRangeException(nameof(idx), idx, null),
             };
         }
@@ -120,6 +122,7 @@ public static partial class ImRaii
 
             return this;
         }
+
         public Style Push(ImGuiStyleVar idx, Vector2 value, bool condition = true)
         {
             if (!condition)

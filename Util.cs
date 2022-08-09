@@ -206,11 +206,11 @@ public static partial class ImGuiUtil
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static bool DrawDisabledButton(string label, Vector2 size, string description, bool disabled, bool icon = false)
     {
-        using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
-        using var font  = ImRaii.PushFont(UiBuilder.IconFont, icon);
-        var       ret   = ImGui.Button(label, size);
-        alpha.Pop();
+        using var dis  = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
+        using var font = ImRaii.PushFont(UiBuilder.IconFont, icon);
+        var       ret  = ImGui.Button(label, size);
         font.Pop();
+        dis.Pop();
         HoverTooltip(description);
         return ret && !disabled;
     }
@@ -235,9 +235,9 @@ public static partial class ImGuiUtil
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void HoverTooltip(string tooltip)
+    public static void HoverTooltip(string tooltip, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
     {
-        if (tooltip.Length > 0 && ImGui.IsItemHovered())
+        if (tooltip.Length > 0 && ImGui.IsItemHovered(flags))
         {
             using var tt = ImRaii.Tooltip();
             ImGui.TextUnformatted(tooltip);
@@ -305,9 +305,10 @@ public static partial class ImGuiUtil
     public static void HoverIconTooltip(ImGuiScene.TextureWrap icon, Vector2 iconSize)
     {
         var size = new Vector2(icon.Width, icon.Height);
-        if (iconSize.X > size.X || iconSize.Y > size.Y || !ImGui.IsItemHovered())
+        if (iconSize.X > size.X || iconSize.Y > size.Y || !ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
             return;
 
+        using var enable = ImRaii.Enabled();
         ImGui.BeginTooltip();
         ImGui.Image(icon.ImGuiHandle, size);
         ImGui.EndTooltip();

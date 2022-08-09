@@ -77,6 +77,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         _state     = new List<StateStruct>(FileSystem.Root.TotalDescendants);
         _keyState  = keyState;
         Label      = label;
+
         InitDefaultContext();
         InitDefaultButtons();
         EnableFileSystemSubscription();

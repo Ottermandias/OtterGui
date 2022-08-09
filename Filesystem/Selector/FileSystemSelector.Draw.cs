@@ -12,11 +12,11 @@ namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage>
 {
-    private ImGuiStoragePtr _stateStorage;
-    private int             _currentDepth;
-    private int             _currentIndex;
-    private int             _currentEnd;
-    private DateTimeOffset  _lastButtonTime = DateTimeOffset.UtcNow;
+    private          ImGuiStoragePtr _stateStorage;
+    private          int             _currentDepth;
+    private          int             _currentIndex;
+    private          int             _currentEnd;
+    private          DateTimeOffset  _lastButtonTime = DateTimeOffset.UtcNow;
 
     private (Vector2, Vector2) DrawStateStruct(StateStruct state)
     {
@@ -224,14 +224,15 @@ public partial class FileSystemSelector<T, TStateStorage>
         while (clipper.Step())
         {
             _currentIndex = clipper.DisplayStart;
-            _currentEnd   = clipper.DisplayEnd;
-            if (_currentIndex < _currentEnd)
-            {
-                if (_state[_currentIndex].Depth != 0)
-                    DrawPseudoFolders();
-                for (; _currentIndex < _currentEnd; ++_currentIndex)
-                    DrawStateStruct(_state[_currentIndex]);
-            }
+            _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
+            if (_currentIndex >= _currentEnd)
+                continue;
+
+            if (_state[_currentIndex].Depth != 0)
+                DrawPseudoFolders();
+            _currentEnd = Math.Min(_state.Count, _currentEnd);
+            for (; _currentIndex < _currentEnd; ++_currentIndex)
+                DrawStateStruct(_state[_currentIndex]);
         }
 
         clipper.End();

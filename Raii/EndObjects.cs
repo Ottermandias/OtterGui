@@ -9,6 +9,8 @@ namespace OtterGui.Raii;
 // when created with using variables.
 public static partial class ImRaii
 {
+    private static int _disabledCount = 0;
+
     public static IEndObject Child(string strId)
         => new EndUnconditionally(ImGui.EndChild, ImGui.BeginChild(strId));
 
@@ -101,6 +103,49 @@ public static partial class ImRaii
 
     public static IEndObject TreeNode(string label, ImGuiTreeNodeFlags flags)
         => new EndConditionally(flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen) ? Nop : ImGui.TreePop, ImGui.TreeNodeEx(label, flags));
+
+    public static IEndObject Disabled()
+    {
+        ImGui.BeginDisabled();
+        ++_disabledCount;
+        return DisabledEnd();
+    }
+
+    public static IEndObject Disabled(bool disabled)
+    {
+        if (!disabled)
+            return new EndConditionally(Nop, false);
+
+        ImGui.BeginDisabled();
+        ++_disabledCount;
+        return DisabledEnd();
+    }
+
+    public static IEndObject Enabled()
+    {
+        var oldCount = _disabledCount;
+        if (oldCount == 0)
+            return new EndConditionally(Nop, false);
+
+        void Restore()
+        {
+            _disabledCount += oldCount;
+            while (--oldCount >= 0)
+                ImGui.BeginDisabled();
+        }
+
+        for (; _disabledCount > 0; --_disabledCount)
+            ImGui.EndDisabled();
+
+        return new EndUnconditionally(Restore, true);
+    }
+
+    private static IEndObject DisabledEnd()
+        => new EndUnconditionally(() =>
+        {
+            --_disabledCount;
+            ImGui.EndDisabled();
+        }, true);
 
     public static IEndObject FramedGroup(string label)
     {
