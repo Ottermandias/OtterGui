@@ -244,11 +244,11 @@ public static partial class ImGuiUtil
         }
     }
 
-    public static bool Checkbox(string label, string description, bool current, Action<bool> setter)
+    public static bool Checkbox(string label, string description, bool current, Action<bool> setter, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
     {
         var tmp    = current;
         var result = ImGui.Checkbox(label, ref tmp);
-        HoverTooltip(description);
+        HoverTooltip(description, flags);
         if (!result || tmp == current)
             return false;
 
