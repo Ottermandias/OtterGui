@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
+using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Filesystem;
@@ -79,6 +80,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         for (var idx = _currentEnd; idx < _state.Count; ++idx)
         {
             var state = _state[idx];
+
             // If we find an object at the same depth, the current folder continues
             // and the line has to go out of the screen.
             if (state.Depth == _currentDepth)
@@ -219,13 +221,13 @@ public partial class FileSystemSelector<T, TStateStorage>
         //HandleKeyNavigation();
 
         clipper.Begin(_state.Count, ImGui.GetTextLineHeightWithSpacing());
-
         // Draw the clipped list.
-        while (clipper.Step())
+
+        while(clipper.Step())
         {
             _currentIndex = clipper.DisplayStart;
             _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
-            if (_currentIndex >= _currentEnd)
+            if (_currentIndex >= _currentEnd - 1)
                 continue;
 
             if (_state[_currentIndex].Depth != 0)
