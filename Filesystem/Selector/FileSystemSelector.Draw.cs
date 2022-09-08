@@ -13,11 +13,11 @@ namespace OtterGui.FileSystem.Selector;
 
 public partial class FileSystemSelector<T, TStateStorage>
 {
-    private          ImGuiStoragePtr _stateStorage;
-    private          int             _currentDepth;
-    private          int             _currentIndex;
-    private          int             _currentEnd;
-    private          DateTimeOffset  _lastButtonTime = DateTimeOffset.UtcNow;
+    private ImGuiStoragePtr _stateStorage;
+    private int             _currentDepth;
+    private int             _currentIndex;
+    private int             _currentEnd;
+    private DateTimeOffset  _lastButtonTime = DateTimeOffset.UtcNow;
 
     private (Vector2, Vector2) DrawStateStruct(StateStruct state)
     {
@@ -76,6 +76,10 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (_currentIndex != _currentEnd)
             return lineEnd;
 
+        var y = ImGui.GetWindowHeight() + ImGui.GetWindowPos().Y;
+        if (y > lineEnd.Y + ImGui.GetTextLineHeight())
+            return lineEnd;
+
         // Continue iterating from the current end.
         for (var idx = _currentEnd; idx < _state.Count; ++idx)
         {
@@ -84,10 +88,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             // If we find an object at the same depth, the current folder continues
             // and the line has to go out of the screen.
             if (state.Depth == _currentDepth)
-            {
-                lineEnd.Y = ImGui.GetWindowHeight() + ImGui.GetWindowPos().Y;
-                return lineEnd;
-            }
+                return lineEnd with { Y = y };
 
             // If we find an object at a lower depth before reaching current depth,
             // the current folder stops and the line should stop at the last drawn child, too.
@@ -124,7 +125,7 @@ public partial class FileSystemSelector<T, TStateStorage>
 
             // Draw the notch and increase the line length.
             var midPoint = (minRect.Y + maxRect.Y) / 2f - 1f;
-            drawList.AddLine(new Vector2(lineStart.X, midPoint), new Vector2(lineStart.X + lineSize, midPoint), FolderLineColor,
+            drawList.AddLine(lineStart with { Y = midPoint }, new Vector2(lineStart.X + lineSize, midPoint), FolderLineColor,
                 ImGuiHelpers.GlobalScale);
             lineEnd.Y = midPoint;
         }
@@ -219,15 +220,14 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         // TODO: do this right.
         //HandleKeyNavigation();
-
         clipper.Begin(_state.Count, ImGui.GetTextLineHeightWithSpacing());
         // Draw the clipped list.
 
-        while(clipper.Step())
+        while (clipper.Step())
         {
             _currentIndex = clipper.DisplayStart;
             _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
-            if (_currentIndex >= _currentEnd - 1)
+            if (_currentIndex >= _currentEnd)
                 continue;
 
             if (_state[_currentIndex].Depth != 0)
@@ -347,9 +347,9 @@ public partial class FileSystemSelector<T, TStateStorage>
             var max = ImGui.GetScrollMaxY();
             if (max != 0)
             {
-                var y      = ImGui.GetScrollY();
+                var y = ImGui.GetScrollY();
 
-                var offset = (idx * ImGui.GetTextLineHeightWithSpacing());
+                var offset = idx * ImGui.GetTextLineHeightWithSpacing();
                 var space  = ImGui.GetContentRegionAvail().Y - ImGui.GetFrameHeight();
                 if (idx > current) // Movement downwards
                 {
