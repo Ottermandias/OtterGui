@@ -28,9 +28,11 @@ public sealed class Changelog : Window
         : base(label, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize,
             true)
     {
-        _getLastVersion = getLastVersion;
-        _setLastVersion = setLastVersion;
-        Position        = null;
+        _getLastVersion    = getLastVersion;
+        _setLastVersion    = setLastVersion;
+        Position           = null;
+        RespectCloseHotkey = false;
+        ShowCloseButton    = false;
     }
 
     public override void PreOpenCheck()
@@ -49,8 +51,8 @@ public sealed class Changelog : Window
 
     public override void PreDraw()
     {
-        Size     = ImGui.GetMainViewport().Size / 2;
-        ImGuiHelpers.SetNextWindowPosRelativeMainViewport(ImGui.GetMainViewport().Size / 4, ImGuiCond.Appearing);
+        Size = new Vector2(Math.Min(ImGui.GetMainViewport().Size.X / 2, 800), ImGui.GetMainViewport().Size.Y / 2);
+        ImGuiHelpers.SetNextWindowPosRelativeMainViewport((ImGui.GetMainViewport().Size - Size.Value) / 2, ImGuiCond.Appearing);
     }
 
     public override void OnClose()
