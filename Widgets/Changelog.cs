@@ -53,8 +53,10 @@ public sealed class Changelog : Window
 
     public override void PreDraw()
     {
-        Size = new Vector2(Math.Min(ImGui.GetMainViewport().Size.X / 2, 800), ImGui.GetMainViewport().Size.Y / 2);
-        ImGuiHelpers.SetNextWindowPosRelativeMainViewport((ImGui.GetMainViewport().Size - Size.Value) / 2, ImGuiCond.Appearing);
+        Size = new Vector2(Math.Min(ImGui.GetMainViewport().Size.X / ImGuiHelpers.GlobalScale / 2, 800),
+            ImGui.GetMainViewport().Size.Y / ImGuiHelpers.GlobalScale / 2);
+        ImGuiHelpers.SetNextWindowPosRelativeMainViewport((ImGui.GetMainViewport().Size - Size.Value * ImGuiHelpers.GlobalScale) / 2,
+            ImGuiCond.Appearing);
     }
 
     public override void OnClose()
@@ -81,8 +83,9 @@ public sealed class Changelog : Window
             }
         }
 
-        ImGui.SetCursorPosX(Size!.Value.X / 3);
-        if (ImGui.Button("Understood", new Vector2(Size.Value.X / 3, 0)))
+        var pos = Size!.Value.X * ImGuiHelpers.GlobalScale / 3;
+        ImGui.SetCursorPosX(pos);
+        if (ImGui.Button("Understood", new Vector2(pos, 0)))
             _setLastVersion(_entries.Count);
     }
 
@@ -156,11 +159,11 @@ public sealed class Changelog : Window
                 return;
 
             var sb = new StringBuilder(1024 * 64);
-            sb.Append("__**")
+            sb.Append("**")
                 .Append(name)
                 .Append(" notes, Update <t:")
                 .Append(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                .Append(">**__\n");
+                .Append(">**\n");
 
             foreach (var entry in entries)
                 entry.Append(sb);
