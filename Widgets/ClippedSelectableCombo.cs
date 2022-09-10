@@ -62,7 +62,7 @@ public class ClippedSelectableCombo<T>
     {
         newIdx = -1;
         using var id = ImRaii.PushId(_pushId);
-        ImGui.SetNextItemWidth(_previewSize);
+        ImGui.SetNextItemWidth(_previewSize * ImGuiHelpers.GlobalScale);
 
         using var combo = ImRaii.Combo(_label, currentName, flags | ImGuiComboFlags.HeightLargest);
         if (!combo)
