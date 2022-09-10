@@ -25,6 +25,7 @@ public sealed class Changelog : Window
     private int _lastVersion;
 
     public uint HeaderColor { get; set; } = DefaultHeaderColor;
+    public bool ForceOpen   { get; set; } = false;
 
     public Changelog(string label, Func<int> getLastVersion, Action<int> setLastVersion)
         : base(label, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize,
@@ -47,7 +48,7 @@ public sealed class Changelog : Window
         }
         else
         {
-            IsOpen = _lastVersion < _entries.Count;
+            IsOpen = ForceOpen || _lastVersion < _entries.Count;
         }
     }
 
@@ -59,22 +60,20 @@ public sealed class Changelog : Window
             ImGuiCond.Appearing);
     }
 
-    public override void OnClose()
-    {
-        _setLastVersion(_entries.Count);
-    }
-
     public override void Draw()
     {
         using (var child = ImRaii.Child("Entries", new Vector2(-1, -ImGui.GetFrameHeight() * 2)))
         {
             var i = 0;
-            foreach (var (name, list) in _entries.Skip(_lastVersion).Reverse())
+            foreach (var ((name, list), idx) in _entries.WithIndex().Reverse())
             {
                 using var id    = ImRaii.PushId(i++);
                 using var color = ImRaii.PushColor(ImGuiCol.Text, HeaderColor);
-                var tree = ImGui.TreeNodeEx(name,
-                    ImGuiTreeNodeFlags.NoTreePushOnOpen | (i == 1 ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None));
+                var       flags = ImGuiTreeNodeFlags.NoTreePushOnOpen;
+                if (idx >= _lastVersion || idx == _entries.Count - 1)
+                    flags |= ImGuiTreeNodeFlags.DefaultOpen;
+
+                var tree = ImGui.TreeNodeEx(name, flags);
                 CopyToClipboard(name, list);
                 color.Pop();
                 if (tree)
@@ -86,7 +85,11 @@ public sealed class Changelog : Window
         var pos = Size!.Value.X * ImGuiHelpers.GlobalScale / 3;
         ImGui.SetCursorPosX(pos);
         if (ImGui.Button("Understood", new Vector2(pos, 0)))
-            _setLastVersion(_entries.Count);
+        {
+            if (_lastVersion != _entries.Count)
+                _setLastVersion(_entries.Count);
+            ForceOpen = false;
+        }
     }
 
     public Changelog NextVersion(string title)
