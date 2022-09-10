@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
@@ -69,13 +71,13 @@ public sealed class Changelog : Window
             {
                 using var id    = ImRaii.PushId(i++);
                 using var color = ImRaii.PushColor(ImGuiCol.Text, HeaderColor);
-                var       tree  = ImGui.TreeNodeEx(name, ImGuiTreeNodeFlags.NoTreePushOnOpen | (i == 1 ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None));
+                var tree = ImGui.TreeNodeEx(name,
+                    ImGuiTreeNodeFlags.NoTreePushOnOpen | (i == 1 ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None));
+                CopyToClipboard(name, list);
                 color.Pop();
                 if (tree)
-                {
                     foreach (var entry in list)
                         entry.Draw();
-                }
             }
         }
 
@@ -123,6 +125,51 @@ public sealed class Changelog : Window
             ImGui.PushTextWrapPos();
             ImGui.TextUnformatted(Text);
             ImGui.PopTextWrapPos();
+        }
+
+        public void Append(StringBuilder sb)
+        {
+            sb.Append("> ");
+            if (SubText > 0)
+                sb.Append('`');
+            for (var i = 0; i < SubText; ++i)
+                sb.Append("    ");
+            if (SubText > 0)
+                sb.Append('`');
+            if (Color != 0)
+                sb.Append("**");
+            sb.Append("- ")
+                .Append(Text);
+            if (Color != 0)
+                sb.Append("**");
+
+            sb.Append('\n');
+        }
+    }
+
+    [Conditional("DEBUG")]
+    private static void CopyToClipboard(string name, List<Entry> entries)
+    {
+        try
+        {
+            if (!ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                return;
+
+            var sb = new StringBuilder(1024 * 64);
+            sb.Append("__**")
+                .Append(name)
+                .Append(" notes, Update <t:")
+                .Append(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                .Append(">**__\n");
+
+            foreach (var entry in entries)
+                entry.Append(sb);
+
+            ImGui.SetClipboardText(sb.ToString());
+        }
+        catch
+        {
+            // ignored
         }
     }
 }
