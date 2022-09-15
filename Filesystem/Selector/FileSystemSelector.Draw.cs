@@ -3,7 +3,6 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface;
-using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Filesystem;

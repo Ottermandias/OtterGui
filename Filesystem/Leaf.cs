@@ -1,5 +1,3 @@
-using System;
-
 namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>
