@@ -31,9 +31,8 @@ public readonly struct ZipList<T1, T2> : IReadOnlyList<(T1, T2)>
         => (List1[index], List2[index]);
 }
 
-
 public static class ZipList
 {
     public static ZipList<T1, T2> FromSortedList<T1, T2>(SortedList<T1, T2> list) where T1 : notnull
-        => new (list.Keys, list.Values);
+        => new(list.Keys, list.Values);
 }
