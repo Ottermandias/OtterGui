@@ -26,7 +26,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     // Draw all subscribed buttons.
     private void DrawButtons(float width)
     {
-        var buttonWidth = new Vector2(width / Math.Max(_buttons.Count, 1), 0);
+        var buttonWidth = new Vector2(width / Math.Max(_buttons.Count, 1), ImGui.GetFrameHeight());
         using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0f)
             .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
