@@ -15,7 +15,7 @@ public static class Functions
     // Iterate through a list executing actions on each element by its mode.
     public static void IteratePairwise<T>(IReadOnlyList<T> list, Action<T> action1, Action inBetween, Action<T>? action2 = null)
     {
-        var odd = (list.Count & 1) == 1;
+        var odd  = (list.Count & 1) == 1;
         var size = list.Count - 1;
         action2 ??= action1;
         for (var i = 0; i < size; i += 2)
@@ -83,6 +83,29 @@ public static class Functions
         var b = (uint)(b1 + b2) / 2;
         var a = (uint)(a1 + a2) / 2;
         return r | (g << 8) | (b << 16) | (a << 24);
+    }
+
+    // Remove a single bit, moving all further bits one down.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static uint RemoveBit(uint config, int bit)
+    {
+        var lowMask  = (1u << bit) - 1u;
+        var highMask = ~((1u << (bit + 1)) - 1u);
+        var low      = config & lowMask;
+        var high     = (config & highMask) >> 1;
+        return low | high;
+    }
+
+    // Move a bit in an uint from its position to another, shifting other bits accordingly.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static uint MoveBit(uint config, int bit1, int bit2)
+    {
+        var enabled = (config & (1 << bit1)) != 0 ? 1u << bit2 : 0u;
+        config = RemoveBit(config, bit1);
+        var lowMask = (1u << bit2) - 1u;
+        var low     = config & lowMask;
+        var high    = (config & ~lowMask) << 1;
+        return low | enabled | high;
     }
 
     // Return a human readable form of the size using the given format (which should be a float identifier followed by a placeholder).
@@ -171,7 +194,7 @@ public static class Functions
 
             var shell = Activator.CreateInstance(shellAppType);
 
-            object? obj = shellAppType.InvokeMember("NameSpace", BindingFlags.InvokeMethod, null, shell, new object[]
+            var obj = shellAppType.InvokeMember("NameSpace", BindingFlags.InvokeMethod, null, shell, new object[]
             {
                 "shell:::{679f85cb-0220-4080-b29b-5540cc05aab6}",
             });
@@ -179,7 +202,7 @@ public static class Functions
                 return false;
 
 
-            foreach (dynamic fi in ((dynamic) obj).Items())
+            foreach (var fi in ((dynamic)obj).Items())
             {
                 if (!fi.IsLink && !fi.IsFolder)
                     continue;
