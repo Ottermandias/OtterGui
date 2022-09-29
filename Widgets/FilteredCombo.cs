@@ -51,7 +51,7 @@ public abstract class FilteredCombo<T>
             return;
 
         // Width of the popup window and text input field.
-        var width = ImGui.GetWindowWidth() - ImGui.GetStyle().WindowPadding.X;
+        var width = ImGui.GetWindowWidth() - 2 * ImGui.GetStyle().FramePadding.X;
 
         var setScroll = false;
         ImGui.SetNextItemWidth(width);
