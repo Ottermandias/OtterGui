@@ -10,6 +10,45 @@ using OtterGui.Raii;
 
 namespace OtterGui;
 
+[InterpolatedStringHandler]
+public ref struct HoverTooltipStringHandler
+{
+    private DefaultInterpolatedStringHandler _builder;
+    public  bool                             IsEnabled;
+
+    public HoverTooltipStringHandler(int literalLength, int formattedCount, out bool isEnabled)
+    {
+        IsEnabled = (literalLength > 0 || formattedCount > 0) && ImGui.IsItemHovered();
+        isEnabled = IsEnabled;
+        _builder  = isEnabled ? new DefaultInterpolatedStringHandler(literalLength, formattedCount) : default;
+    }
+
+    public HoverTooltipStringHandler(int literalLength, int formattedCount, ImGuiHoveredFlags flags, out bool isEnabled)
+    {
+        IsEnabled = (literalLength > 0 || formattedCount > 0) && ImGui.IsItemHovered(flags);
+        isEnabled = IsEnabled;
+        _builder  = isEnabled ? new DefaultInterpolatedStringHandler(literalLength, formattedCount) : default;
+    }
+
+    public void AppendLiteral(string s)
+        => _builder.AppendLiteral(s);
+
+    public void AppendFormatted<T>(T t)
+        => _builder.AppendFormatted(t);
+
+    public void AppendFormatted<T>(T t, string format) where T : IFormattable
+        => _builder.AppendFormatted(t, format);
+
+    public void AppendFormatted<T>(T t, int alignment) where T : IFormattable
+        => _builder.AppendFormatted(t, alignment);
+
+    public void AppendFormatted<T>(T t, int alignment, string format) where T : IFormattable
+        => _builder.AppendFormatted(t, alignment, format);
+
+    internal string GetFormattedText()
+        => _builder.ToStringAndClear();
+}
+
 public static partial class ImGuiUtil
 {
     // Exception safe clipboard.
@@ -244,7 +283,28 @@ public static partial class ImGuiUtil
         }
     }
 
-    public static bool Checkbox(string label, string description, bool current, Action<bool> setter, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void HoverTooltip(HoverTooltipStringHandler tooltip)
+    {
+        if (tooltip.IsEnabled)
+        {
+            using var tt = ImRaii.Tooltip();
+            ImGui.TextUnformatted(tooltip.GetFormattedText());
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void HoverTooltip(ImGuiHoveredFlags flags, [InterpolatedStringHandlerArgument("flags")] HoverTooltipStringHandler tooltip)
+    {
+        if (tooltip.IsEnabled)
+        {
+            using var tt = ImRaii.Tooltip();
+            ImGui.TextUnformatted(tooltip.GetFormattedText());
+        }
+    }
+
+    public static bool Checkbox(string label, string description, bool current, Action<bool> setter,
+        ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
     {
         var tmp    = current;
         var result = ImGui.Checkbox(label, ref tmp);
