@@ -47,6 +47,15 @@ public class Tutorial
         --_waitFrames;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+    public void Skip(int id, int current, Action<int> setter)
+    {
+        if (current != id)
+            return;
+
+        setter(NextId(current));
+    }
+
     private void OpenWhenMatch(int current, Action<int> setter)
     {
         var step = Steps[current];
@@ -69,6 +78,8 @@ public class Tutorial
 
     private Vector2 HighlightObject()
     {
+        ImGui.SetScrollHereX();
+        ImGui.SetScrollHereY();
         var offset = ImGuiHelpers.ScaledVector2(5, 4);
         var min    = ImGui.GetItemRectMin() - offset;
         var max    = ImGui.GetItemRectMax() + offset;
