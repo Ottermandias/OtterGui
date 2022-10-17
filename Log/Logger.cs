@@ -351,6 +351,9 @@ public class Logger
     public void Verbose(string text)
         => Verbose($"{text}");
 
+    public void Verbose(string format, params object?[] args)
+        => _pluginLogger.Verbose(_prefix + format, args);
+
     public void Verbose([InterpolatedStringHandlerArgument("")] VerboseInterpolatedStringHandler builder)
     {
         if (_pluginLogger.IsEnabled(LogEventLevel.Verbose))
