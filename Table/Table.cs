@@ -68,7 +68,7 @@ public class Table<T>
     public void Draw(float itemHeight)
     {
         ItemHeight = itemHeight;
-        using var id = Raii.ImRaii.PushId(Label);
+        using var id = ImRaii.PushId(Label);
         UpdateFilter();
         DrawTableInternal();
     }
@@ -90,19 +90,19 @@ public class Table<T>
         if (!SortDirty)
             return;
 
-        SortIdx = sortSpecs.Specs.ColumnIndex;
+            SortIdx = sortSpecs.Specs.ColumnIndex;
 
-        if (Headers.Length <= SortIdx)
-            SortIdx = 0;
+            if (Headers.Length <= SortIdx)
+                SortIdx = 0;
 
-        if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Ascending)
-            FilteredItems.StableSort((a, b) => Headers[SortIdx].Compare(a.Item1, b.Item1));
-        else if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending)
-            FilteredItems.StableSort((a, b) => Headers[SortIdx].CompareInv(a.Item1, b.Item1));
-        else
-            SortIdx = -1;
-        SortDirty            = false;
-        sortSpecs.SpecsDirty = false;
+            if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Ascending)
+                FilteredItems.StableSort((a, b) => Headers[SortIdx].Compare(a.Item1, b.Item1));
+            else if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending)
+                FilteredItems.StableSort((a, b) => Headers[SortIdx].CompareInv(a.Item1, b.Item1));
+            else
+                SortIdx = -1;
+            SortDirty            = false;
+            sortSpecs.SpecsDirty = false;
     }
 
     private void UpdateFilter()
@@ -126,7 +126,7 @@ public class Table<T>
     private void DrawItem((T, int) pair)
     {
         var       column = 0;
-        using var id     = Raii.ImRaii.PushId(_currentIdx);
+        using var id     = ImRaii.PushId(_currentIdx);
         _currentIdx = pair.Item2;
         foreach (var header in Headers)
         {

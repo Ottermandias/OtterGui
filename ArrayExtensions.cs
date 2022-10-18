@@ -8,7 +8,7 @@ namespace OtterGui;
 public static class ArrayExtensions
 {
     // Iterate over enumerables with additional index.
-    public static IEnumerable<(T, int)> WithIndex<T>(this IEnumerable<T> list)
+    public static IEnumerable<(T Value, int Index)> WithIndex<T>(this IEnumerable<T> list)
         => list.Select((x, i) => (x, i));
 
 
