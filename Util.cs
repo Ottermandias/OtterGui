@@ -100,10 +100,10 @@ public static partial class ImGuiUtil
     // Draw the same text multiple times to simulate a shadowed text.
     public static void TextShadowed(Vector2 position, string text, uint foregroundColor, uint shadowColor, byte shadowWidth = 1)
     {
-        var drawList = ImGui.GetWindowDrawList();
-        for (var i = -shadowWidth; i < shadowWidth; i++)
+        var drawList = ImGui.GetForegroundDrawList();
+        for (var i = -shadowWidth; i <= shadowWidth; i++)
         {
-            for (var j = -shadowWidth; j < shadowWidth; j++)
+            for (var j = -shadowWidth; j <= shadowWidth; j++)
             {
                 if (i == 0 && j == 0)
                     continue;
