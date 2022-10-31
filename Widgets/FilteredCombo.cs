@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using ImGuiNET;
@@ -12,7 +13,7 @@ public abstract class FilterComboBase<T>
 
     private LowerString _filter = LowerString.Empty;
 
-    private          int? _newSelection  = null;
+    protected        int? NewSelection  = null;
     private          int  _lastSelection = -1;
     private          bool _filterDirty   = true;
     private          bool _setScroll     = false;
@@ -52,13 +53,21 @@ public abstract class FilterComboBase<T>
     protected virtual float GetFilterWidth()
         => ImGui.GetWindowWidth() - 2 * ImGui.GetStyle().FramePadding.X;
 
+    protected virtual void Cleanup()
+    { }
+
     protected virtual void DrawCombo(string label, string preview, int currentSelected, float previewWidth, float itemHeight,
         ImGuiComboFlags flags)
     {
         ImGui.SetNextItemWidth(previewWidth);
         using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
         if (!combo)
+        {
+            if (ImGui.IsItemDeactivated())
+                Cleanup();
             return;
+        }
+
 
         UpdateFilter();
         // Width of the popup window and text input field.
@@ -112,7 +121,7 @@ public abstract class FilterComboBase<T>
         using var id = ImRaii.PushId(globalIdx);
         if (DrawSelectable(globalIdx, _lastSelection == localIdx))
         {
-            _newSelection = globalIdx;
+            NewSelection = globalIdx;
             _closePopup   = true;
         }
     }
@@ -137,9 +146,9 @@ public abstract class FilterComboBase<T>
         if (ImGui.IsKeyPressed(ImGuiKey.Enter))
         {
             if (_lastSelection >= 0)
-                _newSelection = _available[_lastSelection];
+                NewSelection = _available[_lastSelection];
             else if (_available.Count > 0)
-                _newSelection = _available[0];
+                NewSelection = _available[0];
             _closePopup = true;
         }
     }
@@ -154,6 +163,7 @@ public abstract class FilterComboBase<T>
         _lastSelection = -1;
         ImGui.CloseCurrentPopup();
         ClearStorage();
+        Cleanup();
     }
 
     // Basic Draw.
@@ -161,11 +171,11 @@ public abstract class FilterComboBase<T>
         ImGuiComboFlags flags = ImGuiComboFlags.None)
     {
         DrawCombo(label, preview, currentSelection, previewWidth, itemHeight, flags);
-        if (_newSelection == null)
+        if (NewSelection == null)
             return false;
 
-        currentSelection = _newSelection.Value;
-        _newSelection    = null;
+        currentSelection = NewSelection.Value;
+        NewSelection    = null;
         return true;
     }
 
