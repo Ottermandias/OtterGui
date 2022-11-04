@@ -6,13 +6,13 @@ using System.Linq;
 namespace OtterGui.Classes;
 
 // Just a slice out of a list.
-public readonly struct SubList<T> : IEnumerable<T>
+public readonly struct SubList<T> : IReadOnlyList<T>
 {
     public static readonly SubList<T> Empty = new();
 
     public readonly IList<T> BaseList   = Array.Empty<T>();
     public readonly int      StartIndex = 0;
-    public readonly int      Count      = 0;
+    public          int      Count { get; }
 
     public SubList(IList<T> list, int startIndex = 0)
     {

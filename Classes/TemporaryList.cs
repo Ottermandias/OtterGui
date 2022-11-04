@@ -7,7 +7,7 @@ namespace OtterGui.Classes;
 /// <summary>
 /// A IReadOnlyList based on any IEnumerable, that can clear its temporary storage and automatically initializes it when necessary.
 /// </summary>
-public class TemporaryList<T> : IReadOnlyList<T>
+public class TemporaryList<T> : ICachingList<T>
 {
     private          IReadOnlyList<T>? _list;
     private readonly IEnumerable<T>    _items;
