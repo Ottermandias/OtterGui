@@ -31,7 +31,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             }
             catch (Exception e)
             {
-                PluginLog.Warning(e.Message);
+                PluginLog.Warning(e.ToString());
             }
         }
     }

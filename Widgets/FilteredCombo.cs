@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Raii;
@@ -13,11 +13,11 @@ public abstract class FilterComboBase<T>
 
     private LowerString _filter = LowerString.Empty;
 
-    protected        int? NewSelection  = null;
+    protected        int? NewSelection;
     private          int  _lastSelection = -1;
     private          bool _filterDirty   = true;
-    private          bool _setScroll     = false;
-    private          bool _closePopup    = false;
+    private          bool _setScroll;
+    private          bool _closePopup;
     private readonly bool _keepStorage;
 
     private readonly List<int> _available;
@@ -102,6 +102,7 @@ public abstract class FilterComboBase<T>
         // Height is based on default combo height minus the filter input.
         var       height = ImGui.GetTextLineHeightWithSpacing() * 12 - ImGui.GetFrameHeight() - ImGui.GetStyle().WindowPadding.Y;
         using var _      = ImRaii.Child("ChildL", new Vector2(width, height));
+        using var indent = ImRaii.PushIndent(ImGuiHelpers.GlobalScale);
         if (_setScroll)
             ImGui.SetScrollFromPosY(_lastSelection * itemHeight - ImGui.GetScrollY());
 
