@@ -418,6 +418,15 @@ public static partial class ImGuiUtil
         return true;
     }
 
+    /// <summary>
+    /// Computes the intensity of a RGB color without taking into consideration alpha values.
+    /// </summary>
+    public static byte ColorIntensity(uint color)
+    {
+        color = 1 + (color & 0xFF) + ((color >> 8) & 0xFF) + ((color >> 16) & 0xFF);
+        return (byte)(color / 3);
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool IsDropping(string name)
         => ImGui.AcceptDragDropPayload(name).NativePtr != null;

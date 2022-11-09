@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ImGuiNET;
 using OtterGui.Classes;
 
@@ -42,6 +41,6 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
             CurrentSelection = Items[NewSelection.Value];
     }
 
-    public void Draw(string label, string preview, float previewWidth, float itemHeight, ImGuiComboFlags flags = ImGuiComboFlags.None)
+    public bool Draw(string label, string preview, float previewWidth, float itemHeight, ImGuiComboFlags flags = ImGuiComboFlags.None)
         => Draw(label, preview, ref CurrentSelectionIdx, previewWidth, itemHeight, flags);
 }
