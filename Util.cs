@@ -429,6 +429,14 @@ public static partial class ImGuiUtil
         ImGui.Dummy(new Vector2(width, height));
     }
 
+    public static void Dummy(Vector2 size, bool condition = true)
+    {
+        if (!condition)
+            return;
+
+        ImGui.Dummy(size);
+    }
+
 
     /// <summary>
     /// Computes the intensity of a RGB color without taking into consideration alpha values.
