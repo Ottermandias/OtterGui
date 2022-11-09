@@ -419,6 +419,18 @@ public static partial class ImGuiUtil
     }
 
     /// <summary>
+    /// A dummy that is only applied conditionally.
+    /// </summary>
+    public static void Dummy(float width, float height, bool condition = true)
+    {
+        if (!condition)
+            return;
+
+        ImGui.Dummy(new Vector2(width, height));
+    }
+
+
+    /// <summary>
     /// Computes the intensity of a RGB color without taking into consideration alpha values.
     /// </summary>
     public static byte ColorIntensity(uint color)
