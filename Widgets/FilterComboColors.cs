@@ -42,7 +42,7 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         var (_, (name, color, gloss)) = Items[globalIdx];
         // Push the stain color to type and if it is too bright, turn the text color black.
         var intensity = ImGuiUtil.ColorIntensity(color);
-        using var colors = ImRaii.PushColor(ImGuiCol.Button, color)
+        using var colors = ImRaii.PushColor(ImGuiCol.Button, color, color != 0)
             .Push(ImGuiCol.Text,   0xFF101010, intensity > 127)
             .Push(ImGuiCol.Border, 0xFF2020D0, selected);
         using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, 2f * ImGuiHelpers.GlobalScale, selected);
@@ -57,7 +57,7 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
 
     public bool Draw(string label, uint color, bool found)
     {
-        _color.Push(ImGuiCol.FrameBg, color, found);
+        _color.Push(ImGuiCol.FrameBg, color, found && color != 0);
         var change = Draw(label, string.Empty, ImGui.GetFrameHeight(), ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
         _color.Pop();
         return change;
