@@ -60,23 +60,21 @@ public abstract class FilterComboBase<T>
         ImGuiComboFlags flags)
     {
         ImGui.SetNextItemWidth(previewWidth);
-        using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
-        if (!combo)
+        using var combo       = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
+        var       deactivated = ImGui.IsItemDeactivated();
+        if (combo)
         {
-            if (ImGui.IsItemDeactivated())
-                Cleanup();
-            return;
+            UpdateFilter();
+            // Width of the popup window and text input field.
+            var width = GetFilterWidth();
+
+            DrawFilter(currentSelected, width);
+            DrawKeyboardNavigation();
+            DrawList(width, itemHeight);
+            ClosePopup();
         }
-
-
-        UpdateFilter();
-        // Width of the popup window and text input field.
-        var width = GetFilterWidth();
-
-        DrawFilter(currentSelected, width);
-        DrawKeyboardNavigation();
-        DrawList(width, itemHeight);
-        ClosePopup();
+        else
+            Cleanup();
     }
 
     protected virtual void DrawFilter(int currentSelected, float width)
@@ -123,7 +121,7 @@ public abstract class FilterComboBase<T>
         if (DrawSelectable(globalIdx, _lastSelection == localIdx))
         {
             NewSelection = globalIdx;
-            _closePopup   = true;
+            _closePopup  = true;
         }
     }
 
@@ -176,7 +174,7 @@ public abstract class FilterComboBase<T>
             return false;
 
         currentSelection = NewSelection.Value;
-        NewSelection    = null;
+        NewSelection     = null;
         return true;
     }
 
