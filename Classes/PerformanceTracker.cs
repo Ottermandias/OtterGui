@@ -25,7 +25,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
 
     private unsafe struct Monitor
     {
-        public const    int                    RollingFramesStored = 32;
+        public const    int                    RollingFramesStored = 64;
         public const    uint                   RollingFramesMask   = RollingFramesStored - 1;
         public readonly ThreadLocal<Stopwatch> Stopwatch;
         public          ulong                  TotalTime;
@@ -64,7 +64,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
                 for (var i = 0u; i < RollingFramesStored; ++i)
                 {
                     if (_lastFrames[i] == 0)
-                        return (uint)(sum / (i + 1));
+                        return i == 0 ? 0 : (uint)(sum / i);
 
                     sum += _lastFrames[i];
                 }
