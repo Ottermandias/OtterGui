@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Interface;
+using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Raii;
@@ -18,6 +19,7 @@ public abstract class FilterComboBase<T>
     private          bool _filterDirty   = true;
     private          bool _setScroll;
     private          bool _closePopup;
+    private          bool _popupIsOpen;
     private readonly bool _keepStorage;
 
     private readonly List<int> _available;
@@ -61,9 +63,9 @@ public abstract class FilterComboBase<T>
     {
         ImGui.SetNextItemWidth(previewWidth);
         using var combo       = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
-        var       deactivated = ImGui.IsItemDeactivated();
         if (combo)
         {
+            _popupIsOpen = true;
             UpdateFilter();
             // Width of the popup window and text input field.
             var width = GetFilterWidth();
@@ -73,8 +75,12 @@ public abstract class FilterComboBase<T>
             DrawList(width, itemHeight);
             ClosePopup();
         }
-        else
+        else if (_popupIsOpen)
+        {
+            PluginLog.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
             Cleanup();
+            _popupIsOpen = false;
+        }
     }
 
     protected virtual void DrawFilter(int currentSelected, float width)
