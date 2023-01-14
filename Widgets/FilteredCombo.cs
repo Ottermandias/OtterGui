@@ -10,6 +10,9 @@ namespace OtterGui.Widgets;
 
 public abstract class FilterComboBase<T>
 {
+    private readonly HashSet<uint> _popupState = new();
+
+
     public readonly IReadOnlyList<T> Items;
 
     private LowerString _filter = LowerString.Empty;
@@ -19,7 +22,6 @@ public abstract class FilterComboBase<T>
     private          bool _filterDirty   = true;
     private          bool _setScroll;
     private          bool _closePopup;
-    private          bool _popupIsOpen;
     private readonly bool _keepStorage;
 
     private readonly List<int> _available;
@@ -31,8 +33,13 @@ public abstract class FilterComboBase<T>
         _available   = _keepStorage ? new List<int>(Items.Count) : new List<int>();
     }
 
-    private void ClearStorage()
+    private void ClearStorage(string label)
     {
+        PluginLog.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
+        _filter        = LowerString.Empty;
+        _lastSelection = -1;
+        Cleanup();
+
         if (_keepStorage)
             return;
 
@@ -62,10 +69,11 @@ public abstract class FilterComboBase<T>
         ImGuiComboFlags flags)
     {
         ImGui.SetNextItemWidth(previewWidth);
-        using var combo       = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
+        var       id    = ImGui.GetID(label);
+        using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
         if (combo)
         {
-            _popupIsOpen = true;
+            _popupState.Add(id);
             UpdateFilter();
             // Width of the popup window and text input field.
             var width = GetFilterWidth();
@@ -73,13 +81,11 @@ public abstract class FilterComboBase<T>
             DrawFilter(currentSelected, width);
             DrawKeyboardNavigation();
             DrawList(width, itemHeight);
-            ClosePopup();
+            ClosePopup(id, label);
         }
-        else if (_popupIsOpen)
+        else if (_popupState.Remove(id))
         {
-            PluginLog.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
-            Cleanup();
-            _popupIsOpen = false;
+            ClearStorage(label);
         }
     }
 
@@ -158,17 +164,15 @@ public abstract class FilterComboBase<T>
         }
     }
 
-    protected void ClosePopup()
+    protected void ClosePopup(uint id, string label)
     {
         if (!_closePopup)
             return;
 
         // Close the popup and reset state.
-        _filter        = LowerString.Empty;
-        _lastSelection = -1;
         ImGui.CloseCurrentPopup();
-        ClearStorage();
-        Cleanup();
+        _popupState.Remove(id);
+        ClearStorage(label);
     }
 
     // Basic Draw.
