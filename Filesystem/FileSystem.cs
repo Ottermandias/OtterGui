@@ -84,7 +84,7 @@ public partial class FileSystem<T> where T : class
         if (SetChild(parent, folder, out var idx) == Result.ItemExists)
             throw new Exception($"Could not add folder {folder.Name} to {parent.FullName()}: Child of that name already exists.");
 
-        Changed?.Invoke(FileSystemChangeType.LeafAdded, folder, null, parent);
+        Changed?.Invoke(FileSystemChangeType.FolderAdded, folder, null, parent);
         return (folder, idx);
     }
 
