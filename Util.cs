@@ -405,10 +405,11 @@ public static partial class ImGuiUtil
         if (ImGui.IsKeyPressed(ImGuiKey.Escape))
             ImGui.CloseCurrentPopup();
 
-        ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
-        var enterPressed = ImGui.InputTextWithHint("##newName", "Enter New Name...", ref newName, 64, ImGuiInputTextFlags.EnterReturnsTrue);
         if (ImGui.IsWindowAppearing())
             ImGui.SetKeyboardFocusHere();
+
+        ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
+        var enterPressed = ImGui.InputTextWithHint("##newName", "Enter New Name...", ref newName, 64, ImGuiInputTextFlags.EnterReturnsTrue);
 
         if (!enterPressed)
             return false;
