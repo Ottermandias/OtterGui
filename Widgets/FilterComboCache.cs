@@ -41,6 +41,6 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
             CurrentSelection = Items[NewSelection.Value];
     }
 
-    public bool Draw(string label, string preview, float previewWidth, float itemHeight, ImGuiComboFlags flags = ImGuiComboFlags.None)
-        => Draw(label, preview, ref CurrentSelectionIdx, previewWidth, itemHeight, flags);
+    public bool Draw(string label, string preview, string tooltip, float previewWidth, float itemHeight, ImGuiComboFlags flags = ImGuiComboFlags.None)
+        => Draw(label, preview, tooltip, ref CurrentSelectionIdx, previewWidth, itemHeight, flags);
 }

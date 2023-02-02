@@ -65,16 +65,18 @@ public abstract class FilterComboBase<T>
     protected virtual void Cleanup()
     { }
 
-    protected virtual void DrawCombo(string label, string preview, int currentSelected, float previewWidth, float itemHeight,
+    protected virtual void DrawCombo(string label, string preview, string tooltip, int currentSelected, float previewWidth, float itemHeight,
         ImGuiComboFlags flags)
     {
         ImGui.SetNextItemWidth(previewWidth);
         var       id    = ImGui.GetID(label);
         using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
+        ImGuiUtil.HoverTooltip(tooltip);
         if (combo)
         {
             _popupState.Add(id);
             UpdateFilter();
+
             // Width of the popup window and text input field.
             var width = GetFilterWidth();
 
@@ -89,6 +91,12 @@ public abstract class FilterComboBase<T>
         }
     }
 
+    protected virtual int UpdateCurrentSelected(int currentSelected)
+    {
+        _lastSelection = currentSelected;
+        return currentSelected;
+    }
+
     protected virtual void DrawFilter(int currentSelected, float width)
     {
         _setScroll = false;
@@ -96,8 +104,9 @@ public abstract class FilterComboBase<T>
         // scroll to it, and set keyboard focus to the filter field.
         if (ImGui.IsWindowAppearing())
         {
-            _lastSelection = _available.IndexOf(currentSelected);
-            _setScroll     = true;
+            currentSelected = UpdateCurrentSelected(currentSelected);
+            _lastSelection  = _available.IndexOf(currentSelected);
+            _setScroll      = true;
             ImGui.SetKeyboardFocusHere();
         }
 
@@ -176,10 +185,10 @@ public abstract class FilterComboBase<T>
     }
 
     // Basic Draw.
-    public virtual bool Draw(string label, string preview, ref int currentSelection, float previewWidth, float itemHeight,
+    public virtual bool Draw(string label, string preview, string tooltip, ref int currentSelection, float previewWidth, float itemHeight,
         ImGuiComboFlags flags = ImGuiComboFlags.None)
     {
-        DrawCombo(label, preview, currentSelection, previewWidth, itemHeight, flags);
+        DrawCombo(label, preview, tooltip, currentSelection, previewWidth, itemHeight, flags);
         if (NewSelection == null)
             return false;
 

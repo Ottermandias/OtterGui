@@ -11,6 +11,18 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
     private readonly float        _comboWidth;
     private readonly ImRaii.Color _color = new();
     private          Vector2      _buttonSize;
+    private          uint         _currentColor = 0;
+    protected override int UpdateCurrentSelected(int currentSelected)
+    {
+        if (CurrentSelection.Key != _currentColor)
+        {
+            CurrentSelectionIdx = Items.IndexOf(c => c.Value.Color == _currentColor );
+            CurrentSelection    = CurrentSelectionIdx >= 0 ? Items[CurrentSelectionIdx] : default;
+            return base.UpdateCurrentSelected(CurrentSelectionIdx);
+        }
+
+        return currentSelected;
+    }
 
     public FilterComboColors(float comboWidth, IEnumerable<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>> colors)
         : base(colors)
@@ -55,10 +67,11 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         return ret;
     }
 
-    public bool Draw(string label, uint color, bool found)
+    public bool Draw(string label, uint color, string name, bool found)
     {
+        _currentColor = color;
         _color.Push(ImGuiCol.FrameBg, color, found && color != 0);
-        var change = Draw(label, string.Empty, ImGui.GetFrameHeight(), ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
+        var change = Draw(label, string.Empty, found ? name : string.Empty, ImGui.GetFrameHeight(), ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
         _color.Pop();
         return change;
     }
