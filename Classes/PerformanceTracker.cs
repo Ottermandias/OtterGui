@@ -17,7 +17,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
     public           long      TotalFrames { get; private set; }
 
     private readonly Monitor[] _monitors =
-#if DEBUG
+#if PROFILING
         Enum.GetValues<T>().Select(e => new Monitor()).Append(new Monitor()).ToArray();
 #else
         Array.Empty<Monitor>();
@@ -126,7 +126,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
             => _watch.Stop();
     }
 
-#if DEBUG
+#if PROFILING
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public TimingStopper Measure(T timingType)
         => new(this, timingType);
@@ -136,17 +136,17 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
         => null;
 #endif
 
-    [Conditional("DEBUG")]
+    [Conditional("PROFILING")]
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Start(T timingType)
         => _monitors[Unsafe.As<T, int>(ref timingType)].Stopwatch.Value!.Start();
 
-    [Conditional("DEBUG")]
+    [Conditional("PROFILING")]
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Stop(T timingType)
         => _monitors[Unsafe.As<T, int>(ref timingType)].Stopwatch.Value!.Stop();
 
-    [Conditional("DEBUG")]
+    [Conditional("PROFILING")]
     public void Enable()
     {
         if (Enabled)
@@ -163,7 +163,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
         });
     }
 
-    [Conditional("DEBUG")]
+    [Conditional("PROFILING")]
     public void Disable()
     {
         if (!Enabled)
@@ -173,7 +173,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
         Enabled           =  false;
     }
 
-    [Conditional("DEBUG")]
+    [Conditional("PROFILING")]
     public void Draw(string label, string textBox, Func<T, string> toNames)
     {
         using var id      = ImRaii.PushId(label);
