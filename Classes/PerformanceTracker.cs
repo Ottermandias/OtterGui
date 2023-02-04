@@ -18,7 +18,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
 
     private readonly Monitor[] _monitors =
 #if DEBUG
-        Enum.GetValues< T >().Select( e => new Monitor() ).Append( new Monitor() ).ToArray();
+        Enum.GetValues<T>().Select(e => new Monitor()).Append(new Monitor()).ToArray();
 #else
         Array.Empty<Monitor>();
 #endif
@@ -127,8 +127,8 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
     }
 
 #if DEBUG
-    [MethodImpl( MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization )]
-    public TimingStopper Measure( T timingType )
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public TimingStopper Measure(T timingType)
         => new(this, timingType);
 #else
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
