@@ -110,7 +110,7 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
         => _framework = framework;
 
 
-    public struct TimingStopper : IDisposable
+    public readonly struct TimingStopper : IDisposable
     {
         private readonly Stopwatch _watch;
 

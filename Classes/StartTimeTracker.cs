@@ -5,20 +5,14 @@ using System.Runtime.CompilerServices;
 using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Raii;
-using System.Threading;
 
 namespace OtterGui.Classes;
 
 public class StartTimeTracker<T> where T : unmanaged, Enum
 {
-    private readonly Stopwatch[] _timers =
-#if DEBUG
-        Enum.GetValues<T>().Select(e => new Stopwatch()).ToArray();
-#else
-        Array.Empty<Monitor>();
-#endif
+    private readonly Stopwatch[] _timers = Enum.GetValues<T>().Select(e => new Stopwatch()).ToArray();
 
-    public struct TimingStopper : IDisposable
+    public readonly struct TimingStopper : IDisposable
     {
         private readonly Stopwatch _watch;
 
@@ -34,41 +28,26 @@ public class StartTimeTracker<T> where T : unmanaged, Enum
             => _watch.Stop();
     }
 
-#if DEBUG
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public TimingStopper Measure(T timingType)
         => new(this, timingType);
-#else
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public IDisposable? Measure(T timingType)
-        => null;
-#endif
 
-#if DEBUG
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Measure(T timingType, Action action)
     {
         using var t = Measure(timingType);
         action();
     }
-#else
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public void Measure(T _, Action action)
-        => action();
-#endif
 
 
-    [Conditional("DEBUG")]
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Start(T timingType)
         => _timers[Unsafe.As<T, int>(ref timingType)].Start();
 
-    [Conditional("DEBUG")]
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Stop(T timingType)
         => _timers[Unsafe.As<T, int>(ref timingType)].Stop();
 
-    [Conditional("DEBUG")]
     public void Draw(string label, Func<T, string> toNames)
     {
         using var id    = ImRaii.PushId(label);
