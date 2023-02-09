@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Dalamud.Data;
+using Dalamud.Logging;
 using Dalamud.Plugin;
 using Dalamud.Utility;
 using ImGuiScene;
@@ -21,14 +22,20 @@ public class IconStorage : IDisposable
         _icons    = new Dictionary<uint, TextureWrap>(size);
     }
 
+    private static string HqPath(uint id)
+        => $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}_hr1.tex";
+
+    private static string NormalPath(uint id)
+        => $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}.tex";
+
+    public bool IconExists(uint id)
+        => _gameData.FileExists(HqPath(id)) || _gameData.FileExists(NormalPath(id));
+
     public TextureWrap this[int id]
         => LoadIcon(id);
 
     private TexFile? LoadIconHq(uint id)
-    {
-        var path = $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}_hr1.tex";
-        return _gameData.GetFile<TexFile>(path);
-    }
+        => _gameData.GetFile<TexFile>(HqPath(id));
 
     public TextureWrap LoadIcon(int id)
         => LoadIcon((uint)id);
@@ -38,10 +45,19 @@ public class IconStorage : IDisposable
         if (_icons.TryGetValue(id, out var ret))
             return ret;
 
-        var icon     = LoadIconHq(id) ?? _gameData.GetIcon(id)!;
-        var iconData = icon.GetRgbaImageData();
+        var icon = LoadIconHq(id) ?? _gameData.GetIcon(id);
+        if (icon == null)
+        {
+            PluginLog.Warning($"No icon with id {id} could be found.");
+            ret = _pi.UiBuilder.LoadImageRaw(new byte[] { 0, 0, 0, 0, }, 1, 1, 4);
+        }
+        else
+        {
+            var iconData = icon.GetRgbaImageData();
 
-        ret        = _pi.UiBuilder.LoadImageRaw(iconData, icon.Header.Width, icon.Header.Height, 4);
+            ret = _pi.UiBuilder.LoadImageRaw(iconData, icon.Header.Width, icon.Header.Height, 4);
+        }
+
         _icons[id] = ret;
         return ret;
     }
