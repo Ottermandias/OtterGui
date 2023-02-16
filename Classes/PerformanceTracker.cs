@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -196,10 +197,10 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
                 var value = frames * 1000.0 / Stopwatch.Frequency;
                 var text = value switch
                 {
-                    > 3600000 => $"{value / 3600000:F4, CultureInfo.InvariantCulture} h",
-                    > 60000   => $"{value / 60000:F4, CultureInfo.InvariantCulture} min",
-                    > 1000    => $"{value / 1000:F4, CultureInfo.InvariantCulture} s",
-                    _         => $"{value:F4, CultureInfo.InvariantCulture} ms",
+                    > 3600000 => $"{(value / 3600000).ToString("F4", CultureInfo.InvariantCulture)} h",
+                    > 60000   => $"{(value / 60000).ToString("F4", CultureInfo.InvariantCulture)} min",
+                    > 1000    => $"{(value / 1000).ToString("F4", CultureInfo.InvariantCulture)} s",
+                    _         => $"{value.ToString("F4", CultureInfo.InvariantCulture)} ms",
                 };
                 ImGuiUtil.RightAlign(text);
             }
