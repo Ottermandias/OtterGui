@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Dalamud.Interface;
@@ -62,7 +63,7 @@ public class StartTimeTracker<T> where T : unmanaged, Enum
             ImGuiUtil.DrawTableColumn(toNames(e));
             var time = timer.ElapsedTicks * 1000.0 / Stopwatch.Frequency;
             ImGui.TableNextColumn();
-            ImGuiUtil.RightAlign($"{time:F4}");
+            ImGuiUtil.RightAlign(time.ToString("F4", CultureInfo.InvariantCulture));
         }
     }
 }

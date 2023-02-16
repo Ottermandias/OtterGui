@@ -196,10 +196,10 @@ public class PerformanceTracker<T> : IDisposable where T : unmanaged, Enum
                 var value = frames * 1000.0 / Stopwatch.Frequency;
                 var text = value switch
                 {
-                    > 3600000 => $"{value / 3600000:F4} h",
-                    > 60000   => $"{value / 60000:F4} min",
-                    > 1000    => $"{value / 1000:F4} s",
-                    _         => $"{value:F4} ms",
+                    > 3600000 => $"{value / 3600000:F4, CultureInfo.InvariantCulture} h",
+                    > 60000   => $"{value / 60000:F4, CultureInfo.InvariantCulture} min",
+                    > 1000    => $"{value / 1000:F4, CultureInfo.InvariantCulture} s",
+                    _         => $"{value:F4, CultureInfo.InvariantCulture} ms",
                 };
                 ImGuiUtil.RightAlign(text);
             }
