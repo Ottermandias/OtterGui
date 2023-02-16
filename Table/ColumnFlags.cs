@@ -30,6 +30,16 @@ public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
         var       all   = FilterValue.HasFlag(AllFlags);
         using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
         using var combo = ImRaii.Combo(string.Empty, Label, ImGuiComboFlags.NoArrowButton);
+
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+        {
+            SetValue(AllFlags, true);
+            return true;
+        }
+
+        if (!all && ImGui.IsItemHovered())
+            ImGui.SetTooltip("Right-click to clear filters.");
+
         if (!combo)
             return false;
 
@@ -42,7 +52,7 @@ public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
             ret = true;
         }
 
-        using var indent = Raii.ImRaii.PushIndent(10f);
+        using var indent = ImRaii.PushIndent(10f);
         for (var i = 0; i < Names.Length; ++i)
         {
             var tmp = FilterValue.HasFlag(Values[i]);

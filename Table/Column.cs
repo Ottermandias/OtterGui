@@ -15,6 +15,7 @@ public class Column<TItem>
 
     public virtual bool DrawFilter()
     {
+        ImGui.AlignTextToFramePadding();
         ImGui.TextUnformatted(Label);
         return false;
     }
