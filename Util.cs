@@ -439,6 +439,17 @@ public static partial class ImGuiUtil
 
 
     /// <summary>
+    /// Input an ushort.
+    /// </summary>
+    public static unsafe bool InputUInt16(string label, ref ushort v, ImGuiInputTextFlags flags)
+    {
+        fixed (ushort* v2 = &v)
+        {
+            return ImGui.InputScalar(label, ImGuiDataType.U16, (nint)v2, IntPtr.Zero, IntPtr.Zero, "%hu", flags);
+        }
+    }
+
+    /// <summary>
     /// Computes the intensity of a RGB color without taking into consideration alpha values.
     /// </summary>
     public static byte ColorIntensity(uint color)
