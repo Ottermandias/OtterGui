@@ -10,18 +10,12 @@ namespace OtterGui.Widgets;
 public static partial class Widget
 {
     public static void BeginFramedGroup(string label, string description = "")
-        => BeginFramedGroupInternal(ref label, Vector2.Zero, description, false);
+        => BeginFramedGroupInternal(label, Vector2.Zero, description);
 
     public static void BeginFramedGroup(string label, Vector2 minSize, string description = "")
-        => BeginFramedGroupInternal(ref label, minSize, description, false);
+        => BeginFramedGroupInternal(label, minSize, description);
 
-    public static bool BeginFramedGroupEdit(ref string label, string description = "")
-        => BeginFramedGroupInternal(ref label, Vector2.Zero, description, true);
-
-    public static bool BeginFramedGroupEdit(ref string label, Vector2 minSize, string description = "")
-        => BeginFramedGroupInternal(ref label, minSize, description, true);
-
-    private static bool BeginFramedGroupInternal(ref string label, Vector2 minSize, string description, bool edit)
+    private static void BeginFramedGroupInternal(string label, Vector2 minSize, string description)
     {
         var itemSpacing     = ImGui.GetStyle().ItemSpacing;
         var frameHeight     = ImGui.GetFrameHeight();
@@ -50,12 +44,9 @@ public static partial class Widget
 
         // Label block
         ImGui.SameLine();
-        var       ret   = false;
-        using var group = ImRaii.Group();
-        if (edit)
-            ret = ResizingTextInput(ref label, 1024);
-        else
-            ImGui.TextUnformatted(label);
+        using var group     = ImRaii.Group();
+        ImGui.TextUnformatted(label);
+
         if (description.Length > 0)
         {
             ImGui.SameLine();
@@ -81,23 +72,23 @@ public static partial class Widget
         var itemWidth = ImGui.CalcItemWidth();
         ImGui.PushItemWidth(Math.Max(0f, itemWidth - frameHeight));
 
-        LabelStack.Add((labelMin, labelMax));
-        return ret;
+        LabelStack.Push((labelMin, labelMax));
     }
 
     private static void DrawClippedRect(Vector2 clipMin, Vector2 clipMax, Vector2 drawMin, Vector2 drawMax, uint color, float thickness)
     {
         ImGui.PushClipRect(clipMin, clipMax, true);
-        ImGui.GetWindowDrawList().AddRect(drawMin, drawMax, color, thickness);
+        ImGui.GetWindowDrawList().AddRect(drawMin, drawMax, color, ImGui.GetStyle().FrameRounding, ImDrawFlags.RoundCornersAll, thickness);
         ImGui.PopClipRect();
     }
 
     public static void EndFramedGroup()
     {
-        var borderColor     = ImGui.ColorConvertFloat4ToU32(ImGui.GetStyle().Colors[(int)ImGuiCol.Border]);
+        var borderColor     = ImGui.GetColorU32(ImGuiCol.Border);
         var itemSpacing     = ImGui.GetStyle().ItemSpacing;
         var frameHeight     = ImGui.GetFrameHeight();
         var halfFrameHeight = new Vector2(ImGui.GetFrameHeight() / 2, 0);
+        var (currentLabelMin, currentLabelMax) = LabelStack.Pop();
 
         ImGui.PopItemWidth();
 
@@ -114,29 +105,27 @@ public static partial class Widget
         ImGui.Dummy(Vector2.UnitY * (frameHeight / 2 - itemSpacing.Y));
         ImGui.EndGroup(); // Close second group
 
-        var itemMin = ImGui.GetItemRectMin();
-        var itemMax = ImGui.GetItemRectMax();
-        var (currentLabelMin, currentLabelMax) = LabelStack[^1];
-        LabelStack.RemoveAt(LabelStack.Count - 1);
-
+        var itemMin   = ImGui.GetItemRectMin();
+        var itemMax   = ImGui.GetItemRectMax();
         var halfFrame = new Vector2(frameHeight / 8, frameHeight / 2);
+        var frameMin  = itemMin + halfFrame;
+        var frameMax  = itemMax - Vector2.UnitX * halfFrame.X;
         currentLabelMin.X -= itemSpacing.X;
         currentLabelMax.X += itemSpacing.X;
-        var frameMin = itemMin + halfFrame;
-        var frameMax = itemMax - Vector2.UnitX * halfFrame.X;
+        var thickness = 2 * ImGui.GetStyle().ChildBorderSize;
 
         // Left
-        DrawClippedRect(new Vector2(-float.MaxValue, -float.MaxValue), new Vector2(currentLabelMin.X, float.MaxValue), frameMin,
-            frameMax,                                                  borderColor,                                    halfFrame.X);
+        DrawClippedRect(new Vector2(-float.MaxValue, -float.MaxValue), currentLabelMin with { Y = float.MaxValue }, frameMin,
+            frameMax,                                                  borderColor,                                 thickness);
         // Right
-        DrawClippedRect(new Vector2(currentLabelMax.X, -float.MaxValue), new Vector2(float.MaxValue, float.MaxValue), frameMin,
-            frameMax,                                                    borderColor,                                 halfFrame.X);
+        DrawClippedRect(currentLabelMax with { Y = -float.MaxValue }, new Vector2(float.MaxValue, float.MaxValue), frameMin,
+            frameMax,                                                 borderColor,                                 thickness);
         // Top
-        DrawClippedRect(new Vector2(currentLabelMin.X, -float.MaxValue), new Vector2(currentLabelMax.X, currentLabelMin.Y), frameMin,
-            frameMax,                                                    borderColor,                                       halfFrame.X);
+        DrawClippedRect(currentLabelMin with { Y = -float.MaxValue }, new Vector2(currentLabelMax.X, currentLabelMin.Y), frameMin,
+            frameMax,                                                 borderColor,                                       thickness);
         // Bottom
-        DrawClippedRect(new Vector2(currentLabelMin.X, currentLabelMax.Y), new Vector2(currentLabelMax.X, float.MaxValue), frameMin,
-            frameMax,                                                      borderColor,                                    halfFrame.X);
+        DrawClippedRect(new Vector2(currentLabelMin.X, currentLabelMax.Y), currentLabelMax with { Y = float.MaxValue }, frameMin,
+            frameMax,                                                      borderColor,                                 thickness);
 
         style.Pop(2);
         // This seems wrong?
@@ -146,5 +135,5 @@ public static partial class Widget
         ImGui.EndGroup(); // Close first group
     }
 
-    private static readonly List<(Vector2, Vector2)> LabelStack = new();
+    private static readonly Stack<(Vector2, Vector2)> LabelStack = new();
 }
