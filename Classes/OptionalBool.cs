@@ -195,4 +195,9 @@ public readonly struct QuadBool : IEquatable<QuadBool>, IEquatable<OptionalBool>
         var enabled = token[nameEnabled]?.ToObject<bool>() ?? def.Enabled;
         return new QuadBool(value, enabled);
     }
+
+    public static bool operator ==(QuadBool left, QuadBool right)
+        => left.Equals(right);
+    public static bool operator !=(QuadBool left, QuadBool right)
+        => left.Equals(right);
 }

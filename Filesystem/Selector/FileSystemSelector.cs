@@ -21,6 +21,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 
     // Fired after the selected leaf changed.
     public event SelectionChangeDelegate? SelectionChanged;
+    private FileSystem<T>.Leaf? _jumpToSelection = null;
 
     public void ClearSelection()
         => Select(null);
@@ -130,8 +131,9 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         {
             EnqueueFsAction(() =>
             {
-                ExpandAncestors(leaf);
+                _filterDirty |= ExpandAncestors(leaf);
                 Select(leaf, GetState(leaf));
+                _jumpToSelection = leaf;
             });
         }
     }

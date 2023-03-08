@@ -211,6 +211,17 @@ public partial class FileSystemSelector<T, TStateStorage>
         //// Check if filters are dirty and recompute them before the draw iteration if necessary.
         ApplyFilters();
 
+        if (_jumpToSelection != null)
+        {
+            var idx = _state.FindIndex(s => s.Path == _jumpToSelection);
+            if (idx >= 0)
+            {
+                ImGui.SetScrollFromPosY(ImGui.GetTextLineHeightWithSpacing() * idx - ImGui.GetScrollY());
+            }
+
+            _jumpToSelection = null;
+        }
+
         ImGuiListClipperPtr clipper;
         unsafe
         {

@@ -119,7 +119,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             _fsActions.Enqueue(() =>
             {
                 FileSystem.RenameAndMove(folder, currentPath);
-                ExpandAncestors(folder);
+                _filterDirty |= ExpandAncestors(folder);
             });
 
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the folder. Creates all required parent directories, if possible.");
@@ -132,7 +132,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             _fsActions.Enqueue(() =>
             {
                 FileSystem.RenameAndMove(leaf, currentPath);
-                ExpandAncestors(leaf);
+                _filterDirty |= ExpandAncestors(leaf);
             });
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the leaf. Creates all required parent directories, if possible.");
     }

@@ -65,7 +65,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             }
 
         if (folder != null)
-            ExpandAncestors(folder);
+            _filterDirty |= ExpandAncestors(folder);
     }
 
     private void InitDefaultButtons()
