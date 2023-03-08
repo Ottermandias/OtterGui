@@ -156,6 +156,12 @@ public readonly struct QuadBool : IEquatable<QuadBool>, IEquatable<OptionalBool>
     public bool Equals(bool other)
         => other == Value;
 
+    public override bool Equals(object? obj)
+        => obj is QuadBool other && Equals(other);
+
+    public override int GetHashCode()
+        => _value;
+
     public override string ToString()
         => _value switch
         {
