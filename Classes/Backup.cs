@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Dalamud.Logging;
+using OtterGui.Log;
 
 namespace OtterGui.Classes;
 
@@ -15,7 +15,7 @@ public static class Backup
     // If the newest previously existing backup equals the current state of files,
     // do not create a new backup.
     // If the maximum number of backups is exceeded afterwards, delete the oldest backup.
-    public static void CreateBackup(DirectoryInfo dir, IReadOnlyCollection<FileInfo> files)
+    public static void CreateBackup(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files)
     {
         try
         {
@@ -23,7 +23,7 @@ public static class Backup
             var directory       = CreateBackupDirectory(dir);
             var (newestFile, oldestFile, numFiles) = CheckExistingBackups(directory);
             var newBackupName = Path.Combine(directory.FullName, $"{DateTime.Now:yyyyMMddHHmmss}.zip");
-            if (newestFile == null || CheckNewestBackup(newestFile, configDirectory, files.Count))
+            if (newestFile == null || CheckNewestBackup(logger, newestFile, configDirectory, files.Count))
             {
                 CreateBackup(files, newBackupName, configDirectory);
                 if (numFiles > MaxNumBackups)
@@ -32,7 +32,7 @@ public static class Backup
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Could not create backups:\n{e}");
+            logger.Error($"Could not create backups:\n{e}");
         }
     }
 
@@ -73,7 +73,7 @@ public static class Backup
 
     // Compare the newest backup against the currently existing files.
     // If there are any differences, return true, and if they are completely identical, return false.
-    private static bool CheckNewestBackup(FileInfo newestFile, string configDirectory, int fileCount)
+    private static bool CheckNewestBackup(Logger logger, FileInfo newestFile, string configDirectory, int fileCount)
     {
         try
         {
@@ -101,7 +101,7 @@ public static class Backup
         }
         catch (Exception e)
         {
-            PluginLog.Warning($"Could not read the newest backup file {newestFile.FullName}:\n{e}");
+            logger.Warning($"Could not read the newest backup file {newestFile.FullName}:\n{e}");
             return true;
         }
 
