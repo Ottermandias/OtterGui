@@ -73,6 +73,9 @@ public class Table<T>
         DrawTableInternal();
     }
 
+    public bool WouldBeVisible(T value)
+        => Headers.All(header => header.FilterFunc(value));
+
     protected virtual void DrawFilters()
         => throw new NotImplementedException();
 
@@ -114,7 +117,7 @@ public class Table<T>
         var idx = 0;
         foreach (var item in Items)
         {
-            if (Headers.All(header => header.FilterFunc(item)))
+            if (WouldBeVisible(item))
                 FilteredItems.Add((item, idx));
             idx++;
         }
