@@ -12,13 +12,9 @@ public partial class FileSystem<T>
     // Save a current filesystem to a file, using a function that transforms the data value as well as its full path
     // to a identifier string for the data as well as a bool whether this data should be saved.
     // If addEmptyFolders is true, folders without any leaves are stored separately.
-    protected void SaveToFile(FileInfo file, Func<T, string, (string, bool)> conversion, bool addEmptyFolders)
+    protected void SaveToFile(StreamWriter writer, Func<T, string, (string, bool)> conversion, bool addEmptyFolders)
     {
-        using var stream = File.Exists(file.FullName)
-            ? File.Open(file.FullName, FileMode.Truncate)
-            : File.Open(file.FullName, FileMode.CreateNew);
-        using var w = new StreamWriter(stream);
-        using var j = new JsonTextWriter(w);
+        using var j = new JsonTextWriter(writer);
         j.Formatting = Formatting.Indented;
 
         var emptyFolders = new List<string>();
