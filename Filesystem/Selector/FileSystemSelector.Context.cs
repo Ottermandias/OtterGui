@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ImGuiNET;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
@@ -125,9 +126,49 @@ public partial class FileSystemSelector<T, TStateStorage>
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the folder. Creates all required parent directories, if possible.");
     }
 
+    protected void SetQuickMove(FileSystem<T>.Folder folder, int which, string current, Action<string> onSelect)
+    {
+        if (ImGui.MenuItem($"Set as Quick Move Folder #{which + 1}"))
+            onSelect(folder.FullName());
+        ImGuiUtil.HoverTooltip($"Set this folder as a quick move location{(current.Length > 0 ? $"instead of {current}." : ".")}");
+    }
+
+    protected void ClearQuickMove(int which, string current, Action onSelect)
+    {
+        if (current.Length == 0)
+            return;
+
+        if (ImGui.MenuItem($"Clear Quick Move Folder #{which + 1}"))
+            onSelect();
+        ImGuiUtil.HoverTooltip($"Remove the current quick move folder {current}.");
+    }
+
+    protected void QuickMove(FileSystem<T>.Leaf leaf, params string[] folders)
+    {
+        var currentName = leaf.Name;
+        var currentPath = leaf.FullName();
+        foreach (var (folder, idx) in folders.WithIndex().Where(s => s.Item1.Length > 0))
+        {
+            var targetPath = $"{folder}/{currentName}";
+            if (FileSystem.Equal(targetPath, currentPath))
+                continue;
+
+            if (ImGui.MenuItem($"Move to {folder}##QuickMove{idx}"))
+                _fsActions.Enqueue(() =>
+                {
+                    FileSystem.RenameAndMove(leaf, targetPath);
+                    _filterDirty |= ExpandAncestors(leaf);
+                });
+        }
+
+        ImGuiUtil.HoverTooltip("Move the leaf to a previously set-up quick move location, if possible.");
+    }
+
     protected void RenameLeaf(FileSystem<T>.Leaf leaf)
     {
         var currentPath = leaf.FullName();
+        if (ImGui.IsWindowAppearing())
+            ImGui.SetKeyboardFocusHere(0);
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
             _fsActions.Enqueue(() =>
             {

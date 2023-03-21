@@ -22,18 +22,26 @@ public partial class FileSystem<T> where T : class
     public delegate void         ChangeDelegate(FileSystemChangeType type, IPath changedObject, IPath? previousParent, IPath? newParent);
     public event ChangeDelegate? Changed;
 
-    private readonly NameComparer _nameComparer;
-    public           Folder       Root      = Folder.CreateRoot();
-    public           uint         IdCounter = 1;
+    private readonly NameComparer      _nameComparer;
+    private readonly IComparer<string> _stringComparer;
+    public           Folder            Root      = Folder.CreateRoot();
+    public           uint              IdCounter = 1;
 
     // The string comparer passed will be used to compare the names of siblings.
     // If none is supplied, they will be compared with OrdinalIgnoreCase.
     public FileSystem(IComparer<string>? comparer = null)
-        => _nameComparer = new NameComparer(comparer ?? StringComparer.OrdinalIgnoreCase);
+    {
+        _stringComparer = comparer ?? StringComparer.OrdinalIgnoreCase;
+        _nameComparer   = new NameComparer(_stringComparer);
+    }
 
     // Find a child-index inside a folder using the given comparer.
     private int Search(Folder parent, string name)
         => parent.Children.BinarySearch((SearchPath)name, _nameComparer);
+
+    /// <summary> Check if two paths compare equal completely. </summary>
+    public bool Equal(string lhs, string rhs)
+        => _stringComparer.Compare(lhs, rhs) == 0;
 
     // Find a specific child by its path from Root.
     // Returns true if the folder was found, and false if not.
