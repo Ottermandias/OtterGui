@@ -233,7 +233,7 @@ public partial class FileSystem<T>
         if (!CheckHeritage(to, from))
             return Result.CircularReference;
 
-        var result = Result.NoSuccess;
+        var result = from.Children.Count == 0 ? Result.Success : Result.NoSuccess;
         for (var i = 0; i < from.Children.Count;)
             (i, result) = MoveChild(from.Children[i], to, out _, out _) == Result.Success 
                 ? (i, result == Result.NoSuccess ? i == 0 ? Result.Success : Result.PartialSuccess : result) 
