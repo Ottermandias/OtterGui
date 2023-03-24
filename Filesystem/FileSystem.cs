@@ -231,6 +231,7 @@ public partial class FileSystem<T> where T : class
     // Throws if from is Root.
     // If all children can be moved, from is deleted.
     // If some children can not be moved, from and the unmoved children are kept where they are.
+    // Throws if no children could be moved at all.
     public void Merge(Folder from, Folder to)
     {
         switch (MergeFolders(from, to))
@@ -243,6 +244,8 @@ public partial class FileSystem<T> where T : class
             case Result.PartialSuccess:
                 Changed?.Invoke(FileSystemChangeType.PartialMerge, from, from, to);
                 return;
+            case Result.NoSuccess: 
+                throw new Exception($"Could not merge {from.FullName()} into {to.FullName()} because all children already existed in the target.");
         }
     }
 }

@@ -13,6 +13,7 @@ public partial class FileSystem<T>
         ItemExists,
         PartialSuccess,
         CircularReference,
+        NoSuccess,
     }
 
     // Try to rename a child inside its parent.
@@ -86,13 +87,7 @@ public partial class FileSystem<T>
         var actualNewName = newName?.FixName() ?? child.Name;
         newIdx = Search(newParent, actualNewName);
         if (newIdx >= 0)
-        {
-            if (newIdx != child.IndexInParent)
-                return Result.ItemExists;
-
-            child.SetName(actualNewName, false);
-            return Result.Success;
-        }
+            return Result.ItemExists;
 
         RemoveChild(oldParent, child, Search(oldParent, child.Name));
         newIdx = ~newIdx;
@@ -227,6 +222,7 @@ public partial class FileSystem<T>
     //     - InvalidOperation (from is Root)
     //     - CircularReference (to is a descendant of from)
     //     - PartialSuccess (Some Items could not be moved because they already existed in to, so from was not deleted, but some items were moved)
+    //     - NoSuccess (No Items could be moved because they all already existed in to.
     //     - Success (all items were successfully moved and from was deleted)
     private Result MergeFolders(Folder from, Folder to)
     {
@@ -237,9 +233,11 @@ public partial class FileSystem<T>
         if (!CheckHeritage(to, from))
             return Result.CircularReference;
 
-        var result = Result.Success;
+        var result = Result.NoSuccess;
         for (var i = 0; i < from.Children.Count;)
-            (i, result) = MoveChild(from.Children[i], to, out _, out _) == Result.Success ? (i, result) : (i + 1, Result.PartialSuccess);
+            (i, result) = MoveChild(from.Children[i], to, out _, out _) == Result.Success 
+                ? (i, result == Result.NoSuccess ? i == 0 ? Result.Success : Result.PartialSuccess : result) 
+                : (i + 1, result == Result.Success ? Result.PartialSuccess : result);
 
         return result == Result.Success ? RemoveChild(from) : result;
     }

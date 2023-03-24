@@ -57,7 +57,8 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGuiUtil.OpenNameField(newFolderName, ref _newName) && _newName.Length > 0)
             try
             {
-                folder = FileSystem.FindOrCreateAllFolders(_newName);
+                folder   = FileSystem.FindOrCreateAllFolders(_newName);
+                _newName = string.Empty;
             }
             catch
             {

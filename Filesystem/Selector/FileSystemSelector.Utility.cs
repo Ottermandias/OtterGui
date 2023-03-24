@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.ClientState.Keys;
-using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Filesystem;
 
@@ -31,7 +30,8 @@ public partial class FileSystemSelector<T, TStateStorage>
             }
             catch (Exception e)
             {
-                PluginLog.Warning(e.ToString());
+
+                ExceptionHandler(e);
             }
         }
     }

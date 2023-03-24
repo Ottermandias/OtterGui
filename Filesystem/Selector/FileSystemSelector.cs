@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.ClientState.Keys;
+using Dalamud.Logging;
 using ImGuiNET;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
@@ -72,7 +73,9 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
     protected virtual bool FoldersDefaultOpen
         => false;
 
-    public FileSystemSelector(FileSystem<T> fileSystem, KeyState keyState, string label = "##FileSystemSelector")
+    public readonly Action<Exception> ExceptionHandler;
+
+    public FileSystemSelector(FileSystem<T> fileSystem, KeyState keyState, Action<Exception>? exceptionHandler = null, string label = "##FileSystemSelector")
     {
         FileSystem = fileSystem;
         _state     = new List<StateStruct>(FileSystem.Root.TotalDescendants);
@@ -82,6 +85,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         InitDefaultContext();
         InitDefaultButtons();
         EnableFileSystemSubscription();
+        ExceptionHandler = exceptionHandler ?? (e => PluginLog.Warning(e.ToString()));
     }
 
     // Default flags to use for custom leaf nodes.
