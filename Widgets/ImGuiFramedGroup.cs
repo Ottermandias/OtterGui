@@ -9,20 +9,21 @@ namespace OtterGui.Widgets;
 
 public static partial class Widget
 {
-    public static void BeginFramedGroup(string label, string description = "")
+    public static float BeginFramedGroup(string label, string description = "")
         => BeginFramedGroupInternal(label, Vector2.Zero, description);
 
-    public static void BeginFramedGroup(string label, Vector2 minSize, string description = "")
+    public static float BeginFramedGroup(string label, Vector2 minSize, string description = "")
         => BeginFramedGroupInternal(label, minSize, description);
 
-    private static void BeginFramedGroupInternal(string label, Vector2 minSize, string description)
+    private static float BeginFramedGroupInternal(string label, Vector2 minSize, string description)
     {
         var itemSpacing     = ImGui.GetStyle().ItemSpacing;
         var frameHeight     = ImGui.GetFrameHeight();
         var halfFrameHeight = new Vector2(ImGui.GetFrameHeight() / 2, 0);
+        var startPoint      = ImGui.GetCursorScreenPos().X + halfFrameHeight.X;
 
         ImGui.BeginGroup(); // First group
-
+        
         using var style = ImRaii.PushStyle(ImGuiStyleVar.FramePadding, Vector2.Zero)
             .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
@@ -73,6 +74,7 @@ public static partial class Widget
         ImGui.PushItemWidth(Math.Max(0f, itemWidth - frameHeight));
 
         LabelStack.Push((labelMin, labelMax));
+        return Math.Max(effectiveSize.X, labelMax.X - startPoint);
     }
 
     private static void DrawClippedRect(Vector2 clipMin, Vector2 clipMax, Vector2 drawMin, Vector2 drawMax, uint color, float thickness)
