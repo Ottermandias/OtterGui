@@ -398,7 +398,7 @@ public static partial class ImGuiUtil
 
     public static bool OpenNameField(string popupName, ref string newName)
     {
-gh        using var popup = ImRaii.Popup(popupName);
+        using var popup = ImRaii.Popup(popupName);
         if (!popup)
             return false;
 
