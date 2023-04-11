@@ -398,18 +398,17 @@ public static partial class ImGuiUtil
 
     public static bool OpenNameField(string popupName, ref string newName)
     {
-        using var popup = ImRaii.Popup(popupName);
+gh        using var popup = ImRaii.Popup(popupName);
         if (!popup)
             return false;
 
         if (ImGui.IsKeyPressed(ImGuiKey.Escape))
             ImGui.CloseCurrentPopup();
 
+        ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
         if (ImGui.IsWindowAppearing())
             ImGui.SetKeyboardFocusHere();
-
-        ImGui.SetNextItemWidth(300 * ImGuiHelpers.GlobalScale);
-        var enterPressed = ImGui.InputTextWithHint("##newName", "Enter New Name...", ref newName, 64, ImGuiInputTextFlags.EnterReturnsTrue);
+        var enterPressed = ImGui.InputTextWithHint("##newName", "Enter New Name...", ref newName, 512, ImGuiInputTextFlags.EnterReturnsTrue);
 
         if (!enterPressed)
             return false;
