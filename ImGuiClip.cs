@@ -109,7 +109,8 @@ public static class ImGuiClip
                 using var group = ImRaii.Group();
                 draw(it.Current);
                 group.Dispose();
-                if (!ImGui.IsItemVisible())
+                // Just checking IsItemVisible caused some issues when not the entire width of the window was visible.
+                if (!ImGui.IsRectVisible(ImGui.GetItemRectMin(), ImGui.GetItemRectMin() with { Y = ImGui.GetItemRectMax().Y }))
                 {
                     if (visible)
                     {
