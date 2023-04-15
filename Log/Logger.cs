@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Serilog.Events;
@@ -20,6 +21,7 @@ public class Logger
 
     public enum LogLevel
     {
+        Excessive   = LogEventLevel.Verbose,
         Verbose     = LogEventLevel.Verbose,
         Debug       = LogEventLevel.Debug,
         Information = LogEventLevel.Information,
@@ -355,6 +357,21 @@ public class Logger
         => _pluginLogger.Verbose(_prefix + format, args);
 
     public void Verbose([InterpolatedStringHandlerArgument("")] VerboseInterpolatedStringHandler builder)
+    {
+        if (_pluginLogger.IsEnabled(LogEventLevel.Verbose))
+            _pluginLogger.Verbose(builder.GetFormattedText());
+    }
+
+    [Conditional("EXCESSIVE_LOGGING")]
+    public void Excessive(string text)
+        => Verbose($"{text}");
+
+    [Conditional("EXCESSIVE_LOGGING")]
+    public void Excessive(string format, params object?[] args)
+        => _pluginLogger.Verbose(_prefix + format, args);
+
+    [Conditional("EXCESSIVE_LOGGING")]
+    public void Excessive([InterpolatedStringHandlerArgument("")] VerboseInterpolatedStringHandler builder)
     {
         if (_pluginLogger.IsEnabled(LogEventLevel.Verbose))
             _pluginLogger.Verbose(builder.GetFormattedText());
