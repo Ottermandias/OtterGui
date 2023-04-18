@@ -168,6 +168,13 @@ public class ItemSelector<T>
         }
     }
 
+    protected void SetCurrent(T item)
+    {
+        var idx = Items.IndexOf(item);
+        if (idx >= 0)
+            SetCurrent(idx);
+    }
+
     public T? EnsureCurrent()
     {
         TryRestoreCurrent();
@@ -369,19 +376,22 @@ public class ItemSelector<T>
         }
     }
 
+    protected virtual bool DeleteButtonEnabled()
+        => ImGui.GetIO().KeyCtrl;
+
+    protected virtual string DeleteButtonTooltip()
+        => "Delete Current Selection. Hold Control while clicking.";
+
     private void DrawDeleteButton(float width)
     {
-        if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), Vector2.UnitX * width)
-         && ImGui.GetIO().KeyCtrl
+        using var font = ImRaii.DefaultFont();
+        if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(width, 0), DeleteButtonTooltip(), !DeleteButtonEnabled(), true)
          && CurrentIdx >= 0
          && OnDelete(CurrentIdx))
         {
             FilterDirty = true;
             SetCurrent(CurrentIdx > 0 ? CurrentIdx - 1 : CurrentIdx);
         }
-
-        using var font = ImRaii.PushFont(UiBuilder.DefaultFont);
-        ImGuiUtil.HoverTooltip("Delete Current Selection. Hold Control while clicking.");
     }
 
     private void DrawButtons(float width)
