@@ -114,6 +114,22 @@ public static partial class ImGuiUtil
         drawList.AddText(position, foregroundColor, text);
     }
 
+    /// <summary> Draw a group of texts with colors without additional spacing between them in the same line. </summary>
+    public static void DrawColoredText(params (string, uint)[] data)
+    {
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
+        foreach (var (text, color) in data)
+        {
+            if (color == 0)
+                ImGui.TextUnformatted(text);
+            else
+                TextColored(color, text);
+            ImGui.SameLine();
+        }
+
+        ImGui.NewLine();
+    }
+
 
     // Go to the next column, then enter text.
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
