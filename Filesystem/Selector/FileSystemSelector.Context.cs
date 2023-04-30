@@ -140,7 +140,7 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         if (ImGui.MenuItem($"Clear Quick Move Folder #{which + 1}"))
             onSelect();
-        ImGuiUtil.HoverTooltip($"Remove the current quick move folder {current}.");
+        ImGuiUtil.HoverTooltip($"Clear the current quick move assignment of {current}.");
     }
 
     protected void QuickMove(FileSystem<T>.Leaf leaf, params string[] folders)
