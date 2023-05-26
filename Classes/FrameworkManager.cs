@@ -10,17 +10,18 @@ namespace OtterGui.Classes;
 /// <summary> Manage certain actions to only occur on framework updates. </summary>
 public class FrameworkManager : IDisposable
 {
+    public readonly Framework Framework;
+
     private readonly Logger                                 _log;
-    private readonly Framework                              _framework;
     private readonly Dictionary<string, Action>             _important = new();
     private readonly Dictionary<string, Action>             _onTick    = new();
     private readonly LinkedList<(DateTime, string, Action)> _delayed   = new();
 
     public FrameworkManager(Framework framework, Logger log)
     {
-        _framework        =  framework;
-        _log              =  log;
-        _framework.Update += OnUpdate;
+        Framework        =  framework;
+        _log             =  log;
+        Framework.Update += OnUpdate;
     }
 
     public List<string> Important
@@ -131,7 +132,7 @@ public class FrameworkManager : IDisposable
 
     public void Dispose()
     {
-        _framework.Update -= OnUpdate;
+        Framework.Update -= OnUpdate;
         foreach (var (_, action) in _onTick)
             action();
 
