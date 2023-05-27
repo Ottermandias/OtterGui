@@ -1,3 +1,4 @@
+using System;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using Dalamud.Interface.Internal.Notifications;
@@ -31,6 +32,21 @@ public class ChatService
         };
         _uiBuilder.AddNotification(content, title, type);
         _log.Message(logLevel, title.IsNullOrEmpty() ? content : $"[{title}] {content}");
+    }
+
+    public void NotificationMessage(Exception ex, string content1, string content2, string? title = null, NotificationType type = NotificationType.None)
+    {
+        var logLevel = type switch
+        {
+            NotificationType.None    => Logger.LogLevel.Information,
+            NotificationType.Success => Logger.LogLevel.Information,
+            NotificationType.Warning => Logger.LogLevel.Warning,
+            NotificationType.Error   => Logger.LogLevel.Error,
+            NotificationType.Info    => Logger.LogLevel.Information,
+            _                        => Logger.LogLevel.Debug,
+        };
+        _uiBuilder.AddNotification(content1, title, type);
+        _log.Message(logLevel, title.IsNullOrEmpty() ? content2 : $"[{title}] {content2}:{ex}");
     }
 }
 
