@@ -202,7 +202,7 @@ public class FrameworkManager : IDisposable
             Task[] tasks;
             lock (dict)
             {
-                tasks = dict.Values.Select(Task.Run).ToArray();
+                tasks = dict.Values.Select(AwaitedTask.Run).ToArray();
                 dict.Clear();
             }
 
