@@ -59,18 +59,24 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
     // Customization point to draw additional filters into the filter row.
     // Parameters are start position for the filter input field and selector width.
     // It should return the remaining width for the text input.
-    protected virtual float CustomFilters(float width)
-        => width;
+    protected virtual (float RemainingWidth, bool ClearText) CustomFilters(float width)
+        => (width, false);
 
     // Draw the default filter row of a given width.
     private void DrawFilterRow(float width)
     {
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).Push(ImGuiStyleVar.FrameRounding, 0);
-        width = CustomFilters(width);
+        (width, var clear) = CustomFilters(width);
         ImGui.SetNextItemWidth(width);
-        var tmp = FilterValue;
-        if (ImGui.InputTextWithHint("##Filter", "Filter...", ref tmp, 128) && ChangeFilterInternal(tmp) && ChangeFilter(tmp))
-            SetFilterDirty();
+        var       tmp = FilterValue;
+        using var id  = ImRaii.PushId(0, clear);
+        if (ImGui.InputTextWithHint($"##Filter", "Filter...", ref tmp, 128) || clear)
+        {
+            tmp = clear ? string.Empty : tmp;
+            if (ChangeFilterInternal(tmp) && ChangeFilter(tmp))
+                SetFilterDirty();
+        }
+
         style.Pop();
         if (FilterTooltip.Length > 0)
             ImGuiUtil.HoverTooltip(FilterTooltip);
