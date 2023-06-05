@@ -106,9 +106,13 @@ public static class ImGuiClip
         {
             if (idx >= skips)
             {
-                using var group = ImRaii.Group();
-                draw(it.Current);
-                group.Dispose();
+
+                using (var group = ImRaii.Group())
+                {
+                    using var id = ImRaii.PushId(idx);
+                    draw(it.Current);
+                }
+
                 // Just checking IsItemVisible caused some issues when not the entire width of the window was visible.
                 if (!ImGui.IsRectVisible(ImGui.GetItemRectMin(), ImGui.GetItemRectMin() with { Y = ImGui.GetItemRectMax().Y }))
                 {
