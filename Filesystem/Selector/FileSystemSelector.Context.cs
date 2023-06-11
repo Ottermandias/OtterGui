@@ -73,9 +73,9 @@ public partial class FileSystemSelector<T, TStateStorage>
 
     private void InitDefaultContext()
     {
-        SubscribeRightClickFolder(DissolveFolder);
         SubscribeRightClickFolder(ExpandAllDescendants,   100);
         SubscribeRightClickFolder(CollapseAllDescendants, 100);
+        SubscribeRightClickFolder(DissolveFolder,         999);
         SubscribeRightClickFolder(RenameFolder,           1000);
         SubscribeRightClickLeaf(RenameLeaf, 1000);
         SubscribeRightClickMain(ExpandAll,   1);
