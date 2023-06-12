@@ -38,6 +38,15 @@ public static partial class ImRaii
     public static IEndObject Popup(string id, ImGuiWindowFlags flags)
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopup(id, flags));
 
+    public static IEndObject ContextPopupItem()
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem());
+
+    public static IEndObject ContextPopupItem(string label)
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem(label));
+
+    public static IEndObject ContextPopupItem(string label, ImGuiPopupFlags flags)
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem(label, flags));
+
     public static IEndObject ContextPopup(string id)
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextWindow(id));
 
