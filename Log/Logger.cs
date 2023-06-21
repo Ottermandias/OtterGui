@@ -6,6 +6,20 @@ using Serilog.Events;
 
 namespace OtterGui.Log;
 
+public readonly struct LazyString
+{
+    private readonly Func<string> _func;
+
+    public LazyString(Func<string> func)
+        => _func = func;
+
+    public static explicit operator LazyString(Func<string> func)
+        => new(func);
+
+    public override string ToString()
+        => _func();
+}
+
 public class Logger
 {
     private readonly Serilog.ILogger _pluginLogger;
