@@ -142,7 +142,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         var       flags = ImGuiTreeNodeFlags.NoTreePushOnOpen | (FoldersDefaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
         var       expandedState = GetPathState(folder);
         using var color = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name);
+        var       recurse = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
 
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
@@ -215,9 +215,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         {
             var idx = _state.FindIndex(s => s.Path == _jumpToSelection);
             if (idx >= 0)
-            {
                 ImGui.SetScrollFromPosY(ImGui.GetTextLineHeightWithSpacing() * idx - ImGui.GetScrollY());
-            }
 
             _jumpToSelection = null;
         }
