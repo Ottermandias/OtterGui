@@ -15,10 +15,10 @@ public static class Table
 
 public class Table<T>
 {
-    protected          bool           FilterDirty = true;
-    protected          bool           SortDirty   = true;
-    protected readonly ICollection<T> Items;
-    internal readonly  List<(T, int)> FilteredItems;
+    protected          bool                   FilterDirty = true;
+    protected          bool                   SortDirty   = true;
+    protected readonly IReadOnlyCollection<T> Items;
+    internal readonly  List<(T, int)>         FilteredItems;
 
     protected readonly string      Label;
     protected readonly Column<T>[] Headers;
@@ -56,7 +56,7 @@ public class Table<T>
 
     public int VisibleColumns { get; private set; }
 
-    public Table(string label, ICollection<T> items, params Column<T>[] headers)
+    public Table(string label, IReadOnlyCollection<T> items, params Column<T>[] headers)
     {
         Label          = label;
         Items          = items;
@@ -93,19 +93,19 @@ public class Table<T>
         if (!SortDirty)
             return;
 
-            SortIdx = sortSpecs.Specs.ColumnIndex;
+        SortIdx = sortSpecs.Specs.ColumnIndex;
 
-            if (Headers.Length <= SortIdx)
-                SortIdx = 0;
+        if (Headers.Length <= SortIdx)
+            SortIdx = 0;
 
-            if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Ascending)
-                FilteredItems.StableSort((a, b) => Headers[SortIdx].Compare(a.Item1, b.Item1));
-            else if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending)
-                FilteredItems.StableSort((a, b) => Headers[SortIdx].CompareInv(a.Item1, b.Item1));
-            else
-                SortIdx = -1;
-            SortDirty            = false;
-            sortSpecs.SpecsDirty = false;
+        if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Ascending)
+            FilteredItems.StableSort((a, b) => Headers[SortIdx].Compare(a.Item1, b.Item1));
+        else if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending)
+            FilteredItems.StableSort((a, b) => Headers[SortIdx].CompareInv(a.Item1, b.Item1));
+        else
+            SortIdx = -1;
+        SortDirty            = false;
+        sortSpecs.SpecsDirty = false;
     }
 
     private void UpdateFilter()

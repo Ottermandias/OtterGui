@@ -43,10 +43,10 @@ public class ColumnString<TItem> : Column<TItem>
 
     public override bool FilterFunc(TItem item)
     {
-        var name = ToName(item);
         if (FilterValue.Length == 0)
             return true;
 
+        var name = ToName(item);
         return FilterRegex?.IsMatch(name) ?? name.Contains(FilterValue, StringComparison.OrdinalIgnoreCase);
     }
 

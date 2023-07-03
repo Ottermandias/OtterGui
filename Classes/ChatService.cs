@@ -46,7 +46,7 @@ public class ChatService
             _                        => Logger.LogLevel.Debug,
         };
         _uiBuilder.AddNotification(content1, title, type);
-        _log.Message(logLevel, title.IsNullOrEmpty() ? content2 : $"[{title}] {content2}:{ex}");
+        _log.Message(logLevel, title.IsNullOrEmpty() ? content2 : $"[{title}] {content2}:\n{ex}");
     }
 }
 

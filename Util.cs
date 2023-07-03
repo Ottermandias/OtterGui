@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using ImGuiNET;
+using OtterGui.Classes;
 using OtterGui.Raii;
 
 namespace OtterGui;
@@ -98,7 +99,8 @@ public static partial class ImGuiUtil
     }
 
     // Draw the same text multiple times to simulate a shadowed text.
-    public static void TextShadowed(ImDrawListPtr drawList, Vector2 position, string text, uint foregroundColor, uint shadowColor, byte shadowWidth = 1)
+    public static void TextShadowed(ImDrawListPtr drawList, Vector2 position, string text, uint foregroundColor, uint shadowColor,
+        byte shadowWidth = 1)
     {
         for (var i = -shadowWidth; i <= shadowWidth; i++)
         {
@@ -377,6 +379,14 @@ public static partial class ImGuiUtil
         HoverIconTooltip(icon, iconSize);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void HoverIcon(TextureHandle icon, Vector2 iconSize)
+    {
+        var (handle, size) = icon.Value;
+        ImGui.Image(handle, iconSize);
+        HoverIconTooltip(handle, iconSize, size);
+    }
+
     public static void HoverIconTooltip(ImGuiScene.TextureWrap icon, Vector2 iconSize)
     {
         var size = new Vector2(icon.Width, icon.Height);
@@ -386,6 +396,17 @@ public static partial class ImGuiUtil
         using var enable = ImRaii.Enabled();
         ImGui.BeginTooltip();
         ImGui.Image(icon.ImGuiHandle, size);
+        ImGui.EndTooltip();
+    }
+
+    public static void HoverIconTooltip(nint icon, Vector2 iconSize, Vector2 size)
+    {
+        if (iconSize.X > size.X || iconSize.Y > size.Y || !ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            return;
+
+        using var enable = ImRaii.Enabled();
+        ImGui.BeginTooltip();
+        ImGui.Image(icon, size);
         ImGui.EndTooltip();
     }
 
