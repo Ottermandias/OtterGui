@@ -340,6 +340,14 @@ public static partial class ImGuiUtil
         ImGui.TextUnformatted(text);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void DrawFrameColumn(string text)
+    {
+        ImGui.TableNextColumn();
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextUnformatted(text);
+    }
+
     public static bool DrawEditButtonText(int id, string current, out string newText, ref bool edit, Vector2 buttonSize, float inputWidth,
         uint maxLength = 256)
     {
