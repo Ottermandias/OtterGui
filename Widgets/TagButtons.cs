@@ -32,10 +32,13 @@ public class TagButtons
 
         using var group = ImRaii.Group();
         AlignedHelpMarker(description);
-        ImGui.SameLine();
-        ImGui.AlignTextToFramePadding();
-        ImGui.TextUnformatted(label);
-        ImGui.SameLine();
+        if (label.Length > 0)
+        {
+            ImGui.SameLine();
+            ImGui.AlignTextToFramePadding();
+            ImGui.TextUnformatted(label);
+            ImGui.SameLine();
+        }
 
         var x = ImGui.GetCursorPosX() + xOffset;
         ImGui.SetCursorPosX(x);
@@ -111,7 +114,7 @@ public class TagButtons
         if (width + ImGui.GetStyle().ItemSpacing.X >= ImGui.GetContentRegionAvail().X)
         {
             ImGui.NewLine();
-            ImGui.SetCursorPosX(x - ImGui.GetStyle().ItemSpacing.X);
+            ImGui.SetCursorPosX(x);
         }
 
         return width;
