@@ -214,16 +214,14 @@ public sealed class Changelog : Window
         public void Append(StringBuilder sb)
         {
             sb.Append("> ");
-            if (SubText > 0)
-                sb.Append('`');
             for (var i = 0; i < SubText; ++i)
-                sb.Append("    ");
-            if (SubText > 0)
-                sb.Append('`');
+                sb.Append("  ");
+                
+            sb.Append("- ");
             if (Color != 0)
                 sb.Append("**");
-            sb.Append("- ")
-                .Append(Text);
+
+            sb.Append(Text);
             if (Color != 0)
                 sb.Append("**");
 
