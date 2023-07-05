@@ -77,8 +77,8 @@ public readonly struct QuadBool : IEquatable<QuadBool>, IEquatable<OptionalBool>
         _value = (state, enabled) switch
         {
             (true, true)   => 1,
-            (true, false)  => 0,
-            (false, true)  => 3,
+            (false, true)  => 0,
+            (true, false)  => 3,
             (false, false) => 2,
         };
     }
@@ -129,11 +129,11 @@ public readonly struct QuadBool : IEquatable<QuadBool>, IEquatable<OptionalBool>
         {
             0 => false,
             1 => true,
-            _ => (bool?)null,
+            _ => null,
         };
 
     public bool Enabled
-        => _value > 2;
+        => _value < 2;
 
     public bool ForcedValue
         => (_value & 1) == 1;
