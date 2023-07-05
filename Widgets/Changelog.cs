@@ -216,7 +216,7 @@ public sealed class Changelog : Window
             sb.Append("> ");
             for (var i = 0; i < SubText; ++i)
                 sb.Append("  ");
-                
+
             sb.Append("- ");
             if (Color != 0)
                 sb.Append("**");
