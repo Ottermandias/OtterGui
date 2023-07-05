@@ -43,9 +43,9 @@ public class TextureCache : IDisposable
 {
     private class Data
     {
-        public TextureWrap Wrap;
+        public TextureWrap Wrap = null!;
         public DateTime    LastAccess;
-        public string      Identifier;
+        public string      Identifier = null!;
     }
 
     public TimeSpan KeepAliveTime   { get; set; } = TimeSpan.FromSeconds(2);
