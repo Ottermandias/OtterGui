@@ -3,31 +3,55 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using OtterGui.Log;
 
 namespace OtterGui.Classes;
 
-public static class Backup
+public static partial class Backup
 {
     public const int MaxNumBackups = 10;
 
-    // Create a backup named by ISO 8601 of the current time.
-    // If the newest previously existing backup equals the current state of files,
-    // do not create a new backup.
-    // If the maximum number of backups is exceeded afterwards, delete the oldest backup.
-    public static void CreateBackup(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files)
+    /// <summary>
+    /// Create a backup named by ISO 8601 of the current time.
+    /// </summary>
+    public static void CreatePermanentBackup(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files, string name)
+        => CreateBackupInternal(logger, dir, files, name);
+
+    /// <summary>
+    /// Create a backup named by ISO 8601 of the current time.
+    /// </summary>
+    /// <remarks>
+    /// If the newest previously existing backup equals the current state of files, do not create a new backup.
+    /// If the maximum number of backups is exceeded afterwards, delete the oldest backup.
+    /// </remarks>
+    public static void CreateAutomaticBackup(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files)
+        => CreateBackupInternal(logger, dir, files, null);
+
+    private static void CreateBackupInternal(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files, string? name)
     {
         try
         {
             var configDirectory = dir.Parent!.FullName;
             var directory       = CreateBackupDirectory(dir);
-            var (newestFile, oldestFile, numFiles) = CheckExistingBackups(directory);
-            var newBackupName = Path.Combine(directory.FullName, $"{DateTime.Now:yyyyMMddHHmmss}.zip");
-            if (newestFile == null || CheckNewestBackup(logger, newestFile, configDirectory, files.Count))
+            if (name == null)
             {
-                CreateBackup(files, newBackupName, configDirectory);
-                if (numFiles > MaxNumBackups)
-                    oldestFile!.Delete();
+                var (newestFile, oldestFile, numFiles) = CheckExistingBackups(directory);
+                var newBackupName = Path.Combine(directory.FullName, $"{DateTime.Now:yyyyMMddHHmmss}.zip");
+                if (newestFile == null || CheckNewestBackup(logger, newestFile, configDirectory, files.Count))
+                {
+                    CreateBackupFile(files, newBackupName, configDirectory);
+                    if (numFiles > MaxNumBackups)
+                        oldestFile!.Delete();
+                }
+            }
+            else
+            {
+                var fileName = $"{name}.zip";
+                if (FormatRegex().IsMatch(fileName))
+                    fileName = $"{name}-.zip";
+                var newBackupName = Path.Combine(directory.FullName, fileName);
+                CreateBackupFile(files, newBackupName, configDirectory);
             }
         }
         catch (Exception e)
@@ -35,7 +59,6 @@ public static class Backup
             logger.Error($"Could not create backups:\n{e}");
         }
     }
-
 
     // Obtain the backup directory. Create it if it does not exist.
     private static DirectoryInfo CreateBackupDirectory(DirectoryInfo dir)
@@ -57,7 +80,7 @@ public static class Backup
         FileInfo? newest = null;
         FileInfo? oldest = null;
 
-        foreach (var file in backupDirectory.EnumerateFiles("*.zip"))
+        foreach (var file in backupDirectory.EnumerateFiles("*.zip").Where(f => FormatRegex().IsMatch(f.Name)))
         {
             ++count;
             var time = file.CreationTimeUtc;
@@ -70,6 +93,9 @@ public static class Backup
 
         return (newest, oldest, count);
     }
+
+    [GeneratedRegex(@"^\d{14}\.zip$", RegexOptions.ExplicitCapture | RegexOptions.NonBacktracking)]
+    private static partial Regex FormatRegex();
 
     // Compare the newest backup against the currently existing files.
     // If there are any differences, return true, and if they are completely identical, return false.
@@ -109,7 +135,7 @@ public static class Backup
     }
 
     // Create the actual backup, storing all the files relative to the given configDirectory in the zip.
-    private static void CreateBackup(IEnumerable<FileInfo> files, string fileName, string configDirectory)
+    private static void CreateBackupFile(IEnumerable<FileInfo> files, string fileName, string configDirectory)
     {
         using var fileStream = File.Open(fileName, FileMode.Create);
         using var zip        = new ZipArchive(fileStream, ZipArchiveMode.Create);

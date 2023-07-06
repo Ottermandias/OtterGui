@@ -75,12 +75,16 @@ public class SaveServiceBase<T>
             if (name.Length == 0)
                 throw new Exception("Invalid object returned empty filename.");
 
+            var secureWrite = File.Exists(name);
+            var firstName   = secureWrite ? name + ".tmp" : name;
             Log.Debug($"Saving {value.TypeName} {value.LogName(name)}...");
-            var file = new FileInfo(name);
+            var file = new FileInfo(firstName);
             file.Directory?.Create();
             using var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew);
             using var w = new StreamWriter(s, Encoding.UTF8);
             value.Save(w);
+            if (secureWrite)
+                File.Move(file.FullName, name, true);
         }
         catch (Exception ex)
         {
