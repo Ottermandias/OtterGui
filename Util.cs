@@ -382,17 +382,20 @@ public static partial class ImGuiUtil
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(ImGuiScene.TextureWrap icon, Vector2 iconSize)
-    {
-        ImGui.Image(icon.ImGuiHandle, iconSize);
-        HoverIconTooltip(icon, iconSize);
-    }
+        => HoverIcon(icon.ImGuiHandle, new Vector2(icon.Width, icon.Height), iconSize);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(TextureHandle icon, Vector2 iconSize)
     {
         var (handle, size) = icon.Value;
-        ImGui.Image(handle, iconSize);
-        HoverIconTooltip(handle, iconSize, size);
+        HoverIcon(handle, size, iconSize);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void HoverIcon(nint ptr, Vector2 contentSize, Vector2 iconSize)
+    {
+        ImGui.Image(ptr, iconSize);
+        HoverIconTooltip(ptr, iconSize, contentSize);
     }
 
     public static void HoverIconTooltip(ImGuiScene.TextureWrap icon, Vector2 iconSize)

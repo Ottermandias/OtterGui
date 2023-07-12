@@ -57,19 +57,34 @@ public class TextureCache : IDisposable
     private readonly DataManager _dataManager;
 
     public TextureHandle LoadFile(string filename, bool keepAlive = false)
-        => new(this, filename);
+    {
+        var ret = new TextureHandle(this, filename);
+        if (keepAlive)
+            GetTexture(ret.Identifier, out _, true);
+        return ret;
+    }
 
     public TextureHandle? LoadIcon(uint iconId, bool keepAlive = false)
+        => TryLoadIcon(iconId, out var ret, keepAlive) ? ret : null;
+
+    public bool TryLoadIcon(uint iconId, out TextureHandle ret, bool keepAlive = false)
     {
         var path = HqPath(iconId);
         if (_dataManager.FileExists(path))
-            return LoadFile(path);
+        {
+            ret = LoadFile(path, keepAlive);
+            return true;
+        }
 
         path = NormalPath(iconId);
         if (_dataManager.FileExists(path))
-            return LoadFile(path);
+        {
+            ret = LoadFile(path, keepAlive);
+            return true;
+        }
 
-        return null;
+        ret = new TextureHandle(this, string.Empty);
+        return false;
     }
 
     private static string HqPath(uint id)
@@ -106,7 +121,7 @@ public class TextureCache : IDisposable
 
         if (success)
         {
-            data!.LastAccess = DateTime.UtcNow;
+            data!.LastAccess = keepAlive ? DateTime.MaxValue : DateTime.UtcNow;
             wrap             = data.Wrap;
             Logger?.Excessive($"[TextureCache] Obtained loaded file {identifier}.");
         }

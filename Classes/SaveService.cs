@@ -80,9 +80,12 @@ public class SaveServiceBase<T>
             Log.Debug($"Saving {value.TypeName} {value.LogName(name)}...");
             var file = new FileInfo(firstName);
             file.Directory?.Create();
-            using var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew);
-            using var w = new StreamWriter(s, Encoding.UTF8);
-            value.Save(w);
+            using (var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew))
+            {
+                using var w = new StreamWriter(s, Encoding.UTF8);
+                value.Save(w);
+            }
+
             if (secureWrite)
                 File.Move(file.FullName, name, true);
         }

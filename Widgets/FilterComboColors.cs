@@ -12,11 +12,13 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
     private readonly ImRaii.Color _color = new();
     private          Vector2      _buttonSize;
     private          uint         _currentColor = 0;
+    private          bool         _currentGloss = false;
+
     protected override int UpdateCurrentSelected(int currentSelected)
     {
         if (CurrentSelection.Key != _currentColor)
         {
-            CurrentSelectionIdx = Items.IndexOf(c => c.Value.Color == _currentColor );
+            CurrentSelectionIdx = Items.IndexOf(c => c.Value.Color == _currentColor);
             CurrentSelection    = CurrentSelectionIdx >= 0 ? Items[CurrentSelectionIdx] : default;
             return base.UpdateCurrentSelected(CurrentSelectionIdx);
         }
@@ -61,18 +63,31 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         var       ret   = ImGui.Button(name, _buttonSize);
 
         if (gloss)
-            ImGui.GetForegroundDrawList().AddRectFilledMultiColor(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0x50FFFFFF, 0x50000000,
+            ImGui.GetWindowDrawList().AddRectFilledMultiColor(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0x50FFFFFF, 0x50000000,
                 0x50FFFFFF, 0x50000000);
 
         return ret;
     }
 
-    public bool Draw(string label, uint color, string name, bool found)
+    public bool Draw(string label, uint color, string name, bool found, bool gloss, float previewWidth)
     {
         _currentColor = color;
-        _color.Push(ImGuiCol.FrameBg, color, found && color != 0);
-        var change = Draw(label, string.Empty, found ? name : string.Empty, ImGui.GetFrameHeight(), ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
-        _color.Pop();
+        _currentGloss = gloss;
+        var preview = ImGui.CalcTextSize(name).X <= previewWidth ? name : string.Empty;
+        _color.Push(ImGuiCol.FrameBg, color, found && color != 0)
+            .Push(ImGuiCol.Text, 0xFF101010, ImGuiUtil.ColorIntensity(color) > 127 && preview.Length > 0);
+        var change = Draw(label, preview, found ? name : string.Empty, previewWidth, ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
+        _color.Dispose();
         return change;
     }
+
+    protected override void PostCombo()
+    {
+        if (_currentGloss)
+            ImGui.GetWindowDrawList().AddRectFilledMultiColor(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0x50FFFFFF, 0x50000000,
+                0x50FFFFFF, 0x50000000);
+    }
+
+    public bool Draw(string label, uint color, string name, bool found, bool gloss)
+        => Draw(label, color, name, found, gloss, ImGui.GetFrameHeight());
 }
