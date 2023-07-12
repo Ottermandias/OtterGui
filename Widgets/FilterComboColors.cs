@@ -81,11 +81,15 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         return change;
     }
 
-    protected override void PostCombo()
+    protected override void PostCombo(float previewWidth)
     {
         if (_currentGloss)
-            ImGui.GetWindowDrawList().AddRectFilledMultiColor(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0x50FFFFFF, 0x50000000,
+        {
+            var min = ImGui.GetItemRectMin();
+            ImGui.GetWindowDrawList().AddRectFilledMultiColor(min, new Vector2(min.X + previewWidth, ImGui.GetItemRectMax().Y), 0x50FFFFFF,
+                0x50000000,
                 0x50FFFFFF, 0x50000000);
+        }
     }
 
     public bool Draw(string label, uint color, string name, bool found, bool gloss)

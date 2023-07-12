@@ -65,16 +65,16 @@ public abstract class FilterComboBase<T>
     protected virtual void Cleanup()
     { }
 
-    protected virtual void PostCombo()
+    protected virtual void PostCombo(float previewWidth)
     { }
 
     protected virtual void DrawCombo(string label, string preview, string tooltip, int currentSelected, float previewWidth, float itemHeight,
         ImGuiComboFlags flags)
     {
-        ImGui.SetNextItemWidth(previewWidth);
         var       id    = ImGui.GetID(label);
+        ImGui.SetNextItemWidth(previewWidth);
         using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
-        PostCombo();
+        PostCombo(previewWidth);
         ImGuiUtil.HoverTooltip(tooltip);
         if (combo)
         {
