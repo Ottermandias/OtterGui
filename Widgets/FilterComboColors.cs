@@ -73,16 +73,17 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
     {
         _currentColor = color;
         _currentGloss = gloss;
-        var preview = ImGui.CalcTextSize(name).X <= previewWidth ? name : string.Empty;
+        var preview = found && ImGui.CalcTextSize(name).X <= previewWidth ? name : string.Empty;
+
         _color.Push(ImGuiCol.FrameBg, color, found && color != 0)
             .Push(ImGuiCol.Text, 0xFF101010, ImGuiUtil.ColorIntensity(color) > 127 && preview.Length > 0);
         var change = Draw(label, preview, found ? name : string.Empty, previewWidth, ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
-        _color.Dispose();
         return change;
     }
 
     protected override void PostCombo(float previewWidth)
     {
+        _color.Dispose();
         if (_currentGloss)
         {
             var min = ImGui.GetItemRectMin();
