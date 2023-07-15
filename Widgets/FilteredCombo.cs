@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Logging;
@@ -15,8 +17,10 @@ public abstract class FilterComboBase<T>
 
     public readonly IReadOnlyList<T> Items;
 
-    private LowerString _filter = LowerString.Empty;
+    private LowerString _filter      = LowerString.Empty;
+    private string[]    _filterParts = Array.Empty<string>();
 
+    protected        bool SearchByParts;
     protected        int? NewSelection;
     private          int  _lastSelection = -1;
     private          bool _filterDirty   = true;
@@ -49,7 +53,16 @@ public abstract class FilterComboBase<T>
     }
 
     protected virtual bool IsVisible(int globalIndex, LowerString filter)
-        => filter.IsContained(ToString(Items[globalIndex]));
+    {
+        if (!SearchByParts)
+            return filter.IsContained(ToString(Items[globalIndex]));
+
+        if (_filterParts.Length == 0)
+            return true;
+
+        var name = ToString(Items[globalIndex]).ToLowerInvariant();
+        return _filterParts.All(name.Contains);
+    }
 
     protected virtual string ToString(T obj)
         => obj?.ToString() ?? string.Empty;
@@ -71,7 +84,7 @@ public abstract class FilterComboBase<T>
     protected virtual void DrawCombo(string label, string preview, string tooltip, int currentSelected, float previewWidth, float itemHeight,
         ImGuiComboFlags flags)
     {
-        var       id    = ImGui.GetID(label);
+        var id = ImGui.GetID(label);
         ImGui.SetNextItemWidth(previewWidth);
         using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
         PostCombo(previewWidth);
@@ -116,7 +129,12 @@ public abstract class FilterComboBase<T>
 
         // Draw the text input.
         ImGui.SetNextItemWidth(width);
-        _filterDirty |= LowerString.InputWithHint("##filter", "Filter...", ref _filter);
+        if (LowerString.InputWithHint("##filter", "Filter...", ref _filter))
+        {
+            _filterDirty = true;
+            if (SearchByParts)
+                _filterParts = _filter.Lower.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
     }
 
     protected virtual void DrawList(float width, float itemHeight)

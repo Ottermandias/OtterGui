@@ -170,11 +170,15 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (ImGui.IsWindowAppearing())
             ImGui.SetKeyboardFocusHere(0);
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
+        {
             _fsActions.Enqueue(() =>
             {
                 FileSystem.RenameAndMove(leaf, currentPath);
                 _filterDirty |= ExpandAncestors(leaf);
             });
+            ImGui.CloseCurrentPopup();
+        }
+
         ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the leaf. Creates all required parent directories, if possible.");
     }
 

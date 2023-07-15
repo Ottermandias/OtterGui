@@ -28,7 +28,10 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
 
     public FilterComboColors(float comboWidth, IEnumerable<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>> colors)
         : base(colors)
-        => _comboWidth = comboWidth;
+    {
+        _comboWidth   = comboWidth;
+        SearchByParts = true;
+    }
 
     protected override float GetFilterWidth()
     {
