@@ -41,6 +41,7 @@ public abstract class FilterComboBase<T>
     {
         PluginLog.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
         _filter        = LowerString.Empty;
+        _filterParts   = Array.Empty<string>();
         _lastSelection = -1;
         Cleanup();
 
