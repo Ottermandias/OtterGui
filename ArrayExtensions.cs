@@ -85,4 +85,8 @@ public static class ArrayExtensions
         result = default;
         return false;
     }
+
+    /// <summary> Wrapper for optional selection. </summary>
+    public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, (bool, TOut?)> filterMap)
+        => enumerable.Select(filterMap).Where(p => p.Item1).Select(p => p.Item2!);
 }
