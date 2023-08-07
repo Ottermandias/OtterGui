@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace OtterGui;
+namespace OtterGui.Tasks;
 
 /// <summary>
 /// For tasks that are kept as members.
@@ -10,7 +10,6 @@ namespace OtterGui;
 /// </summary>
 public static class TrackedTask
 {
-    
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static Task Run(Action action)
         => Task.Run(action);

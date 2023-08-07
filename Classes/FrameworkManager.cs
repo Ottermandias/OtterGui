@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dalamud.Game;
 using OtterGui.Log;
+using OtterGui.Tasks;
 
 namespace OtterGui.Classes;
 
