@@ -385,13 +385,6 @@ public static partial class ImGuiUtil
         => HoverIcon(icon.ImGuiHandle, new Vector2(icon.Width, icon.Height), iconSize);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void HoverIcon(TextureHandle icon, Vector2 iconSize)
-    {
-        var (handle, size) = icon.Value;
-        HoverIcon(handle, size, iconSize);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(nint ptr, Vector2 contentSize, Vector2 iconSize)
     {
         ImGui.Image(ptr, iconSize);
