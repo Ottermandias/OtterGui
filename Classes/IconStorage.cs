@@ -1,74 +1,39 @@
 using System;
 using System.Collections.Generic;
-using Dalamud.Data;
+using Dalamud.Interface.Internal;
 using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using ImGuiScene;
 using Lumina.Data.Files;
 
 namespace OtterGui.Classes;
 
-public class IconStorage : IDisposable
+public class IconStorage
 {
-    private readonly DalamudPluginInterface        _pi;
-    private readonly DataManager                   _gameData;
-    private readonly Dictionary<uint, TextureWrap> _icons;
+    private readonly ITextureProvider _textureProvider;
+    private readonly IDataManager     _dataManager;
 
-    public IconStorage(DalamudPluginInterface pi, DataManager gameData, int size = 0)
+    public IconStorage(ITextureProvider textureProvider, IDataManager dataManager)
     {
-        _pi       = pi;
-        _gameData = gameData;
-        _icons    = new Dictionary<uint, TextureWrap>(size);
+        _textureProvider = textureProvider;
+        _dataManager     = dataManager;
     }
-
-    private static string HqPath(uint id)
-        => $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}_hr1.tex";
-
-    private static string NormalPath(uint id)
-        => $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}.tex";
 
     public bool IconExists(uint id)
-        => _gameData.FileExists(HqPath(id)) || _gameData.FileExists(NormalPath(id));
+        => _dataManager.FileExists(_textureProvider.GetIconPath(id) ?? string.Empty)
+         || _dataManager.FileExists(_textureProvider.GetIconPath(id, ITextureProvider.IconFlags.None) ?? string.Empty);
 
-    public TextureWrap this[int id]
-        => LoadIcon(id);
+    public IDalamudTextureWrap? this[int id]
+        => _textureProvider.GetIcon((uint)id);
 
-    private TexFile? LoadIconHq(uint id)
-        => _gameData.GetFile<TexFile>(HqPath(id));
+    public IDalamudTextureWrap? this[uint id]
+        => _textureProvider.GetIcon(id);
 
-    public TextureWrap LoadIcon(int id)
-        => LoadIcon((uint)id);
+    public IDalamudTextureWrap? LoadIcon(int id)
+        => _textureProvider.GetIcon((uint)id);
 
-    public TextureWrap LoadIcon(uint id)
-    {
-        if (_icons.TryGetValue(id, out var ret))
-            return ret;
-
-        var icon = LoadIconHq(id) ?? _gameData.GetIcon(id);
-        if (icon == null)
-        {
-            PluginLog.Warning($"No icon with id {id} could be found.");
-            ret = _pi.UiBuilder.LoadImageRaw(new byte[] { 0, 0, 0, 0, }, 1, 1, 4);
-        }
-        else
-        {
-            var iconData = icon.GetRgbaImageData();
-
-            ret = _pi.UiBuilder.LoadImageRaw(iconData, icon.Header.Width, icon.Header.Height, 4);
-        }
-
-        _icons[id] = ret;
-        return ret;
-    }
-
-    public void Dispose()
-    {
-        foreach (var icon in _icons.Values)
-            icon.Dispose();
-        _icons.Clear();
-    }
-
-    ~IconStorage()
-        => Dispose();
+    public IDalamudTextureWrap? LoadIcon(uint id)
+        => _textureProvider.GetIcon(id);
 }

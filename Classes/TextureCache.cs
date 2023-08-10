@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
-using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Interface;
+using Dalamud.Plugin.Services;
 using ImGuiScene;
 using Lumina.Data.Files;
 using OtterGui.Log;
@@ -52,9 +52,10 @@ public class TextureCache : IDisposable
     public int      CleanupPerFrame { get; set; } = 10;
     public Logger?  Logger          { get; set; } = null;
 
-    private readonly Framework   _framework;
-    private readonly UiBuilder   _uiBuilder;
-    private readonly DataManager _dataManager;
+    private readonly Framework        _framework;
+    private readonly UiBuilder        _uiBuilder;
+    private readonly IDataManager     _dataManager;
+    private readonly ITextureProvider _textureProvider;
 
     public TextureHandle LoadFile(string filename, bool keepAlive = false)
     {
@@ -93,11 +94,12 @@ public class TextureCache : IDisposable
     private static string NormalPath(uint id)
         => $"ui/icon/{id / 1000 * 1000:000000}/{id:000000}.tex";
 
-    public TextureCache(Framework framework, UiBuilder uiBuilder, DataManager dataManager)
+    public TextureCache(Framework framework, UiBuilder uiBuilder, IDataManager dataManager, ITextureProvider textureProvider)
     {
-        _framework   = framework;
-        _uiBuilder   = uiBuilder;
-        _dataManager = dataManager;
+        _framework       = framework;
+        _uiBuilder       = uiBuilder;
+        _dataManager     = dataManager;
+        _textureProvider = textureProvider;
 
         _framework.Update += OnUpdate;
     }
@@ -146,7 +148,7 @@ public class TextureCache : IDisposable
                     try
                     {
                         var tex = _dataManager.GameData.GetFileFromDisk<TexFile>(identifier);
-                        wrap = _dataManager.GetImGuiTexture(tex);
+                        wrap = _textureProvider.GetTexture(tex);
                         Logger?.Verbose($"[TextureCache] Loaded new TexFile {identifier} from drive.");
                     }
                     catch
@@ -162,7 +164,7 @@ public class TextureCache : IDisposable
                 try
                 {
                     var tex = _dataManager.GameData.GetFile<TexFile>(identifier);
-                    wrap = _dataManager.GetImGuiTexture(tex);
+                    wrap = tex == null ? null : _textureProvider.GetTexture(tex);
                     Logger?.Verbose($"[TextureCache] Loaded new TexFile {identifier} from game files.");
                 }
                 catch
