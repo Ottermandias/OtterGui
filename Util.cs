@@ -186,6 +186,25 @@ public static partial class ImGuiUtil
         HoverTooltip(tooltip);
     }
 
+    // Draw a help marker on a selectable, typically for combo box items.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void SelectableHelpMarker(string tooltip)
+    {
+        var hovered = ImGui.IsItemHovered();
+        ImGui.SameLine();
+        using (var _ = ImRaii.PushFont(UiBuilder.IconFont))
+        {
+            using var color = ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled));
+            RightAlign(FontAwesomeIcon.InfoCircle.ToIconString(), ImGui.GetStyle().ItemSpacing.X);
+        }
+
+        if (hovered)
+        {
+            using var tt = ImRaii.Tooltip();
+            ImGui.TextUnformatted(tooltip);
+        }
+    }
+
     // Drag between min and max with the given speed and format.
     // Has width of width.
     // Returns true if the item was edited but is not active anymore.
