@@ -157,16 +157,29 @@ public static partial class ImGuiUtil
         TextColored(color, text);
     }
 
-    // Create a selectable that copies its text to clipboard when clicked.
+    // Create a selectable that copies a text to clipboard when clicked.
     // Also adds a tooltip on hover.
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void CopyOnClickSelectable(string text)
+    public static void CopyOnClickSelectable(string text, string copiedText, string tooltip)
     {
         if (ImGui.Selectable(text))
-            ImGui.SetClipboardText(text);
+        {
+            try
+            {
+                ImGui.SetClipboardText(copiedText);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
 
-        HoverTooltip("Click to copy to clipboard.");
+        HoverTooltip(tooltip);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void CopyOnClickSelectable(string text)
+        => CopyOnClickSelectable(text, text, "Click to copy to clipboard.");
 
     // Draw a single FontAwesomeIcon.
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
