@@ -89,4 +89,21 @@ public static class ArrayExtensions
     /// <summary> Wrapper for optional selection. </summary>
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, (bool, TOut?)> filterMap)
         => enumerable.Select(filterMap).Where(p => p.Item1).Select(p => p.Item2!);
+
+    // Find the first object fulfilling predicate's criteria in the given ReadOnlySpan, if one exists.
+    // Returns true if an object is found, false otherwise.
+    public static bool FindFirst<T>(this ReadOnlySpan<T> array, Predicate<T> predicate, [NotNullWhen(true)] out T? result)
+    {
+        foreach (var obj in array)
+        {
+            if (predicate(obj))
+            {
+                result = obj!;
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
+    }
 }
