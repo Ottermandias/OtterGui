@@ -35,7 +35,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     private (Vector2, Vector2) DrawLeaf(FileSystem<T>.Leaf leaf, in TStateStorage state)
     {
         DrawLeafName(leaf, state, leaf == SelectedLeaf || SelectedPaths.Contains(leaf));
-        if(ImGui.IsMouseReleased(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax()))
+        if(ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
             Select(leaf, state, ImGui.GetIO().KeyCtrl);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
