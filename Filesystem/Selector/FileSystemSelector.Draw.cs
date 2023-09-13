@@ -34,9 +34,9 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - selection.
     private (Vector2, Vector2) DrawLeaf(FileSystem<T>.Leaf leaf, in TStateStorage state)
     {
-        DrawLeafName(leaf, state, leaf == SelectedLeaf);
-        if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
-            Select(leaf, state);
+        DrawLeafName(leaf, state, leaf == SelectedLeaf || SelectedPaths.Contains(leaf));
+        if(ImGui.IsMouseReleased(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax()))
+            Select(leaf, state, ImGui.GetIO().KeyCtrl);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
             ImGui.OpenPopup(leaf.Identifier.ToString());
@@ -139,15 +139,20 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - expanding/collapsing
     private (Vector2, Vector2) DrawFolder(FileSystem<T>.Folder folder)
     {
-        var       flags = ImGuiTreeNodeFlags.NoTreePushOnOpen | (FoldersDefaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
+        var flags = ImGuiTreeNodeFlags.NoTreePushOnOpen | (FoldersDefaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
+        if (SelectedPaths.Contains(folder))
+            flags |= ImGuiTreeNodeFlags.Selected;
         var       expandedState = GetPathState(folder);
-        using var color = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
+        using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
+        var       recurse       = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
 
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
 
         color.Pop();
+
+        if (AllowMultipleSelection && ImGui.IsItemClicked(ImGuiMouseButton.Left) && ImGui.GetIO().KeyCtrl)
+            Select(folder, default, true);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
             ImGui.OpenPopup(folder.Identifier.ToString());
@@ -351,7 +356,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (next != null)
         {
             _lastButtonTime = DateTimeOffset.UtcNow;
-            Select(next);
+            Select(next, AllowMultipleSelection);
             var max = ImGui.GetScrollMaxY();
             if (max != 0)
             {

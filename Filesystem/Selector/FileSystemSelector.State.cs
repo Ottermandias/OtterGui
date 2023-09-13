@@ -172,7 +172,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         if (_leafCount == 1 && _singleLeaf! != SelectedLeaf)
         {
             _filterDirty = ExpandAncestors(_singleLeaf!);
-            Select(_singleLeaf, GetState(_singleLeaf!));
+            Select(_singleLeaf, AllowMultipleSelection, GetState(_singleLeaf!));
         }
         else
         {
