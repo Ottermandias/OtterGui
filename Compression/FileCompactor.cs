@@ -63,6 +63,9 @@ public class FileCompactor : IDisposable
     /// <returns> If the task could successfully be started. </returns>
     public bool StartMassCompact(IEnumerable<FileInfo> files, CompressionAlgorithm algorithm)
     {
+        if (!CanCompact)
+            return false;
+
         if (MassCompactRunning)
         {
             _logger.Error("Triggered Mass Compact of files while it was already running.");
@@ -166,22 +169,33 @@ public class FileCompactor : IDisposable
             var oldSize     = new FileInfo(filePath).Length;
             var clusterSize = GetClusterSize(filePath);
 
-            if (oldSize < Math.Max(clusterSize, 8 * 1024))
+            var minFileSize = algorithm switch
             {
-                _logger.Debug($"File {filePath} is smaller than cluster size ({clusterSize}), it will not be compacted.");
+                CompressionAlgorithm.None      => clusterSize,
+                CompressionAlgorithm.Lznt1     => clusterSize,
+                CompressionAlgorithm.Xpress4K  => Math.Max(clusterSize, 4 * 1024),
+                CompressionAlgorithm.Lzx       => clusterSize,
+                CompressionAlgorithm.Xpress8K  => Math.Max(clusterSize, 8 * 1024),
+                CompressionAlgorithm.XPress16K => Math.Max(clusterSize, 16 * 1024),
+                _                              => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null),
+            };
+
+            if (oldSize < minFileSize)
+            {
+                _logger.Verbose($"File {filePath} is smaller than cluster size ({clusterSize}), it will not be compacted.");
                 return false;
             }
 
 
             if (Interop.IsCompactedFile(filePath, algorithm))
             {
-                _logger.Debug($"File {filePath} is already compacted with {algorithm}.");
+                _logger.Verbose($"File {filePath} is already compacted with {algorithm}.");
                 return true;
             }
 
 
             Interop.CompactFile(filePath, algorithm);
-            _logger.Debug($"Compacted {filePath} from {oldSize} bytes to {new Lazy<long>(() => GetFileSizeOnDisk(filePath))} bytes.");
+            _logger.Verbose($"Compacted {filePath} from {oldSize} bytes to {new Lazy<long>(() => GetFileSizeOnDisk(filePath))} bytes.");
             return true;
         }
         catch (Exception ex)
