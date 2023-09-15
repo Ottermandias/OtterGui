@@ -1,6 +1,3 @@
-using System;
-using System.Reflection.Metadata.Ecma335;
-using Lumina.Data.Parsing;
 using Newtonsoft.Json.Linq;
 
 namespace OtterGui.Classes;

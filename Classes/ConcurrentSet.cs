@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-
-namespace OtterGui.Classes;
+﻿namespace OtterGui.Classes;
 
 /// <summary>
 /// An empty structure. Can be used as value of a concurrent dictionary, to use it as a set.

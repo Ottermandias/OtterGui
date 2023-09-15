@@ -1,8 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace OtterGui.Classes;
 
 public readonly struct SingleArray<T> : IReadOnlyList<T> where T : notnull

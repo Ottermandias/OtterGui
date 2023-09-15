@@ -1,7 +1,3 @@
-using System;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-
 namespace OtterGui.Tasks;
 
 /// <summary>

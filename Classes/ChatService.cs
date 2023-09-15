@@ -1,4 +1,3 @@
-using System;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using Dalamud.Interface.Internal.Notifications;

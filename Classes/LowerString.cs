@@ -1,4 +1,3 @@
-using System;
 using ImGuiNET;
 using Newtonsoft.Json;
 

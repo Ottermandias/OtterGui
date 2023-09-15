@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace OtterGui.Classes;
 
 // A simple zipped list that combines two IReadOnlyLists at once.

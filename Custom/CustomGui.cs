@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Numerics;
 using Dalamud.Interface.Internal.Notifications;
 using ImGuiNET;
 using OtterGui.Classes;

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>

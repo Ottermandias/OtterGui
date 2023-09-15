@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
-
 namespace OtterGui.Filesystem;
 
 public static class Extensions

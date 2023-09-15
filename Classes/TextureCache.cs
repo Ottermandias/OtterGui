@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using Dalamud.Interface.Internal;
+﻿using Dalamud.Interface.Internal;
 using Dalamud.Plugin.Services;
 
 namespace OtterGui.Classes;

@@ -1,4 +1,3 @@
-using System;
 using ImGuiNET;
 
 namespace OtterGui.Raii;

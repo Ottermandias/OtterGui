@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Numerics;
 using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Filesystem;

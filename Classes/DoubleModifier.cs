@@ -1,4 +1,3 @@
-using System;
 using Dalamud.Game.ClientState.Keys;
 using Newtonsoft.Json;
 

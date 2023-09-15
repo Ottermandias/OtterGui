@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Dalamud.Game.ClientState.Keys;
 using ImGuiNET;
 using Newtonsoft.Json;

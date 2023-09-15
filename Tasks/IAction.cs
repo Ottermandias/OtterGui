@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace OtterGui.Tasks;
 
 public enum ActionState

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using Dalamud.Interface;
 using ImGuiNET;
 using static OtterGui.Raii.ImRaii;

@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace OtterGui.Classes;
 
 public class IndexSet : IEnumerable<int>

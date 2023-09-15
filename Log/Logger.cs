@@ -1,7 +1,3 @@
-using System;
-using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Serilog.Events;
 
 namespace OtterGui.Log;
