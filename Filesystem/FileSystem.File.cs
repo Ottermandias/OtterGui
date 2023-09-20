@@ -55,19 +55,34 @@ public partial class FileSystem<T>
         j.WriteEndObject();
     }
 
+    protected bool Load(FileInfo file, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
+    {
+        JObject? jObj = null;
+        if (File.Exists(file.FullName))
+            try
+            {
+                jObj = JObject.Parse(File.ReadAllText(file.FullName));
+            }
+            catch
+            {
+                // ignored
+            }
+
+        return Load(jObj, objects, toIdentifier, toName);
+    }
+
     // Load a given FileSystem from file, using an enumeration of data values, a function that corresponds a data value to its identifier
     // and a function that corresponds a data value not stored in the saved filesystem to its name.
-    protected bool Load(FileInfo file, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
+    protected bool Load(JObject? jObject, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
     {
         IdCounter = 1;
         Root.Children.Clear();
         var changes = true;
-        if (File.Exists(file.FullName))
+        if (jObject != null)
         {
             changes = false;
             try
             {
-                var jObject      = JObject.Parse(File.ReadAllText(file.FullName));
                 var data         = jObject["Data"]?.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
                 var emptyFolders = jObject["EmptyFolders"]?.ToObject<string[]>() ?? Array.Empty<string>();
 

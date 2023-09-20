@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Newtonsoft.Json;
 using OtterGui.Log;
 
 namespace OtterGui.Classes;
@@ -21,6 +23,55 @@ public static partial class Backup
     /// </remarks>
     public static void CreateAutomaticBackup(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files)
         => CreateBackupInternal(logger, dir, files, null);
+
+    /// <summary> Check all existing backups for a specific file and try to parse it. </summary>
+    /// <typeparam name="T"> The type the file should be converted into. </typeparam>
+    /// <param name="dir"> The plugins config directory. </param>
+    /// <param name="fileName"> The full path of the file. </param>
+    /// <param name="parsedFile"> On success, the parsed object. </param>
+    /// <param name="message"> Several lines of status messages for failures or the success. </param>
+    /// <param name="parse"> The converter function turning the read data into the object. </param>
+    /// <returns> True on success. </returns>
+    public static bool TryGetFile<T>(DirectoryInfo dir, string fileName, [NotNullWhen(true)] out T? parsedFile, out string message,
+        Func<string, T?>? parse = null)
+    {
+        message =   $"The configuration file {fileName} was corrupted, trying to automatically restore from backup.\n";
+        parse   ??= JsonConvert.DeserializeObject<T>;
+        var directory = CreateBackupDirectory(dir);
+        fileName = Path.GetRelativePath(dir.Parent!.FullName, fileName);
+        // Skip one since the newest backup apparently failed.
+        foreach (var existingBackup in EnumerateBackups(directory).OrderByDescending(f => f.CreationTimeUtc).Skip(1))
+        {
+            try
+            {
+                using var oldFileStream = File.Open(existingBackup.FullName, FileMode.Open);
+                using var oldZip        = new ZipArchive(oldFileStream, ZipArchiveMode.Read);
+                var       entry         = oldZip.GetEntry(fileName);
+                if (entry == null)
+                {
+                    message += $"\nBackup from {existingBackup.CreationTime} did not contain the file {fileName}";
+                    continue;
+                }
+
+                using var file = entry.Open();
+                using var tr   = new StreamReader(file, Encoding.UTF8);
+                var       text = tr.ReadToEnd();
+                parsedFile = parse(text);
+                if (parsedFile != null)
+                {
+                    message += $"\nBackup from {existingBackup.CreationTime} successfully loaded {fileName}.";
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                message += $"\nBackup from {existingBackup.CreationTime} could not successfully load the file {fileName}: {ex.Message}";
+            }
+        }
+
+        parsedFile = default;
+        return false;
+    }
 
     private static void CreateBackupInternal(Logger logger, DirectoryInfo dir, IReadOnlyCollection<FileInfo> files, string? name)
     {
@@ -74,7 +125,7 @@ public static partial class Backup
         FileInfo? newest = null;
         FileInfo? oldest = null;
 
-        foreach (var file in backupDirectory.EnumerateFiles("*.zip").Where(f => FormatRegex().IsMatch(f.Name)))
+        foreach (var file in EnumerateBackups(backupDirectory))
         {
             ++count;
             var time = file.CreationTimeUtc;
@@ -90,6 +141,10 @@ public static partial class Backup
 
     [GeneratedRegex(@"^\d{14}\.zip$", RegexOptions.ExplicitCapture | RegexOptions.NonBacktracking)]
     private static partial Regex FormatRegex();
+
+    /// <summary> Enumerate existing standard backups. </summary>
+    private static IEnumerable<FileInfo> EnumerateBackups(DirectoryInfo backupDirectory)
+        => backupDirectory.EnumerateFiles("*.zip").Where(f => FormatRegex().IsMatch(f.Name));
 
     // Compare the newest backup against the currently existing files.
     // If there are any differences, return true, and if they are completely identical, return false.
@@ -140,14 +195,16 @@ public static partial class Backup
     // Compare two streams per byte and return if they are equal.
     private static bool Equals(Stream lhs, Stream rhs)
     {
+        const int  bufferSize = 1024;
+        Span<byte> bufferLhs  = stackalloc byte[bufferSize];
+        Span<byte> bufferRhs  = stackalloc byte[bufferSize];
         while (true)
         {
-            var current = lhs.ReadByte();
-            var old     = rhs.ReadByte();
-            if (current != old)
+            var bytesLhs = lhs.ReadAtLeast(bufferLhs, bufferSize, false);
+            var bytesRhs = rhs.ReadAtLeast(bufferRhs, bufferSize, false);
+            if (bytesLhs != bytesRhs || !bufferLhs.SequenceEqual(bufferRhs))
                 return false;
-
-            if (current == -1)
+            if (bytesLhs < bufferSize)
                 return true;
         }
     }
