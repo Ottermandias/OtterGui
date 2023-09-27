@@ -166,6 +166,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         var currentPath = leaf.FullName();
         if (ImGui.IsWindowAppearing())
             ImGui.SetKeyboardFocusHere(0);
+        ImGui.TextUnformatted("Rename Design Folder/Search Path:");
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             _fsActions.Enqueue(() =>
@@ -176,7 +177,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             ImGui.CloseCurrentPopup();
         }
 
-        ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the leaf. Creates all required parent directories, if possible.");
+        ImGuiUtil.HoverTooltip("Enter a full path here to move or rename the search path of the leaf. Creates all required parent directories, if possible.\n\nDoes NOT rename the actual data!");
     }
 
     protected void ExpandAll()
