@@ -166,7 +166,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         var currentPath = leaf.FullName();
         if (ImGui.IsWindowAppearing())
             ImGui.SetKeyboardFocusHere(0);
-        ImGui.TextUnformatted("Rename Design Folder/Search Path:");
+        ImGui.TextUnformatted("Rename Search Path or Move:");
         if (ImGui.InputText("##Rename", ref currentPath, 256, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             _fsActions.Enqueue(() =>
