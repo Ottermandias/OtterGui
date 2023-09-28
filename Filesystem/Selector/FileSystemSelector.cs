@@ -1,7 +1,9 @@
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Logging;
+using Dalamud.Plugin.Services;
 using ImGuiNET;
 using OtterGui.Filesystem;
+using OtterGui.Log;
 using OtterGui.Raii;
 
 namespace OtterGui.FileSystem.Selector;
@@ -110,7 +112,9 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 
     public readonly bool AllowMultipleSelection;
 
-    public FileSystemSelector(FileSystem<T> fileSystem, KeyState keyState, Action<Exception>? exceptionHandler = null,
+    protected readonly Logger Log;
+
+    public FileSystemSelector(FileSystem<T> fileSystem, IKeyState keyState, Logger log, Action<Exception>? exceptionHandler = null,
         string label = "##FileSystemSelector", bool allowMultipleSelection = false)
     {
         FileSystem             = fileSystem;
@@ -118,11 +122,12 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         _keyState              = keyState;
         Label                  = label;
         AllowMultipleSelection = allowMultipleSelection;
+        Log                    = log;
 
         InitDefaultContext();
         InitDefaultButtons();
         EnableFileSystemSubscription();
-        ExceptionHandler = exceptionHandler ?? (e => PluginLog.Warning(e.ToString()));
+        ExceptionHandler = exceptionHandler ?? (e => Log.Warning(e.ToString()));
     }
 
     // Default flags to use for custom leaf nodes.

@@ -1,5 +1,6 @@
 using Dalamud.Utility;
 using ImGuiNET;
+using OtterGui.Log;
 using OtterGui.Widgets;
 
 namespace OtterGui.Custom;
@@ -8,9 +9,9 @@ public sealed class NpcCombo : FilterComboCache<(string Name, uint[] Ids)>
 {
     private readonly string _label;
 
-    public NpcCombo(string label, IReadOnlyDictionary<uint, string> names)
+    public NpcCombo(string label, IReadOnlyDictionary<uint, string> names, Logger log)
         : base(() => names.GroupBy(kvp => kvp.Value).Select(g => (g.Key, g.Select(g => g.Key).ToArray())).OrderBy(g => g.Key, Comparer)
-            .ToList())
+            .ToList(), log)
         => _label = label;
 
     protected override string ToString((string Name, uint[] Ids) obj)

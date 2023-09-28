@@ -1,7 +1,7 @@
-using Dalamud.Interface;
-using Dalamud.Logging;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Classes;
+using OtterGui.Log;
 using OtterGui.Raii;
 
 namespace OtterGui.Widgets;
@@ -16,26 +16,28 @@ public abstract class FilterComboBase<T>
     private LowerString _filter      = LowerString.Empty;
     private string[]    _filterParts = Array.Empty<string>();
 
-    protected        bool SearchByParts;
-    protected        int? NewSelection;
-    private          int  _lastSelection = -1;
-    private          bool _filterDirty   = true;
-    private          bool _setScroll;
-    private          bool _closePopup;
-    private readonly bool _keepStorage;
+    protected        Logger Log;
+    protected        bool   SearchByParts;
+    protected        int?   NewSelection;
+    private          int    _lastSelection = -1;
+    private          bool   _filterDirty   = true;
+    private          bool   _setScroll;
+    private          bool   _closePopup;
+    private readonly bool   _keepStorage;
 
     private readonly List<int> _available;
 
-    protected FilterComboBase(IReadOnlyList<T> items, bool keepStorage)
+    protected FilterComboBase(IReadOnlyList<T> items, bool keepStorage, Logger log)
     {
         Items        = items;
         _keepStorage = keepStorage;
+        Log          = log;
         _available   = _keepStorage ? new List<int>(Items.Count) : new List<int>();
     }
 
     private void ClearStorage(string label)
     {
-        PluginLog.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
+        Log.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
         _filter        = LowerString.Empty;
         _filterParts   = Array.Empty<string>();
         _lastSelection = -1;

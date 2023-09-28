@@ -1,7 +1,7 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
-using OtterGui.Classes;
 using OtterGui.Raii;
 
 namespace OtterGui;

@@ -1,4 +1,4 @@
-using Dalamud.Game;
+using Dalamud.Plugin.Services;
 using OtterGui.Log;
 
 namespace OtterGui.Classes;
@@ -35,7 +35,7 @@ public class SaveServiceBase<T>
 
     public readonly T FileNames;
 
-    public Framework DalamudFramework
+    public IFramework DalamudFramework
         => Framework.Framework;
 
     protected SaveServiceBase(Logger log, FrameworkManager framework, T fileNames)

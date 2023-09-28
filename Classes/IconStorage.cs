@@ -1,10 +1,5 @@
 using Dalamud.Interface.Internal;
-using Dalamud.Logging;
-using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using Dalamud.Utility;
-using ImGuiScene;
-using Lumina.Data.Files;
 
 namespace OtterGui.Classes;
 

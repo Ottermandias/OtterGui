@@ -1,5 +1,5 @@
 using Dalamud.Game.ClientState.Keys;
-using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Filesystem;

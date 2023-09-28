@@ -1,4 +1,5 @@
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Raii;
 
@@ -23,7 +24,8 @@ public class TagButtons
     /// <param name="editable">Controls if the buttons can be used to edit their tags and if new tags can be added, also controls the background color.</param>
     /// <param name="xOffset">An optional offset that is added after the tag as the text wrap point.</param>
     /// <returns>-1 if no change took place yet, the index of an edited tag (or the count of <paramref name="tags"/> for an added one) if an edit was finalized.</returns>
-    public int Draw(string label, string description, IReadOnlyCollection<string> tags, out string editedTag, bool editable = true, float xOffset = 0)
+    public int Draw(string label, string description, IReadOnlyCollection<string> tags, out string editedTag, bool editable = true,
+        float xOffset = 0)
     {
         using var id  = ImRaii.PushId(label);
         var       ret = -1;
@@ -71,6 +73,7 @@ public class TagButtons
                     }
                 }
             }
+
             ImGui.SameLine();
         }
 

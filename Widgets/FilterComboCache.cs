@@ -1,5 +1,6 @@
 using ImGuiNET;
 using OtterGui.Classes;
+using OtterGui.Log;
 
 namespace OtterGui.Widgets;
 
@@ -14,15 +15,15 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
     private readonly ICachingList<T> _items;
     protected        int             CurrentSelectionIdx = -1;
 
-    protected FilterComboCache(IEnumerable<T> items)
-        : base(new TemporaryList<T>(items), false)
+    protected FilterComboCache(IEnumerable<T> items, Logger log)
+        : base(new TemporaryList<T>(items), false, log)
     {
         CurrentSelection = default;
         _items           = (ICachingList<T>)Items;
     }
 
-    protected FilterComboCache(Func<IReadOnlyList<T>> generator)
-        : base(new LazyList<T>(generator), false)
+    protected FilterComboCache(Func<IReadOnlyList<T>> generator, Logger log)
+        : base(new LazyList<T>(generator), false, log)
     {
         CurrentSelection = default;
         _items           = (ICachingList<T>)Items;
