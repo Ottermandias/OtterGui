@@ -80,8 +80,13 @@ public partial class FileSystemSelector<T, TStateStorage>
             tt += $"\nHold {modifier} while clicking to delete the {name}.";
 
         if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), size, tt, !anySelected || !keys, true))
-            foreach (var leaf in _selectedPaths.OfType<FileSystem<T>.Leaf>())
-                delete(leaf.Value);
+        {
+            if (Selected != null)
+                delete(Selected);
+            else
+                foreach (var leaf in _selectedPaths.OfType<FileSystem<T>.Leaf>())
+                    delete(leaf.Value);
+        }
     }
 
     private void InitDefaultButtons()
