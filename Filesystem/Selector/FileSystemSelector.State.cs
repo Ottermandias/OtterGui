@@ -239,9 +239,12 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
                     SetFilterDirty();
                 });
                 break;
-            case FileSystemChangeType.ObjectRemoved when changedObject == SelectedLeaf:
+            case FileSystemChangeType.ObjectRemoved:
             case FileSystemChangeType.Reload:
-                ClearSelection();
+                if (changedObject == Selected)
+                    ClearSelection();
+                else if (AllowMultipleSelection)
+                    _selectedPaths.Remove(changedObject);
                 SetFilterDirty();
                 break;
             default:
