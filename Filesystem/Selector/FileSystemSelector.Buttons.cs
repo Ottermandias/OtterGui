@@ -1,5 +1,6 @@
 using Dalamud.Interface;
 using ImGuiNET;
+using OtterGui.Classes;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 
@@ -38,7 +39,7 @@ public partial class FileSystemSelector<T, TStateStorage>
 
     // Draw necessary popups from buttons outside of pushed styles.
     protected virtual void DrawPopups()
-    {}
+    { }
 
     // Protected so it can be removed.
     protected void FolderAddButton(Vector2 size)
@@ -64,6 +65,23 @@ public partial class FileSystemSelector<T, TStateStorage>
 
         if (folder != null)
             _filterDirty |= ExpandAncestors(folder);
+    }
+
+    protected void DeleteSelectionButton(Vector2 size, DoubleModifier modifier, string singular, string plural, Action<T> delete)
+    {
+        var keys        = modifier.IsActive();
+        var anySelected = _selectedPaths.Count > 1 || SelectedLeaf != null;
+        var name        = _selectedPaths.Count > 1 ? plural : singular;
+        var tt = !anySelected
+            ? $"No {plural} selected."
+            : $"Delete the currently selected {name} entirely from your drive.\n"
+          + "This can not be undone.";
+        if (!keys)
+            tt += $"\nHold {modifier} while clicking to delete the {name}.";
+
+        if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), size, tt, !anySelected || !keys, true))
+            foreach (var leaf in _selectedPaths.OfType<FileSystem<T>.Leaf>())
+                delete(leaf.Value);
     }
 
     private void InitDefaultButtons()
