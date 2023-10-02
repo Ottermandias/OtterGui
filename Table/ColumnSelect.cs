@@ -1,4 +1,5 @@
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Raii;
 
@@ -23,14 +24,14 @@ public class ColumnSelect<T, TItem> : Column<TItem> where T : struct, Enum, IEqu
 
     public override bool DrawFilter()
     {
-        using var id    = Raii.ImRaii.PushId(FilterLabel);
-        using var style = Raii.ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
+        using var id    = ImRaii.PushId(FilterLabel);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
         ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
         using var combo = ImRaii.Combo(string.Empty, Idx < 0 ? Label : Names[Idx]);
-        if(!combo)
+        if (!combo)
             return false;
 
-        var       ret = false;
+        var ret = false;
         for (var i = 0; i < Names.Length; ++i)
         {
             if (FilterValue.Equals(Values[i]))

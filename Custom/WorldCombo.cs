@@ -1,4 +1,5 @@
 using ImGuiNET;
+using OtterGui.Log;
 using OtterGui.Widgets;
 
 namespace OtterGui.Custom;
@@ -7,8 +8,8 @@ public sealed class WorldCombo : FilterComboCache<KeyValuePair<ushort, string>>
 {
     private static readonly KeyValuePair<ushort, string> AllWorldPair = new(ushort.MaxValue, "Any World");
 
-    public WorldCombo(IReadOnlyDictionary<ushort, string> worlds)
-        : base(worlds.OrderBy(kvp => kvp.Value).Prepend(AllWorldPair))
+    public WorldCombo(IReadOnlyDictionary<ushort, string> worlds, Logger log)
+        : base(worlds.OrderBy(kvp => kvp.Value).Prepend(AllWorldPair), log)
     {
         CurrentSelection    = AllWorldPair;
         CurrentSelectionIdx = 0;

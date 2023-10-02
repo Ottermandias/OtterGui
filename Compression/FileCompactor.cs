@@ -41,7 +41,7 @@ public class FileCompactor : IDisposable
     public FileCompactor(Logger logger)
     {
         _logger    = logger;
-        CanCompact = !Dalamud.Utility.Util.IsLinux();
+        CanCompact = !Dalamud.Utility.Util.IsWine();
     }
 
     public void Dispose()

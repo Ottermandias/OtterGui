@@ -1,5 +1,6 @@
-using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
+using OtterGui.Log;
 using OtterGui.Raii;
 
 namespace OtterGui.Widgets;
@@ -9,8 +10,8 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
     private readonly float        _comboWidth;
     private readonly ImRaii.Color _color = new();
     private          Vector2      _buttonSize;
-    private          uint         _currentColor = 0;
-    private          bool         _currentGloss = false;
+    private          uint         _currentColor;
+    private          bool         _currentGloss;
 
     protected override int UpdateCurrentSelected(int currentSelected)
     {
@@ -24,8 +25,8 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         return currentSelected;
     }
 
-    public FilterComboColors(float comboWidth, IEnumerable<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>> colors)
-        : base(colors)
+    public FilterComboColors(float comboWidth, IEnumerable<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>> colors, Logger log)
+        : base(colors, log)
     {
         _comboWidth   = comboWidth;
         SearchByParts = true;

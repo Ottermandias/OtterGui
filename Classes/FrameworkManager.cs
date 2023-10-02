@@ -1,4 +1,4 @@
-using Dalamud.Game;
+using Dalamud.Plugin.Services;
 using OtterGui.Log;
 using OtterGui.Tasks;
 
@@ -7,14 +7,14 @@ namespace OtterGui.Classes;
 /// <summary> Manage certain actions to only occur on framework updates. </summary>
 public class FrameworkManager : IDisposable
 {
-    public readonly Framework Framework;
+    public readonly IFramework Framework;
 
     private readonly Logger                                 _log;
     private readonly Dictionary<string, Action>             _important = new();
     private readonly Dictionary<string, Action>             _onTick    = new();
     private readonly LinkedList<(DateTime, string, Action)> _delayed   = new();
 
-    public FrameworkManager(Framework framework, Logger log)
+    public FrameworkManager(IFramework framework, Logger log)
     {
         Framework        =  framework;
         _log             =  log;
@@ -140,7 +140,7 @@ public class FrameworkManager : IDisposable
         _delayed.Clear();
     }
 
-    private void OnUpdate(Framework _)
+    private void OnUpdate(IFramework _)
     {
         try
         {

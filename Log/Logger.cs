@@ -25,7 +25,7 @@ public class Logger
     public Logger()
     {
         _pluginName   = Assembly.GetCallingAssembly().GetName().Name ?? "Unknown";
-        _pluginLogger = Serilog.Log.ForContext("SourceContext", _pluginName);
+        _pluginLogger = Serilog.Log.ForContext("Dalamud.PluginName", _pluginName);
         _prefix       = $"[{_pluginName}] ";
     }
 
