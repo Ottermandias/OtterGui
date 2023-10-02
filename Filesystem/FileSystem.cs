@@ -206,6 +206,7 @@ public partial class FileSystem<T> where T : class
                     newName = newName.IncrementDuplicate();
                     continue;
                 case Result.Success:
+                case Result.SuccessNothingDone:
                     Changed?.Invoke(FileSystemChangeType.ObjectRenamed, child, child.Parent, child.Parent);
                     return;
             }
