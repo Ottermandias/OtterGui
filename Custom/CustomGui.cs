@@ -13,7 +13,7 @@ public static class CustomGui
     public const uint ReniColorActive  = 0xFF9070E0;
 
     /// <summary> Draw a button to open the official discord server. </summary>
-    public static void DrawDiscordButton(ChatService chat, float width)
+    public static void DrawDiscordButton(MessageService message, float width)
     {
         const string address = @"https://discord.gg/kVva7DHV4r";
         using var    color   = ImRaii.PushColor(ImGuiCol.Button, DiscordColor);
@@ -28,14 +28,14 @@ public static class CustomGui
             }
             catch
             {
-                chat.NotificationMessage($"Unable to open Discord at {address}.", "Error", NotificationType.Error);
+                message.NotificationMessage($"Unable to open Discord at {address}.", NotificationType.Error, false);
             }
 
         ImGuiUtil.HoverTooltip($"Open {address}");
     }
 
     /// <summary> Draw the button that opens the ReniGuide. </summary>
-    public static void DrawGuideButton(ChatService chat, float width)
+    public static void DrawGuideButton(MessageService message, float width)
     {
         const string address = @"https://reniguide.info/";
         using var color = ImRaii.PushColor(ImGuiCol.Button, ReniColorButton)
@@ -52,8 +52,7 @@ public static class CustomGui
             }
             catch
             {
-                chat.NotificationMessage($"Could not open guide at {address} in external browser.", "Error",
-                    NotificationType.Error);
+                message.NotificationMessage($"Could not open guide at {address} in external browser.", NotificationType.Error);
             }
 
         ImGuiUtil.HoverTooltip(

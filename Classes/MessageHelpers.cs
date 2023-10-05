@@ -1,52 +1,21 @@
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface;
 using Dalamud.Interface.Internal.Notifications;
-using Dalamud.Plugin;
-using Dalamud.Utility;
-using OtterGui.Log;
 
 namespace OtterGui.Classes;
 
-public class ChatService
+public static class MessageServiceExtensions
 {
-    private readonly Logger    _log;
-    private readonly UiBuilder _uiBuilder;
+    public static void NotificationMessage(this MessageService service, string content, NotificationType type = NotificationType.None,
+        bool doPrint = true)
+        => service.AddMessage(new Notification(content, type), doPrint, true, true, false);
 
-    public ChatService(Logger log, DalamudPluginInterface pi)
-    {
-        _log       = log;
-        _uiBuilder = pi.UiBuilder;
-    }
+    public static void NotificationMessage(this MessageService service, Exception ex, string content1,
+        NotificationType type = NotificationType.None, bool doPrint = true)
+        => service.AddMessage(new Notification(ex, content1, content1.TrimEnd('.'), type), doPrint, true, true, false);
 
-    public void NotificationMessage(string content, string? title = null, NotificationType type = NotificationType.None)
-    {
-        var logLevel = type switch
-        {
-            NotificationType.None    => Logger.LogLevel.Information,
-            NotificationType.Success => Logger.LogLevel.Information,
-            NotificationType.Warning => Logger.LogLevel.Warning,
-            NotificationType.Error   => Logger.LogLevel.Error,
-            NotificationType.Info    => Logger.LogLevel.Information,
-            _                        => Logger.LogLevel.Debug,
-        };
-        _uiBuilder.AddNotification(content, title, type);
-        _log.Message(logLevel, title.IsNullOrEmpty() ? content : $"[{title}] {content}");
-    }
-
-    public void NotificationMessage(Exception ex, string content1, string content2, string? title = null, NotificationType type = NotificationType.None)
-    {
-        var logLevel = type switch
-        {
-            NotificationType.None    => Logger.LogLevel.Information,
-            NotificationType.Success => Logger.LogLevel.Information,
-            NotificationType.Warning => Logger.LogLevel.Warning,
-            NotificationType.Error   => Logger.LogLevel.Error,
-            NotificationType.Info    => Logger.LogLevel.Information,
-            _                        => Logger.LogLevel.Debug,
-        };
-        _uiBuilder.AddNotification(content1, title, type);
-        _log.Message(logLevel, title.IsNullOrEmpty() ? content2 : $"[{title}] {content2}:\n{ex}");
-    }
+    public static void NotificationMessage(this MessageService service, Exception ex, string content1, string content2,
+        NotificationType type = NotificationType.None, bool doPrint = true)
+        => service.AddMessage(new Notification(ex, content1, content2, type), doPrint, true, true, false);
 }
 
 public static class SeStringBuilderExtensions
