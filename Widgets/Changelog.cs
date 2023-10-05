@@ -36,8 +36,9 @@ public sealed class Changelog : Window
 
     private readonly List<(string Title, List<Entry> Entries, bool HasHighlight)> _entries = new();
 
-    private int                  _lastVersion;
-    private ChangeLogDisplayType _displayType;
+    private          int                  _lastVersion;
+    private          ChangeLogDisplayType _displayType;
+    private readonly string               _headerName;
 
     public uint HeaderColor { get; set; } = DefaultHeaderColor;
     public bool ForceOpen   { get; set; } = false;
@@ -45,6 +46,7 @@ public sealed class Changelog : Window
     public Changelog(string label, Func<(int, ChangeLogDisplayType)> getConfig, Action<int, ChangeLogDisplayType> setConfig)
         : base(label, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize, true)
     {
+        _headerName        = label.Split().FirstOrDefault(string.Empty);
         _getConfig         = getConfig;
         _setConfig         = setConfig;
         Position           = null;
@@ -128,7 +130,7 @@ public sealed class Changelog : Window
                 flags |= ImGuiTreeNodeFlags.DefaultOpen;
 
             var tree = ImGui.TreeNodeEx(name, flags);
-            CopyToClipboard(name, list);
+            CopyToClipboard(_headerName, name, list);
             color.Pop();
             if (!tree)
                 continue;
@@ -213,7 +215,6 @@ public sealed class Changelog : Window
 
         public void Append(StringBuilder sb)
         {
-            sb.Append("> ");
             for (var i = 0; i < SubText; ++i)
                 sb.Append("  ");
 
@@ -230,7 +231,7 @@ public sealed class Changelog : Window
     }
 
     [Conditional("DEBUG")]
-    private static void CopyToClipboard(string name, List<Entry> entries)
+    private static void CopyToClipboard(string label, string name, List<Entry> entries)
     {
         try
         {
@@ -238,11 +239,14 @@ public sealed class Changelog : Window
                 return;
 
             var sb = new StringBuilder(1024 * 64);
-            sb.Append("**")
+            if (label.Length > 0)
+                sb.Append("# ").Append(label).Append('\n');
+
+            sb.Append("## ")
                 .Append(name)
                 .Append(" notes, Update <t:")
                 .Append(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                .Append(">**\n");
+                .Append(">\n");
 
             foreach (var entry in entries)
                 entry.Append(sb);
