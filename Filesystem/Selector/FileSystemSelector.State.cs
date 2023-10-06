@@ -241,7 +241,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
                 break;
             case FileSystemChangeType.ObjectRemoved:
             case FileSystemChangeType.Reload:
-                if (changedObject == Selected)
+                if (changedObject == SelectedLeaf)
                     ClearSelection();
                 else if (AllowMultipleSelection)
                     _selectedPaths.Remove(changedObject);

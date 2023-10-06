@@ -1,5 +1,3 @@
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Logging;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
 using OtterGui.Filesystem;
