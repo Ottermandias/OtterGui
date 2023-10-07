@@ -39,11 +39,15 @@ public abstract class EventWrapper<T, TPriority> : IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
         lock (_event)
         {
             _event.Clear();
         }
     }
+
+    protected virtual void Dispose(bool disposing)
+    { }
 
     public void Subscribe(T subscriber, TPriority priority)
     {
