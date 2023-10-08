@@ -74,7 +74,7 @@ public class SaveServiceBase<T>
 
             var secureWrite = File.Exists(name);
             var firstName   = secureWrite ? name + ".tmp" : name;
-            Log.Debug($"Saving {value.TypeName} {value.LogName(name)}...");
+            Log.Debug($"Saving {value.TypeName} {value.LogName(name)} {(secureWrite ? "using secure write" : "for the first time")}...");
             var file = new FileInfo(firstName);
             file.Directory?.Create();
             using (var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew))
