@@ -206,13 +206,13 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (!_)
             return false;
 
+        ImGui.SetScrollX(0);
         _stateStorage = ImGui.GetStateStorage();
         style.Push(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
             .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
             .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y));
         //// Check if filters are dirty and recompute them before the draw iteration if necessary.
         ApplyFilters();
-
         if (_jumpToSelection != null)
         {
             var idx = _state.FindIndex(s => s.Path == _jumpToSelection);
