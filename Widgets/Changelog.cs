@@ -46,12 +46,13 @@ public sealed class Changelog : Window
     public Changelog(string label, Func<(int, ChangeLogDisplayType)> getConfig, Action<int, ChangeLogDisplayType> setConfig)
         : base(label, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize, true)
     {
-        _headerName        = label.Split().FirstOrDefault(string.Empty);
-        _getConfig         = getConfig;
-        _setConfig         = setConfig;
-        Position           = null;
-        RespectCloseHotkey = false;
-        ShowCloseButton    = false;
+        _headerName         = label.Split().FirstOrDefault(string.Empty);
+        _getConfig          = getConfig;
+        _setConfig          = setConfig;
+        Position            = null;
+        RespectCloseHotkey  = false;
+        ShowCloseButton     = false;
+        DisableWindowSounds = true;
     }
 
     public override void PreOpenCheck()
