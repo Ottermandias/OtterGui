@@ -1,3 +1,4 @@
+using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Log;
@@ -57,12 +58,17 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
     {
         var (_, (name, color, gloss)) = Items[globalIdx];
         // Push the stain color to type and if it is too bright, turn the text color black.
-        var intensity = ImGuiUtil.ColorIntensity(color);
+        var contrastColor = ImGuiUtil.ContrastColorBW(color);
         using var colors = ImRaii.PushColor(ImGuiCol.Button, color, color != 0)
-            .Push(ImGuiCol.Text,   0xFF101010, intensity > 127)
-            .Push(ImGuiCol.Border, 0xFF2020D0, selected);
-        using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, 2f * ImGuiHelpers.GlobalScale, selected);
+            .Push(ImGuiCol.Text, contrastColor);
         var       ret   = ImGui.Button(name, _buttonSize);
+        if (selected)
+        {
+            ImGui.GetWindowDrawList().AddRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0xFF2020D0, 0, ImDrawFlags.None,
+                ImGuiHelpers.GlobalScale);
+            ImGui.GetWindowDrawList().AddRect(ImGui.GetItemRectMin() + new Vector2(ImGuiHelpers.GlobalScale),
+                ImGui.GetItemRectMax() - new Vector2(ImGuiHelpers.GlobalScale), contrastColor, 0, ImDrawFlags.None, ImGuiHelpers.GlobalScale);
+        }
 
         if (gloss)
             ImGui.GetWindowDrawList().AddRectFilledMultiColor(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0x50FFFFFF, 0x50000000,
@@ -78,7 +84,7 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         var preview = found && ImGui.CalcTextSize(name).X <= previewWidth ? name : string.Empty;
 
         _color.Push(ImGuiCol.FrameBg, color, found && color != 0)
-            .Push(ImGuiCol.Text, 0xFF101010, ImGuiUtil.ColorIntensity(color) > 127 && preview.Length > 0);
+            .Push(ImGuiCol.Text, ImGuiUtil.ContrastColorBW(color), preview.Length > 0);
         var change = Draw(label, preview, found ? name : string.Empty, previewWidth, ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
         return change;
     }

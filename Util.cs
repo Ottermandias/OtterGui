@@ -520,11 +520,15 @@ public static partial class ImGuiUtil
     /// <summary>
     /// Computes the intensity of a RGB color without taking into consideration alpha values.
     /// </summary>
-    public static byte ColorIntensity(uint color)
+    public static float ColorIntensity(uint color)
     {
-        color = 1 + (color & 0xFF) + ((color >> 8) & 0xFF) + ((color >> 16) & 0xFF);
-        return (byte)(color / 3);
+        var vec       = ColorHelpers.RgbaUintToVector4(color);
+        return 2 * vec.X * vec.X + 7 * vec.Y * vec.Y + vec.Z * vec.Z;
     }
+
+    /// <summary> Obtain the better choice of black and white regarding contrast for a color. </summary>
+    public static uint ContrastColorBW(uint color)
+        => ColorIntensity(color) >= 4 ? 0xFF000000 : 0xFFFFFFFF;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool IsDropping(string name)
