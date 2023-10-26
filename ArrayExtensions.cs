@@ -85,6 +85,11 @@ public static class ArrayExtensions
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, (bool, TOut?)> filterMap)
         => enumerable.Select(filterMap).Where(p => p.Item1).Select(p => p.Item2!);
 
+    // Find the first object fulfilling predicate's criteria in the given Span, if one exists.
+    // Returns true if an object is found, false otherwise.
+    public static bool FindFirst<T>(this Span<T> array, Predicate<T> predicate, [NotNullWhen(true)] out T? result)
+        => ((ReadOnlySpan<T>)array).FindFirst(predicate, out result);
+
     // Find the first object fulfilling predicate's criteria in the given ReadOnlySpan, if one exists.
     // Returns true if an object is found, false otherwise.
     public static bool FindFirst<T>(this ReadOnlySpan<T> array, Predicate<T> predicate, [NotNullWhen(true)] out T? result)
