@@ -16,14 +16,14 @@ public abstract class FilterComboBase<T>
     private LowerString _filter      = LowerString.Empty;
     private string[]    _filterParts = Array.Empty<string>();
 
-    protected        Logger Log;
-    protected        bool   SearchByParts;
-    protected        int?   NewSelection;
-    private          int    _lastSelection = -1;
-    private          bool   _filterDirty   = true;
-    private          bool   _setScroll;
-    private          bool   _closePopup;
-    private readonly bool   _keepStorage;
+    protected readonly Logger Log;
+    protected          bool   SearchByParts;
+    protected          int?   NewSelection;
+    private            int    _lastSelection = -1;
+    private            bool   _filterDirty   = true;
+    private            bool   _setScroll;
+    private            bool   _closePopup;
+    private readonly   bool   _keepStorage;
 
     private readonly List<int> _available;
 

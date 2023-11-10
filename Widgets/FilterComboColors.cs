@@ -1,4 +1,3 @@
-using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Log;
@@ -6,7 +5,7 @@ using OtterGui.Raii;
 
 namespace OtterGui.Widgets;
 
-public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>
+public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>
 {
     private readonly float        _comboWidth;
     private readonly ImRaii.Color _color = new();
@@ -26,7 +25,8 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         return currentSelected;
     }
 
-    public FilterComboColors(float comboWidth, IEnumerable<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>> colors, Logger log)
+    public FilterComboColors(float comboWidth, Func<IReadOnlyList<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>> colors,
+        Logger log)
         : base(colors, log)
     {
         _comboWidth   = comboWidth;
@@ -61,7 +61,7 @@ public sealed class FilterComboColors : FilterComboCache<KeyValuePair<byte, (str
         var contrastColor = ImGuiUtil.ContrastColorBW(color);
         using var colors = ImRaii.PushColor(ImGuiCol.Button, color, color != 0)
             .Push(ImGuiCol.Text, contrastColor);
-        var       ret   = ImGui.Button(name, _buttonSize);
+        var ret = ImGui.Button(name, _buttonSize);
         if (selected)
         {
             ImGui.GetWindowDrawList().AddRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax(), 0xFF2020D0, 0, ImDrawFlags.None,
