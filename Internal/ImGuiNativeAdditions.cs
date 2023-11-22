@@ -30,4 +30,11 @@ public static unsafe partial class ImGuiNativeAdditions
 
     [LibraryImport(CLibraryName, EntryPoint = "igRenderFrame")]
     public static partial void RenderFrame(ImVec2 min, ImVec2 max, uint fillColor, [MarshalAs(UnmanagedType.U1)] bool border, float rounding);
+
+    [LibraryImport(CLibraryName, EntryPoint = "igCalcItemSize")]
+    public static partial void CalcItemSize(out ImVec2 result, ImVec2 min, float defaultWidth, float defaultHeight);
+
+    [LibraryImport(CLibraryName, EntryPoint = "igRenderTextClippedEx")]
+    public static partial void RenderTextClippedEx(ImDrawList* drawList, ImVec2 posMin, ImVec2 posMax, byte* text, byte* textDisplayEnd,
+        ImVec2* textSizeIfKnown, ImVec2 align, ImRect* clipRect);
 }

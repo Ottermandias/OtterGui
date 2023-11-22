@@ -81,7 +81,7 @@ public class TristateCheckbox : MultiStateCheckbox<sbyte>
     {
         CrossColor = MergeAlpha(crossColor);
         CheckColor = MergeAlpha(checkColor);
-        DotColor  = MergeAlpha(dotColor);
+        DotColor   = MergeAlpha(dotColor);
     }
 
     protected override void RenderSymbol(sbyte value, Vector2 position, float size)
