@@ -27,6 +27,9 @@ public abstract class FilterComboBase<T>
 
     private readonly List<int> _available;
 
+    public LowerString Filter
+        => _filter;
+
     protected FilterComboBase(IReadOnlyList<T> items, bool keepStorage, Logger log)
     {
         Items        = items;
@@ -194,6 +197,9 @@ public abstract class FilterComboBase<T>
         }
     }
 
+    protected virtual void OnClosePopup()
+    { }
+
     protected void ClosePopup(uint id, string label)
     {
         if (!_closePopup)
@@ -202,6 +208,7 @@ public abstract class FilterComboBase<T>
         // Close the popup and reset state.
         ImGui.CloseCurrentPopup();
         _popupState.Remove(id);
+        OnClosePopup();
         ClearStorage(label);
     }
 
