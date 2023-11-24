@@ -40,16 +40,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="OtterGuiInternal\**" />
-      <EmbeddedResource Remove="OtterGuiInternal\**" />
-      <None Remove="OtterGuiInternal\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="OtterGuiInternal\OtterGuiInternal.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Reference Include="Dalamud">
             <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
             <Private>False</Private>
