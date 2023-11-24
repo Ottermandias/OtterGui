@@ -38,6 +38,9 @@ public class SaveServiceBase<T>
     public IFramework DalamudFramework
         => Framework.Framework;
 
+    private          Task?  _saveTask;
+    private readonly object _saveTaskLock = new();
+
     protected SaveServiceBase(Logger log, FrameworkManager framework, T fileNames)
     {
         Log       = log;
@@ -67,48 +70,71 @@ public class SaveServiceBase<T>
     public void ImmediateSave(ISavable<T> value)
     {
         var name = value.ToFilename(FileNames);
-        try
+        lock (_saveTaskLock)
         {
-            if (name.Length == 0)
-                throw new Exception("Invalid object returned empty filename.");
-
-            var secureWrite = File.Exists(name);
-            var firstName   = secureWrite ? name + ".tmp" : name;
-            Log.Debug($"Saving {value.TypeName} {value.LogName(name)} {(secureWrite ? "using secure write" : "for the first time")}...");
-            var file = new FileInfo(firstName);
-            file.Directory?.Create();
-            using (var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew))
-            {
-                using var w = new StreamWriter(s, Encoding.UTF8);
-                value.Save(w);
-            }
-
-            if (secureWrite)
-                File.Move(file.FullName, name, true);
+            _saveTask = _saveTask == null || _saveTask.IsCompleted ? Task.Run(SaveAction) : _saveTask.ContinueWith(_ => SaveAction());
         }
-        catch (Exception ex)
+
+        return;
+        
+        void SaveAction()
         {
-            Log.Error($"Could not save {value.GetType().Name} {value.LogName(name)}:\n{ex}");
+            try
+            {
+                if (name.Length == 0)
+                    throw new Exception("Invalid object returned empty filename.");
+
+                var secureWrite = File.Exists(name);
+                var firstName   = secureWrite ? name + ".tmp" : name;
+                Log.Debug($"{GetThreadPrefix()}Saving {value.TypeName} {value.LogName(name)} {(secureWrite ? "using secure write" : "for the first time")}...");
+                var file = new FileInfo(firstName);
+                file.Directory?.Create();
+                using (var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew))
+                {
+                    using var w = new StreamWriter(s, Encoding.UTF8);
+                    value.Save(w);
+                }
+
+                if (secureWrite)
+                    File.Move(file.FullName, name, true);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{GetThreadPrefix()}Could not save {value.GetType().Name} {value.LogName(name)}:\n{ex}");
+            }
         }
     }
+
+    private static string GetThreadPrefix()
+        => $"[{Thread.CurrentThread.ManagedThreadId}] ";
 
     public void ImmediateDelete(ISavable<T> value)
     {
         var name = value.ToFilename(FileNames);
-        try
+        lock (_saveTaskLock)
         {
-            if (name.Length == 0)
-                throw new Exception("Invalid object returned empty filename.");
-
-            if (!File.Exists(name))
-                return;
-
-            Log.Information($"Deleting {value.GetType().Name} {value.LogName(name)}...");
-            File.Delete(name);
+            _saveTask = _saveTask == null || _saveTask.IsCompleted ? Task.Run(DeleteAction) : _saveTask.ContinueWith(_ => DeleteAction());
         }
-        catch (Exception ex)
+
+        return;
+
+        void DeleteAction()
         {
-            Log.Error($"Could not delete {value.GetType().Name} {value.LogName(name)}:\n{ex}");
+            try
+            {
+                if (name.Length == 0)
+                    throw new Exception("Invalid object returned empty filename.");
+
+                if (!File.Exists(name))
+                    return;
+
+                Log.Information($"{GetThreadPrefix()}Deleting {value.GetType().Name} {value.LogName(name)}...");
+                File.Delete(name);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"{GetThreadPrefix()}Could not delete {value.GetType().Name} {value.LogName(name)}:\n{ex}");
+            }
         }
     }
 }
