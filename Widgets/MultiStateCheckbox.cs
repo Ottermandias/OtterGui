@@ -25,15 +25,14 @@ public abstract class MultiStateCheckbox<T>
 
         var (visibleEnd, labelSize, id) = StringHelpers.ComputeSizeAndId(label);
         // Calculate the bounding box of the checkbox including the label.
-        var squareSize = ImGui.GetFrameHeight();
-        var style      = ImGui.GetStyle();
-        var screenPos  = window.Dc.CursorPos;
-        var itemSize = new Vector2(squareSize + (labelSize.X > 0 ? style.ItemInnerSpacing.X + labelSize.X : 0),
-            labelSize.Y + style.FramePadding.Y * 2);
+        var squareSize  = ImGui.GetFrameHeight();
+        var style       = ImGui.GetStyle();
+        var screenPos   = window.Dc.CursorPos;
+        var itemSize    = new Vector2(squareSize + (labelSize.X > 0 ? style.ItemInnerSpacing.X + labelSize.X : 0), squareSize);
         var boundingBox = new ImRect(screenPos, screenPos + itemSize);
 
         // Add the item to internals. Skip it if it is clipped.
-        ImGuiInternal.ItemSize(boundingBox, style.FramePadding.Y);
+        ImGuiInternal.ItemSize(itemSize, style.FramePadding.Y);
         if (!ImGuiInternal.ItemAdd(boundingBox, id))
             return false;
 
