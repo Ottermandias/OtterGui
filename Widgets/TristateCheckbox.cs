@@ -3,12 +3,18 @@ using OtterGuiInternal.Utility;
 
 namespace OtterGui.Widgets;
 
-public class TristateCheckbox(uint crossColor = 0xFF0000FF, uint checkColor = 0xFF00FF00, uint dotColor = 0xFFD0D0D0)
-    : MultiStateCheckbox<sbyte>
+public class TristateCheckbox : MultiStateCheckbox<sbyte>
 {
-    public readonly uint CrossColor = MergeAlpha(crossColor);
-    public readonly uint CheckColor = MergeAlpha(checkColor);
-    public readonly uint DotColor   = MergeAlpha(dotColor);
+    public readonly uint CrossColor;
+    public readonly uint CheckColor;
+    public readonly uint DotColor;
+
+    public TristateCheckbox(uint crossColor = 0xFF0000FF, uint checkColor = 0xFF00FF00, uint dotColor = 0xFFD0D0D0)
+    {
+        CrossColor = MergeAlpha(crossColor);
+        CheckColor = MergeAlpha(checkColor);
+        DotColor   = MergeAlpha(dotColor);
+    }
 
     private static uint MergeAlpha(uint color)
         => (color & 0x00FFFFFF) | ((uint)((color >> 24) * ImGui.GetStyle().Alpha) << 24);
