@@ -90,7 +90,11 @@ public abstract class FilterComboBase<T>
         ImGui.SetNextItemWidth(previewWidth);
         using var combo = ImRaii.Combo(label, preview, flags | ImGuiComboFlags.HeightLarge);
         PostCombo(previewWidth);
-        ImGuiUtil.HoverTooltip(tooltip);
+        using (var dis = ImRaii.Enabled())
+        {
+            ImGuiUtil.HoverTooltip(tooltip, ImGuiHoveredFlags.AllowWhenDisabled);
+        }
+
         if (combo)
         {
             _popupState.Add(id);
