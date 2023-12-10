@@ -76,7 +76,7 @@ public class SaveServiceBase<T>
         }
 
         return;
-        
+
         void SaveAction()
         {
             try
@@ -86,7 +86,8 @@ public class SaveServiceBase<T>
 
                 var secureWrite = File.Exists(name);
                 var firstName   = secureWrite ? name + ".tmp" : name;
-                Log.Debug($"{GetThreadPrefix()}Saving {value.TypeName} {value.LogName(name)} {(secureWrite ? "using secure write" : "for the first time")}...");
+                Log.Debug(
+                    $"{GetThreadPrefix()}Saving {value.TypeName} {value.LogName(name)} {(secureWrite ? "using secure write" : "for the first time")}...");
                 var file = new FileInfo(firstName);
                 file.Directory?.Create();
                 using (var s = file.Exists ? file.Open(FileMode.Truncate) : file.Open(FileMode.CreateNew))
@@ -102,6 +103,16 @@ public class SaveServiceBase<T>
             {
                 Log.Error($"{GetThreadPrefix()}Could not save {value.GetType().Name} {value.LogName(name)}:\n{ex}");
             }
+        }
+    }
+
+    /// <summary> Immediately trigger a save and wait for the save to complete. </summary>
+    public void ImmediateSaveSync(ISavable<T> value)
+    {
+        ImmediateSave(value);
+        lock (_saveTaskLock)
+        {
+            _saveTask?.Wait();
         }
     }
 
