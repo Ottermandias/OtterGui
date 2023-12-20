@@ -1,3 +1,5 @@
+using Dalamud.Plugin;
+
 namespace OtterGui.Services;
 
 public interface IService
@@ -18,3 +20,16 @@ public interface IAsyncService : IService
 
 public interface IAsyncDataContainer : IDataContainer, IAsyncService
 { }
+
+public interface IRequiredService : IService
+{ }
+
+public interface IInvokeService : IService
+{
+    public void Invoke();
+}
+
+public interface ILoadService : IService
+{
+    public void Load();
+}
