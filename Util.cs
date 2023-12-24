@@ -61,6 +61,16 @@ public static partial class ImGuiUtil
         }
     }
 
+    /// <summary> InputInt for ulong. </summary>
+    public static unsafe bool InputUlong(string label, ref ulong value, string format = "%llu", ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+    {
+        var v = value;
+        if (!ImGui.InputScalar(label, ImGuiDataType.U64, (nint)(&v), nint.Zero, nint.Zero, format, flags) || v == value)
+            return false;
+        value = v;
+        return true;
+    }
+
     // Print unformatted text wrapped.
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextWrapped(string text)
@@ -522,7 +532,7 @@ public static partial class ImGuiUtil
     /// </summary>
     public static float ColorIntensity(uint color)
     {
-        var vec       = ColorHelpers.RgbaUintToVector4(color);
+        var vec = ColorHelpers.RgbaUintToVector4(color);
         return 2 * vec.X * vec.X + 7 * vec.Y * vec.Y + vec.Z * vec.Z;
     }
 
