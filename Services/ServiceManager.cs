@@ -17,6 +17,21 @@ public class ServiceManager : IDisposable
     {
         _logger = logger;
         _collection.AddSingleton(_logger);
+        _collection.AddSingleton(this);
+    }
+
+    public IEnumerable<T> GetServicesImplementing<T>()
+    {
+        if (Provider == null)
+            yield break;
+
+        var type = typeof(T);
+        foreach (var typeDescriptor in _collection)
+        {
+            if (typeDescriptor.Lifetime is ServiceLifetime.Singleton
+             && typeDescriptor.ServiceType.IsAssignableTo(type))
+                yield return (T)Provider.GetRequiredService(typeDescriptor.ServiceType);
+        }
     }
 
     public T GetService<T>() where T : class
@@ -60,7 +75,8 @@ public class ServiceManager : IDisposable
     {
         var iType = typeof(IService);
         foreach (var type in assembly.ExportedTypes.Where(t => t is { IsInterface: false, IsAbstract: false } && iType.IsAssignableFrom(t)))
-            AddSingleton(type);
+            if (_collection.All(t => t.ServiceType != type))
+                AddSingleton(type);
     }
 
     public ServiceManager AddDalamudService<T>(DalamudPluginInterface pi) where T : class
