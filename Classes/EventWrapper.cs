@@ -29,7 +29,10 @@ public abstract class EventWrapper<T, TPriority> : IDisposable
     where TPriority : struct, Enum
 {
     private readonly string                                        _name;
-    private readonly List<(object Subscriber, TPriority Priority)> _event = new();
+    private readonly List<(object Subscriber, TPriority Priority)> _event = [];
+
+    protected IReadOnlyList<(object Subscriber, TPriority Priority)> Event
+        => _event;
 
     public bool HasSubscribers
         => _event.Count > 0;

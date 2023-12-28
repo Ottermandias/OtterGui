@@ -18,6 +18,13 @@ public interface IAsyncService : IService
     public bool Finished { get; }
 }
 
+public interface IHookService : IAsyncService, IDisposable
+{
+    public nint Address { get; }
+    public void Enable();
+    public void Disable();
+}
+
 public interface IAsyncDataContainer : IDataContainer, IAsyncService
 { }
 
