@@ -41,11 +41,12 @@ public class SaveServiceBase<T>
     private          Task?  _saveTask;
     private readonly object _saveTaskLock = new();
 
-    protected SaveServiceBase(Logger log, FrameworkManager framework, T fileNames)
+    protected SaveServiceBase(Logger log, FrameworkManager framework, T fileNames, Task? awaiter = null)
     {
         Log       = log;
         Framework = framework;
         FileNames = fileNames;
+        _saveTask = awaiter;
     }
 
     /// <summary> Queue a save for the next framework tick. </summary>

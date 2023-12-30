@@ -1,10 +1,11 @@
 using OtterGui.Log;
+using OtterGui.Services;
 
 namespace OtterGui.Compression;
 
-public class FileCompactor : IDisposable
+public class FileCompactor(Logger logger) : IDisposable, IService
 {
-    public readonly bool CanCompact;
+    public readonly bool CanCompact = !Dalamud.Utility.Util.IsWine();
 
     /// <summary> Whether to use file system compression at all. </summary>
     public bool Enabled
@@ -12,7 +13,7 @@ public class FileCompactor : IDisposable
         get => _enabled;
         set
         {
-            _logger.Information(
+            logger.Information(
                 $"File System Compression was {(value ? "enabled" : "disabled")}{(CanCompact ? string.Empty : " but was not available")}.");
             _enabled = CanCompact && value;
         }
@@ -20,7 +21,6 @@ public class FileCompactor : IDisposable
 
     private          bool                    _enabled;
     private readonly Dictionary<string, int> _clusterSizes = new(8, StringComparer.Ordinal);
-    private readonly Logger                  _logger;
 
     private Task?                    _massCompact;
     private CancellationTokenSource? _cancellation;
@@ -37,12 +37,6 @@ public class FileCompactor : IDisposable
 
     /// <summary> The total number of files in the current mass compact operation. </summary>
     public int TotalFiles { get; private set; }
-
-    public FileCompactor(Logger logger)
-    {
-        _logger    = logger;
-        CanCompact = !Dalamud.Utility.Util.IsWine();
-    }
 
     public void Dispose()
         => CancelMassCompact();
@@ -62,7 +56,7 @@ public class FileCompactor : IDisposable
 
         if (MassCompactRunning)
         {
-            _logger.Error("Triggered Mass Compact of files while it was already running.");
+            logger.Error("Triggered Mass Compact of files while it was already running.");
             return false;
         }
 
@@ -75,7 +69,7 @@ public class FileCompactor : IDisposable
             CurrentFile  = null;
             var list = files.ToList();
             TotalFiles = list.Count;
-            _logger.Information(
+            logger.Information(
                 $"Starting Mass {(algorithm is CompressionAlgorithm.None ? "Decompact" : $"Compact with {algorithm}")} for {TotalFiles} files.");
             for (; CurrentIndex < list.Count; ++CurrentIndex)
             {
@@ -148,7 +142,7 @@ public class FileCompactor : IDisposable
                 return -1;
 
             size = (int)(sectorsPerCluster * bytesPerSector);
-            _logger.Verbose($"Cluster size for root {root} is {size}.");
+            logger.Verbose($"Cluster size for root {root} is {size}.");
             _clusterSizes.Add(root, size);
         }
 
@@ -176,25 +170,25 @@ public class FileCompactor : IDisposable
 
             if (oldSize < minFileSize)
             {
-                _logger.Verbose($"File {filePath} is smaller than cluster size ({clusterSize}), it will not be compacted.");
+                logger.Verbose($"File {filePath} is smaller than cluster size ({clusterSize}), it will not be compacted.");
                 return false;
             }
 
 
             if (Interop.IsCompactedFile(filePath, algorithm))
             {
-                _logger.Verbose($"File {filePath} is already compacted with {algorithm}.");
+                logger.Verbose($"File {filePath} is already compacted with {algorithm}.");
                 return true;
             }
 
 
             Interop.CompactFile(filePath, algorithm);
-            _logger.Verbose($"Compacted {filePath} from {oldSize} bytes to {new Lazy<long>(() => GetFileSizeOnDisk(filePath))} bytes.");
+            logger.Verbose($"Compacted {filePath} from {oldSize} bytes to {new Lazy<long>(() => GetFileSizeOnDisk(filePath))} bytes.");
             return true;
         }
         catch (Exception ex)
         {
-            _logger.Error($"Unexpected problem when compacting file {filePath}:\n{ex}");
+            logger.Error($"Unexpected problem when compacting file {filePath}:\n{ex}");
             return false;
         }
     }

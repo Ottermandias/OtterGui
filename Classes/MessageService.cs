@@ -51,7 +51,8 @@ public class Notification : MessageService.IMessage
         => _ex?.ToString() ?? string.Empty;
 }
 
-public class MessageService : IReadOnlyDictionary<DateTime, MessageService.IMessage>
+public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat)
+    : IReadOnlyDictionary<DateTime, MessageService.IMessage>
 {
     public interface IMessage
     {
@@ -95,20 +96,13 @@ public class MessageService : IReadOnlyDictionary<DateTime, MessageService.IMess
             => Message;
     }
 
-    public readonly Logger    Log;
-    public readonly UiBuilder UiBuilder;
-    public readonly IChatGui  Chat;
+    public readonly Logger    Log       = log;
+    public readonly UiBuilder UiBuilder = uiBuilder;
+    public readonly IChatGui  Chat      = chat;
 
     private readonly SortedDictionary<DateTime, IMessage> _messages   = new();
     private          DateTime                             _deleteTime = DateTime.MinValue;
     private          Vector2                              _buttonSize;
-
-    public MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat)
-    {
-        Log       = log;
-        UiBuilder = uiBuilder;
-        Chat      = chat;
-    }
 
     public void AddMessage(IMessage message, bool doPrint = true, bool doNotify = true, bool doLog = true, bool doChat = false)
     {
