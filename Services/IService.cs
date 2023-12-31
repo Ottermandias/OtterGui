@@ -18,7 +18,11 @@ public interface IAsyncService : IService
     public bool Finished { get; }
 }
 
-public interface IHookService : IAsyncService, IDisposable
+public interface IRequiredService : IService;
+
+public interface IAwaitedService : IRequiredService, IAsyncService;
+
+public interface IHookService : IAwaitedService
 {
     public nint Address { get; }
     public void Enable();
@@ -26,9 +30,6 @@ public interface IHookService : IAsyncService, IDisposable
 }
 
 public interface IAsyncDataContainer : IDataContainer, IAsyncService
-{ }
-
-public interface IRequiredService : IService
 { }
 
 public interface IInvokeService : IService

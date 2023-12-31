@@ -48,9 +48,11 @@ public class ServiceManager : IDisposable
             ValidateScopes  = false,
         });
 
-        foreach (var service in _collection.Where(s => s.ServiceType.IsAssignableTo(typeof(IRequiredService))))
-            Provider.GetRequiredService(service.ServiceType);
-
+        foreach (var service in _collection)
+        {
+            if (service.ServiceType.IsAssignableTo(typeof(IRequiredService)))
+                Provider.GetRequiredService(service.ServiceType);
+        }
 
         return Provider;
     }

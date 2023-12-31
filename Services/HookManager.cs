@@ -6,67 +6,108 @@ namespace OtterGui.Services;
 /// <summary> A utility to asynchronously create hooks, and dispose of them. </summary>
 public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, IService
 {
-    private readonly object                                    _lock  = new();
-    private readonly ConcurrentDictionary<string, IDisposable> _hooks = [];
-    private          Task?                                     _currentTask;
-    private          bool                                      _disposed = false;
+    private readonly ConcurrentDictionary<string, (IDalamudHook, long)> _hooks = [];
+    private          Task?                                              _currentTask;
+    private          bool                                               _disposed;
+
+    public IEnumerable<(string Name, nint Address, long Time, Type Delegate)> Diagnostics
+        => _disposed
+            ? []
+            : _hooks.Select(
+                kvp => (kvp.Key, kvp.Value.Item1.Address, kvp.Value.Item2, kvp.Value.Item1.GetType().GenericTypeArguments[0]));
 
     /// <summary> Create a hook for a given address. </summary>
-    public Task<Hook<T>> CreateHook<T>(string name, nint address, T detour) where T : Delegate
+    public Task<Hook<T>> CreateHook<T>(string name, nint address, T detour, bool enable = false) where T : Delegate
     {
-        if (_disposed)
-            throw new ObjectDisposedException(nameof(HookManager));
+        CheckDisposed();
+        return AppendTask(Func);
 
-        Task<Hook<T>> task;
-        lock (_lock)
+        Hook<T> Func()
         {
-            // We do not want to actually create hooks from multiple threads,
-            // so chain them instead.
-            if (_currentTask == null)
-                task = Task.Run(() =>
-                {
-                    var hook = _provider.HookFromAddress(address, detour);
-                    AddHook(name, hook);
-                    return hook;
-                });
-            else
-                task = _currentTask.ContinueWith(_ =>
-                {
-                    var hook = _provider.HookFromAddress(address, detour);
-                    AddHook(name, hook);
-                    return hook;
-                });
-            _currentTask = task;
+            var timer = Stopwatch.StartNew();
+            var hook  = _provider.HookFromAddress(address, detour);
+            if (enable)
+                hook.Enable();
+            AddHook(name, hook, timer);
+            return hook;
         }
-        return task;
     }
 
     /// <summary> Create a hook from a given signature. </summary>
-    public Task<Hook<T>> CreateHook<T>(string name, string signature, T detour) where T : Delegate
+    public Task<Hook<T>> CreateHook<T>(string name, string signature, T detour, bool enable = false) where T : Delegate
+    {
+        CheckDisposed();
+        return AppendTask(Func);
+
+        Hook<T> Func()
+        {
+            var timer = Stopwatch.StartNew();
+            var hook  = _provider.HookFromSignature(signature, detour);
+            if (enable)
+                hook.Enable();
+            AddHook(name, hook, timer);
+            return hook;
+        }
+    }
+
+    /// <summary> Try to replace an existing hook with a different detour. </summary>
+    public Task<Hook<T>?> TryReplaceHook<T>(string name, T detour) where T : Delegate
+    {
+        CheckDisposed();
+        return AppendTask(Func);
+
+        Hook<T>? Func()
+        {
+            var timer = Stopwatch.StartNew();
+            if (!_hooks.TryRemove(name, out var oldHook))
+                return null;
+
+            var enabled = oldHook.Item1.IsEnabled;
+            oldHook.Item1.Dispose();
+            var newHook = _provider.HookFromAddress(oldHook.Item1.Address, detour);
+            if (enabled)
+                newHook.Enable();
+            AddHook(name, newHook, timer);
+            return newHook;
+        }
+    }
+
+    /// <summary> Dispose an existing hook. </summary>
+    public Task<bool> DisposeHook(string name)
+    {
+        CheckDisposed();
+        return AppendTask(Func);
+
+        bool Func()
+        {
+            if (!_hooks.TryRemove(name, out var hook))
+                return false;
+
+            hook.Item1.Dispose();
+            return true;
+        }
+    }
+
+    /// <summary> Append a new hooking task to the current task. </summary>
+    private Task<T> AppendTask<T>(Func<T> func)
+    {
+        Task<T> task;
+        lock (_hooks)
+        {
+            task = _currentTask == null || _currentTask.IsCompleted
+                ? Task.Run(func)
+                : _currentTask.ContinueWith(_ => func());
+            _currentTask = task;
+        }
+
+        return task;
+    }
+
+    /// <summary> Check whether the hook manager was disposed already. </summary>
+    private void CheckDisposed()
     {
         if (_disposed)
             throw new ObjectDisposedException(nameof(HookManager));
-
-        Task<Hook<T>> task;
-        lock (_lock)
-        {
-            if (_currentTask == null)
-                task = Task.Run(() =>
-                {
-                    var hook = _provider.HookFromSignature(signature, detour);
-                    AddHook(name, hook);
-                    return hook;
-                });
-            else
-                task = _currentTask.ContinueWith(_ =>
-                {
-                    var hook = _provider.HookFromSignature(signature, detour);
-                    AddHook(name, hook);
-                    return hook;
-                });
-            _currentTask = task;
-        }
-        return task;
     }
 
     /// <inheritdoc/>
@@ -75,21 +116,21 @@ public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, I
         if (_disposed)
             return;
 
-        lock (_lock)
+        lock (_hooks)
         {
             _currentTask?.Wait();
             _disposed = true;
-            foreach(var (_, hook) in _hooks)
-                hook.Dispose();
+            foreach (var (_, hook) in _hooks)
+                hook.Item1.Dispose();
             _hooks.Clear();
             _currentTask = null;
         }
     }
 
     /// <summary> Add the hook and throw on failure. </summary>
-    private void AddHook(string name, IDisposable hook)
+    private void AddHook(string name, IDalamudHook hook, Stopwatch timer)
     {
-        if (!_hooks.TryAdd(name, hook))
+        if (!_hooks.TryAdd(name, (hook, timer.ElapsedMilliseconds)))
             throw new Exception($"A hook with the name of {name} already exists.");
     }
 }
