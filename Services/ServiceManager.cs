@@ -48,13 +48,18 @@ public class ServiceManager : IDisposable
             ValidateScopes  = false,
         });
 
+        return Provider;
+    }
+
+    public void EnsureRequiredServices()
+    {
+        CreateProvider();
+
         foreach (var service in _collection)
         {
             if (service.ServiceType.IsAssignableTo(typeof(IRequiredService)))
-                Provider.GetRequiredService(service.ServiceType);
+                Provider!.GetRequiredService(service.ServiceType);
         }
-
-        return Provider;
     }
 
     public ServiceManager AddSingleton<T>()
@@ -77,8 +82,10 @@ public class ServiceManager : IDisposable
     {
         var iType = typeof(IService);
         foreach (var type in assembly.ExportedTypes.Where(t => t is { IsInterface: false, IsAbstract: false } && iType.IsAssignableFrom(t)))
+        {
             if (_collection.All(t => t.ServiceType != type))
                 AddSingleton(type);
+        }
     }
 
     public ServiceManager AddDalamudService<T>(DalamudPluginInterface pi) where T : class
