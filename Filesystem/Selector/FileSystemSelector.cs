@@ -57,7 +57,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         }
     }
 
-    protected void Select(FileSystem<T>.Leaf? leaf, bool clear, in TStateStorage storage = default)
+    protected virtual void Select(FileSystem<T>.Leaf? leaf, bool clear, in TStateStorage storage = default)
     {
         if (clear)
             _selectedPaths.Clear();
