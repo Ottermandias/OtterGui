@@ -1,3 +1,4 @@
+using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using ImGuiNET;
 using OtterGui.Raii;
@@ -6,13 +7,16 @@ namespace OtterGui.Widgets;
 
 public static partial class Widget
 {
-    public static float BeginFramedGroup(string label, string description = "")
-        => BeginFramedGroupInternal(label, Vector2.Zero, description);
+    public static float BeginFramedGroup(string label, string description = "", uint headerColor = 0,
+        FontAwesomeIcon headerPreSymbol = FontAwesomeIcon.None)
+        => BeginFramedGroupInternal(label, Vector2.Zero, description, headerColor, headerPreSymbol);
 
-    public static float BeginFramedGroup(string label, Vector2 minSize, string description = "")
-        => BeginFramedGroupInternal(label, minSize, description);
+    public static float BeginFramedGroup(string label, Vector2 minSize, string description = "", uint headerColor = 0,
+        FontAwesomeIcon headerPreSymbol = FontAwesomeIcon.None)
+        => BeginFramedGroupInternal(label, minSize, description, headerColor, headerPreSymbol);
 
-    private static float BeginFramedGroupInternal(string label, Vector2 minSize, string description)
+    private static float BeginFramedGroupInternal(string label, Vector2 minSize, string description, uint headerColor,
+        FontAwesomeIcon headerPreSymbol)
     {
         var itemSpacing     = ImGui.GetStyle().ItemSpacing;
         var frameHeight     = ImGui.GetFrameHeight();
@@ -20,7 +24,7 @@ public static partial class Widget
         var startPoint      = ImGui.GetCursorScreenPos().X + halfFrameHeight.X;
 
         ImGui.BeginGroup(); // First group
-        
+
         using var style = ImRaii.PushStyle(ImGuiStyleVar.FramePadding, Vector2.Zero)
             .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
@@ -42,18 +46,25 @@ public static partial class Widget
 
         // Label block
         ImGui.SameLine();
-        using var group     = ImRaii.Group();
-        ImGui.TextUnformatted(label);
-
-        if (description.Length > 0)
+        using (_ = ImRaii.Group())
         {
-            ImGui.SameLine();
-            ImGui.Dummy(itemSpacing);
-            ImGui.SameLine();
-            ImGuiComponents.HelpMarker(description);
-        }
+            using var color = ImRaii.PushColor(ImGuiCol.Text, headerColor, headerColor != 0);
+            if (headerPreSymbol is not FontAwesomeIcon.None)
+            {
+                using var font = ImRaii.PushFont(UiBuilder.IconFont);
+                ImGui.TextUnformatted(headerPreSymbol.ToIconString());
+                ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
+            }
 
-        group.Dispose();
+
+            ImGui.TextUnformatted(label);
+
+            if (description.Length > 0)
+            {
+                ImGui.SameLine(0, itemSpacing.X);
+                ImGuiComponents.HelpMarker(description);
+            }
+        }
 
         var labelMin = ImGui.GetItemRectMin();
         var labelMax = ImGui.GetItemRectMax();
@@ -81,9 +92,10 @@ public static partial class Widget
         ImGui.PopClipRect();
     }
 
-    public static void EndFramedGroup()
+    public static void EndFramedGroup(uint borderColor = 0)
     {
-        var borderColor     = ImGui.GetColorU32(ImGuiCol.Border);
+        if (borderColor == 0)
+            borderColor = ImGui.GetColorU32(ImGuiCol.Border);
         var itemSpacing     = ImGui.GetStyle().ItemSpacing;
         var frameHeight     = ImGui.GetFrameHeight();
         var halfFrameHeight = new Vector2(ImGui.GetFrameHeight() / 2, 0);
