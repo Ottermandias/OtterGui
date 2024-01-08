@@ -1,3 +1,4 @@
+using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Widgets;
 
@@ -154,16 +155,17 @@ public static partial class ImRaii
             ImGui.EndDisabled();
         }, true);
 
-    public static IEndObject FramedGroup(string label)
+    public static IEndObject FramedGroup(string label, uint borderColor = 0, uint headerColor = 0, FontAwesomeIcon headerPreIcon = FontAwesomeIcon.None)
     {
-        Widget.BeginFramedGroup(label, Vector2.Zero);
-        return new EndUnconditionally(Widget.EndFramedGroup, true);
+        Widget.BeginFramedGroup(label, Vector2.Zero, string.Empty, headerColor, headerPreIcon);
+        return new EndUnconditionally(() => Widget.EndFramedGroup(borderColor), true);
     }
 
-    public static IEndObject FramedGroup(string label, Vector2 minSize, string description = "")
+    public static IEndObject FramedGroup(string label, Vector2 minSize, string description = "", uint borderColor = 0, uint headerColor = 0,
+        FontAwesomeIcon headerPreIcon = FontAwesomeIcon.None)
     {
-        Widget.BeginFramedGroup(label, minSize, description);
-        return new EndUnconditionally(Widget.EndFramedGroup, true);
+        Widget.BeginFramedGroup(label, minSize, description, headerColor, headerPreIcon);
+        return new EndUnconditionally(() => Widget.EndFramedGroup(borderColor), true);
     }
 
     // Exported interface for RAII.

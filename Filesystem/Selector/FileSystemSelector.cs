@@ -10,7 +10,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 {
     public delegate void SelectionChangeDelegate(T? oldSelection, T? newSelection, in TStateStorage state);
 
-    protected readonly HashSet<FileSystem<T>.IPath> _selectedPaths = new();
+    protected readonly HashSet<FileSystem<T>.IPath> _selectedPaths = [];
 
     // The currently selected leaf, if any.
     protected FileSystem<T>.Leaf? SelectedLeaf;
@@ -24,19 +24,19 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 
     // Fired after the selected leaf changed.
     public event SelectionChangeDelegate? SelectionChanged;
-    private FileSystem<T>.Leaf?           _jumpToSelection = null;
+    private FileSystem<T>.Leaf?           _jumpToSelection;
 
     public void ClearSelection()
         => Select(null, AllowMultipleSelection);
 
-    public void RemovePathFromMultiselection(FileSystem<T>.IPath path)
+    public void RemovePathFromMultiSelection(FileSystem<T>.IPath path)
     {
         _selectedPaths.Remove(path);
         if (_selectedPaths.Count == 1 && _selectedPaths.First() is FileSystem<T>.Leaf leaf)
             Select(leaf, true, GetState(leaf));
     }
 
-    protected void Select(FileSystem<T>.IPath? path, in TStateStorage storage, bool additional)
+    private void Select(FileSystem<T>.IPath? path, in TStateStorage storage, bool additional)
     {
         if (path == null)
         {
@@ -47,7 +47,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
             if (SelectedLeaf != null && _selectedPaths.Count == 0)
                 _selectedPaths.Add(SelectedLeaf);
             if (!_selectedPaths.Add(path))
-                RemovePathFromMultiselection(path);
+                RemovePathFromMultiSelection(path);
             else
                 Select(null, false);
         }
@@ -57,7 +57,7 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         }
     }
 
-    protected void Select(FileSystem<T>.Leaf? leaf, bool clear, in TStateStorage storage = default)
+    protected virtual void Select(FileSystem<T>.Leaf? leaf, bool clear, in TStateStorage storage = default)
     {
         if (clear)
             _selectedPaths.Clear();
