@@ -10,6 +10,12 @@ public static partial class ImRaii
 {
     private static int _disabledCount = 0;
 
+    public static IEndObject ItemWidth(float width)
+    {
+        ImGui.PushItemWidth(width);
+        return new EndUnconditionally(ImGui.PopItemWidth, true);
+    }
+
     public static IEndObject Child(string strId)
         => new EndUnconditionally(ImGui.EndChild, ImGui.BeginChild(strId));
 
@@ -155,7 +161,8 @@ public static partial class ImRaii
             ImGui.EndDisabled();
         }, true);
 
-    public static IEndObject FramedGroup(string label, uint borderColor = 0, uint headerColor = 0, FontAwesomeIcon headerPreIcon = FontAwesomeIcon.None)
+    public static IEndObject FramedGroup(string label, uint borderColor = 0, uint headerColor = 0,
+        FontAwesomeIcon headerPreIcon = FontAwesomeIcon.None)
     {
         Widget.BeginFramedGroup(label, Vector2.Zero, string.Empty, headerColor, headerPreIcon);
         return new EndUnconditionally(() => Widget.EndFramedGroup(borderColor), true);
