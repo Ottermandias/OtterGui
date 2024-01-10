@@ -10,6 +10,13 @@ public static partial class ImRaii
 {
     private static int _disabledCount = 0;
 
+    public static IEndObject CollapsingHeader(string label)
+    {
+        var ret = ImGui.CollapsingHeader(label);
+        ImGui.PushID(label);
+        return new EndUnconditionally(ImGui.PopID, ret);
+    }
+
     public static IEndObject ItemWidth(float width)
     {
         ImGui.PushItemWidth(width);
