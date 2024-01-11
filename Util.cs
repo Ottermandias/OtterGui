@@ -62,11 +62,13 @@ public static partial class ImGuiUtil
     }
 
     /// <summary> InputInt for ulong. </summary>
-    public static unsafe bool InputUlong(string label, ref ulong value, string format = "%llu", ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+    public static unsafe bool InputUlong(string label, ref ulong value, string format = "%llu",
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         var v = value;
         if (!ImGui.InputScalar(label, ImGuiDataType.U64, (nint)(&v), nint.Zero, nint.Zero, format, flags) || v == value)
             return false;
+
         value = v;
         return true;
     }
@@ -430,6 +432,9 @@ public static partial class ImGuiUtil
     }
 
     public static void HoverIconTooltip(IDalamudTextureWrap icon, Vector2 iconSize)
+        => HoverIconTooltip(icon, iconSize, string.Empty);
+
+    public static void HoverIconTooltip(IDalamudTextureWrap icon, Vector2 iconSize, string text)
     {
         var size = new Vector2(icon.Width, icon.Height);
         if (iconSize.X > size.X || iconSize.Y > size.Y || !ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
@@ -438,6 +443,8 @@ public static partial class ImGuiUtil
         using var enable = ImRaii.Enabled();
         ImGui.BeginTooltip();
         ImGui.Image(icon.ImGuiHandle, size);
+        if (text.Length > 0)
+            ImGui.TextUnformatted(text);
         ImGui.EndTooltip();
     }
 
