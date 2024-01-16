@@ -85,7 +85,7 @@ public partial class FileSystem<T> where T : class
     public (Leaf, int) CreateDuplicateLeaf(Folder parent, string name, T data)
     {
         name = name.FixName();
-        while (Find(name, out _))
+        while (parent.Children.Any(c => c.Name == name))
             name = name.IncrementDuplicate();
         return CreateLeaf(parent, name, data);
     }
