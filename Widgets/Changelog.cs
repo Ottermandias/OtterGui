@@ -44,7 +44,7 @@ public sealed class Changelog : Window
     public bool ForceOpen   { get; set; } = false;
 
     public Changelog(string label, Func<(int, ChangeLogDisplayType)> getConfig, Action<int, ChangeLogDisplayType> setConfig)
-        : base(label, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize, true)
+        : base(label, ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize, true)
     {
         _headerName         = label.Split().FirstOrDefault(string.Empty);
         _getConfig          = getConfig;
