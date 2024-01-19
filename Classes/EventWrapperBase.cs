@@ -23,6 +23,9 @@ public unsafe delegate void ActionPtr<T1, T2, T3>(T1* a, T2* b, T3* c) where T1 
 public unsafe delegate void ActionPtr234<in T1, T2, T3, T4>(T1 a, T2* b, T3* c, T4* d)
     where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged;
 
+public unsafe delegate void ActionPtr12Ref34<T1, T2, T3, T4>(T1* a, T2* b, ref T3 c, ref T4 d)
+    where T1 : unmanaged where T2 : unmanaged;
+
 public abstract class EventWrapperBase<TPriority>(string name) : IDisposable, IService
     where TPriority : struct, Enum
 {
@@ -446,6 +449,33 @@ public abstract unsafe class EventWrapperPtr234<T1, T2, T3, T4, TPriority>(strin
             try
             {
                 action.Invoke(a, b, c, d);
+            }
+            catch (Exception ex)
+            {
+                EventWrapperBase.Logger?.Error($"[{Name}] Exception thrown during invocation:\n{ex}");
+            }
+        }
+    }
+}
+
+public abstract unsafe class EventWrapperPtr12Ref34<T1, T2, T3, T4, TPriority>(string name) : EventWrapperBase<TPriority>(name)
+    where TPriority : struct, Enum
+    where T1 : unmanaged
+    where T2 : unmanaged
+{
+    public void Subscribe(ActionPtr12Ref34<T1, T2, T3, T4> subscriber, TPriority priority)
+        => base.Subscribe(subscriber, priority);
+
+    public void Unsubscribe(ActionPtr12Ref34<T1, T2, T3, T4> subscriber)
+        => base.Unsubscribe(subscriber);
+
+    public void Invoke(T1* a, T2* b, ref T3 c, ref T4 d)
+    {
+        foreach (var action in Enumerate<ActionPtr12Ref34<T1, T2, T3, T4>>())
+        {
+            try
+            {
+                action.Invoke(a, b, ref c, ref d);
             }
             catch (Exception ex)
             {
