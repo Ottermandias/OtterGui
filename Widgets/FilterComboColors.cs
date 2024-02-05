@@ -15,7 +15,7 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
 
     protected override int UpdateCurrentSelected(int currentSelected)
     {
-        if (CurrentSelection.Key != _currentColor)
+        if (CurrentSelection.Value.Color != _currentColor)
         {
             CurrentSelectionIdx = Items.IndexOf(c => c.Value.Color == _currentColor);
             CurrentSelection    = CurrentSelectionIdx >= 0 ? Items[CurrentSelectionIdx] : default;
@@ -25,9 +25,9 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
         return currentSelected;
     }
 
-    public FilterComboColors(float comboWidth, Func<IReadOnlyList<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>> colors,
+    public FilterComboColors(float comboWidth, MouseWheelType allowMouseWheel, Func<IReadOnlyList<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>> colors,
         Logger log)
-        : base(colors, log)
+        : base(colors, allowMouseWheel, log)
     {
         _comboWidth   = comboWidth;
         SearchByParts = true;
@@ -77,7 +77,7 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
         return ret;
     }
 
-    public bool Draw(string label, uint color, string name, bool found, bool gloss, float previewWidth)
+    public virtual bool Draw(string label, uint color, string name, bool found, bool gloss, float previewWidth)
     {
         _currentColor = color;
         _currentGloss = gloss;
@@ -99,6 +99,12 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
                 0x50000000,
                 0x50FFFFFF, 0x50000000);
         }
+    }
+
+    protected override void OnMouseWheel(string preview, ref int index, int steps)
+    {
+        UpdateCurrentSelected(0);
+        base.OnMouseWheel(preview, ref index, steps);
     }
 
     public bool Draw(string label, uint color, string name, bool found, bool gloss)

@@ -33,6 +33,9 @@ public class TemporaryList<T> : ICachingList<T>
             _list = null;
     }
 
+    public bool IsInitialized
+        => _list != null;
+
     public T this[int index]
         => InitList()[index];
 }

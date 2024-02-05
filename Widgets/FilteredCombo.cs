@@ -3,27 +3,39 @@ using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Log;
 using OtterGui.Raii;
+using OtterGuiInternal;
 
 namespace OtterGui.Widgets;
 
 public abstract class FilterComboBase<T>
 {
-    private readonly HashSet<uint> _popupState = new();
+    private readonly HashSet<uint> _popupState = [];
+
+    [Flags]
+    public enum MouseWheelType : byte
+    {
+        None       = 0,
+        Unmodified = 1,
+        Shift      = 2,
+        Control    = 4,
+        Alt        = 8,
+    }
 
 
     public readonly IReadOnlyList<T> Items;
 
     private LowerString _filter      = LowerString.Empty;
-    private string[]    _filterParts = Array.Empty<string>();
+    private string[]    _filterParts = [];
 
-    protected readonly Logger Log;
-    protected          bool   SearchByParts;
-    protected          int?   NewSelection;
-    private            int    _lastSelection = -1;
-    private            bool   _filterDirty   = true;
-    private            bool   _setScroll;
-    private            bool   _closePopup;
-    private readonly   bool   _keepStorage;
+    protected readonly Logger         Log;
+    protected          bool           SearchByParts;
+    protected          int?           NewSelection;
+    private            int            _lastSelection = -1;
+    private            bool           _filterDirty   = true;
+    private            bool           _setScroll;
+    private            bool           _closePopup;
+    protected          MouseWheelType AllowMouseWheel { get; init; }
+    private readonly   bool           _keepStorage;
 
     private readonly List<int> _available;
 
@@ -35,14 +47,14 @@ public abstract class FilterComboBase<T>
         Items        = items;
         _keepStorage = keepStorage;
         Log          = log;
-        _available   = _keepStorage ? new List<int>(Items.Count) : new List<int>();
+        _available   = _keepStorage ? new List<int>(Items.Count) : [];
     }
 
     private void ClearStorage(string label)
     {
         Log.Verbose("Cleaning up Filter Combo Cache for {Label}.", label);
         _filter        = LowerString.Empty;
-        _filterParts   = Array.Empty<string>();
+        _filterParts   = [];
         _lastSelection = -1;
         Cleanup();
 
@@ -204,6 +216,9 @@ public abstract class FilterComboBase<T>
     protected virtual void OnClosePopup()
     { }
 
+    protected virtual void OnMouseWheel(string preview, ref int currentSelection, int steps)
+    { }
+
     protected void ClosePopup(uint id, string label)
     {
         if (!_closePopup)
@@ -221,6 +236,14 @@ public abstract class FilterComboBase<T>
         ImGuiComboFlags flags = ImGuiComboFlags.None)
     {
         DrawCombo(label, preview, tooltip, currentSelection, previewWidth, itemHeight, flags);
+        if (CheckMouseWheel(AllowMouseWheel) && ImGui.IsItemHovered())
+        {
+            ImGuiInternal.ItemSetUsingMouseWheel();
+            var mw = (int)ImGui.GetIO().MouseWheel;
+            if (mw != 0)
+                OnMouseWheel(preview, ref currentSelection, mw);
+        }
+
         if (NewSelection == null)
             return false;
 
@@ -255,4 +278,22 @@ public abstract class FilterComboBase<T>
             _available.Add(idx);
         }
     }
+
+    // Check Mousewheel and modifiers,
+    private static bool CheckMouseWheel(MouseWheelType type)
+        => type switch
+        {
+            MouseWheelType.None                           => false,
+            MouseWheelType.Unmodified                     => true,
+            MouseWheelType.Shift                          => ImGui.GetIO().KeyShift,
+            MouseWheelType.Control                        => ImGui.GetIO().KeyCtrl,
+            MouseWheelType.Alt                            => ImGui.GetIO().KeyAlt,
+            MouseWheelType.Shift | MouseWheelType.Control => ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl,
+            MouseWheelType.Shift | MouseWheelType.Alt     => ImGui.GetIO().KeyShift && ImGui.GetIO().KeyAlt,
+            MouseWheelType.Control | MouseWheelType.Alt   => ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyAlt,
+            MouseWheelType.Shift | MouseWheelType.Control | MouseWheelType.Alt => ImGui.GetIO().KeyShift
+             && ImGui.GetIO().KeyCtrl
+             && ImGui.GetIO().KeyAlt,
+            _ => true,
+        };
 }
