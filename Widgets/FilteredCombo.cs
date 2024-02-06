@@ -7,19 +7,19 @@ using OtterGuiInternal;
 
 namespace OtterGui.Widgets;
 
+[Flags]
+public enum MouseWheelType : byte
+{
+    None       = 0,
+    Unmodified = 1,
+    Shift      = 2,
+    Control    = 4,
+    Alt        = 8,
+}
+
 public abstract class FilterComboBase<T>
 {
     private readonly HashSet<uint> _popupState = [];
-
-    [Flags]
-    public enum MouseWheelType : byte
-    {
-        None       = 0,
-        Unmodified = 1,
-        Shift      = 2,
-        Control    = 4,
-        Alt        = 8,
-    }
 
 
     public readonly IReadOnlyList<T> Items;
@@ -34,7 +34,7 @@ public abstract class FilterComboBase<T>
     private            bool           _filterDirty   = true;
     private            bool           _setScroll;
     private            bool           _closePopup;
-    protected          MouseWheelType AllowMouseWheel { get; init; }
+    protected          MouseWheelType AllowMouseWheel { get; set; }
     private readonly   bool           _keepStorage;
 
     private readonly List<int> _available;

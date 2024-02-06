@@ -25,7 +25,8 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
         return currentSelected;
     }
 
-    public FilterComboColors(float comboWidth, MouseWheelType allowMouseWheel, Func<IReadOnlyList<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>> colors,
+    public FilterComboColors(float comboWidth, MouseWheelType allowMouseWheel,
+        Func<IReadOnlyList<KeyValuePair<byte, (string Name, uint Color, bool Gloss)>>> colors,
         Logger log)
         : base(colors, allowMouseWheel, log)
     {
@@ -77,12 +78,14 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
         return ret;
     }
 
-    public virtual bool Draw(string label, uint color, string name, bool found, bool gloss, float previewWidth)
+    public virtual bool Draw(string label, uint color, string name, bool found, bool gloss, float previewWidth,
+        MouseWheelType mouseWheel = MouseWheelType.Control)
     {
         _currentColor = color;
         _currentGloss = gloss;
         var preview = found && ImGui.CalcTextSize(name).X <= previewWidth ? name : string.Empty;
 
+        AllowMouseWheel = mouseWheel;
         _color.Push(ImGuiCol.FrameBg, color, found && color != 0)
             .Push(ImGuiCol.Text, ImGuiUtil.ContrastColorBW(color), preview.Length > 0);
         var change = Draw(label, preview, found ? name : string.Empty, previewWidth, ImGui.GetFrameHeight(), ImGuiComboFlags.NoArrowButton);
@@ -96,8 +99,7 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
         {
             var min = ImGui.GetItemRectMin();
             ImGui.GetWindowDrawList().AddRectFilledMultiColor(min, new Vector2(min.X + previewWidth, ImGui.GetItemRectMax().Y), 0x50FFFFFF,
-                0x50000000,
-                0x50FFFFFF, 0x50000000);
+                0x50000000, 0x50FFFFFF, 0x50000000);
         }
     }
 
@@ -107,6 +109,7 @@ public class FilterComboColors : FilterComboCache<KeyValuePair<byte, (string Nam
         base.OnMouseWheel(preview, ref index, steps);
     }
 
-    public bool Draw(string label, uint color, string name, bool found, bool gloss)
-        => Draw(label, color, name, found, gloss, ImGui.GetFrameHeight());
+    public bool Draw(string label, uint color, string name, bool found, bool gloss,
+        MouseWheelType mouseWheel = MouseWheelType.Control)
+        => Draw(label, color, name, found, gloss, ImGui.GetFrameHeight(), mouseWheel);
 }
