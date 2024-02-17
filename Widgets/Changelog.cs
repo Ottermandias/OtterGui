@@ -116,6 +116,9 @@ public sealed class Changelog : Window
         var i = 0;
         foreach (var ((name, list, hasHighlight), idx) in _entries.WithIndex().Reverse())
         {
+            if (name.Length == 0)
+                continue;
+
             using var id    = ImRaii.PushId(i++);
             using var color = ImRaii.PushColor(ImGuiCol.Text, HeaderColor);
             var       flags = ImGuiTreeNodeFlags.NoTreePushOnOpen;
