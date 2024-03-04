@@ -42,7 +42,14 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
     {
         base.DrawList(width, itemHeight);
         if (NewSelection != null && Items.Count > NewSelection.Value)
-            CurrentSelection = Items[NewSelection.Value];
+            UpdateSelection(Items[NewSelection.Value]);
+    }
+
+    protected virtual void UpdateSelection(T? newSelection)
+    {
+        if (!ReferenceEquals(CurrentSelection, newSelection))
+            SelectionChanged?.Invoke(CurrentSelection, newSelection);
+        CurrentSelection = newSelection;
     }
 
     protected override void OnMouseWheel(string _1, ref int _2, int steps)
@@ -62,7 +69,7 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
         if (NewSelection != null && Items.Count > NewSelection.Value)
         {
             CurrentSelectionIdx = NewSelection.Value;
-            CurrentSelection    = Items[NewSelection.Value];
+            UpdateSelection(Items[NewSelection.Value]);
         }
 
         Cleanup();
@@ -71,4 +78,6 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
     public bool Draw(string label, string preview, string tooltip, float previewWidth, float itemHeight,
         ImGuiComboFlags flags = ImGuiComboFlags.None)
         => Draw(label, preview, tooltip, ref CurrentSelectionIdx, previewWidth, itemHeight, flags);
+
+    public event Action<T?, T?>? SelectionChanged;
 }
