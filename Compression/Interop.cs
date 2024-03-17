@@ -2,6 +2,8 @@ namespace OtterGui.Compression;
 
 internal static partial class Interop
 {
+    private const uint InvalidFileSize = 4294967295;
+
     /// <summary> Obtain the compressed size of a file by its path. </summary>
     /// <param name="path"> The path of the file. </param>
     /// <returns> The compressed size of the file. </returns>
@@ -9,6 +11,9 @@ internal static partial class Interop
     public static long GetCompressedFileSize(string path)
     {
         var loSize = GetCompressedFileSizeW(path, out var hiSize);
+        if (loSize == InvalidFileSize)
+            return -1;
+
         return ((long)hiSize << 32) | loSize;
     }
 
@@ -62,7 +67,7 @@ internal static partial class Interop
     }
 
     [LibraryImport("kernel32.dll")]
-    public static partial int GetDiskFreeSpaceW([MarshalAs(UnmanagedType.LPWStr)] in string lpRootPathName, out uint lpSectorsPerCluster,
+    public static partial int GetDiskFreeSpaceW([MarshalAs(UnmanagedType.LPWStr)] string lpRootPathName, out uint lpSectorsPerCluster,
         out uint lpBytesPerSector, out uint lpNumberOfFreeClusters, out uint lpTotalNumberofClusters);
 
     private record struct WofFileCompressionInfoV1(CompressionAlgorithm Algorithm, ulong Flags);
@@ -72,7 +77,7 @@ internal static partial class Interop
         uint nOutBufferSize, out nint lpBytesReturned, out nint lpOverlapped);
 
     [LibraryImport("kernel32.dll")]
-    private static partial uint GetCompressedFileSizeW([MarshalAs(UnmanagedType.LPWStr)] in string lpFileName, out uint lpFileSizeHigh);
+    private static partial uint GetCompressedFileSizeW([MarshalAs(UnmanagedType.LPWStr)] string lpFileName, out uint lpFileSizeHigh);
 
 
     [LibraryImport("WoFUtil.dll")]

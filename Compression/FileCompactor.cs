@@ -94,11 +94,14 @@ public class FileCompactor(Logger logger) : IDisposable, IService
         if (!CanCompact)
             return new FileInfo(filePath).Length;
 
-        var clusterSize = GetClusterSize(filePath);
-        if (clusterSize == -1)
+        var size        = Interop.GetCompressedFileSize(filePath);
+        if (size < 0)
             return new FileInfo(filePath).Length;
 
-        var size = Interop.GetCompressedFileSize(filePath);
+        var clusterSize = GetClusterSize(filePath);
+        if (clusterSize == -1)
+            return size;
+
         return Interop.RoundToCluster(size, clusterSize);
     }
 
@@ -131,7 +134,7 @@ public class FileCompactor(Logger logger) : IDisposable, IService
         if (!File.Exists(filePath))
             return -1;
 
-        var root = Path.GetPathRoot(filePath)?.ToLowerInvariant() ?? string.Empty;
+        var root = Path.GetPathRoot(filePath) ?? string.Empty;
         if (root.Length == 0)
             return -1;
 
@@ -170,7 +173,7 @@ public class FileCompactor(Logger logger) : IDisposable, IService
 
             if (oldSize < minFileSize)
             {
-                logger.Verbose($"File {filePath} is smaller than cluster size ({clusterSize}), it will not be compacted.");
+                logger.Verbose($"File {filePath} is smaller than cluster size ({minFileSize}), it will not be compacted.");
                 return false;
             }
 
@@ -183,7 +186,7 @@ public class FileCompactor(Logger logger) : IDisposable, IService
 
 
             Interop.CompactFile(filePath, algorithm);
-            logger.Verbose($"Compacted {filePath} from {oldSize} bytes to {new Lazy<long>(() => GetFileSizeOnDisk(filePath))} bytes.");
+            logger.Verbose($"Compacted {filePath} from {oldSize} bytes to {new LazyString(() => GetFileSizeOnDisk(filePath).ToString())} bytes.");
             return true;
         }
         catch (Exception ex)
