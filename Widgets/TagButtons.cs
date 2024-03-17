@@ -160,10 +160,12 @@ public class TagButtons
         if (tooltip.Length == 0)
             return;
 
-        ImGui.AlignTextToFramePadding();
         using (var font = ImRaii.PushFont(UiBuilder.IconFont))
         {
             using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, ImGui.GetStyle().ItemInnerSpacing);
+            ImGui.AlignTextToFramePadding();
+            // The symbol is cut off on the left side for some reason otherwise.
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGuiHelpers.GlobalScale);
             ImGui.TextDisabled(FontAwesomeIcon.InfoCircle.ToIconString());
         }
 
