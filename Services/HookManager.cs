@@ -96,7 +96,7 @@ public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, I
         {
             task = _currentTask == null || _currentTask.IsCompleted
                 ? Task.Run(func)
-                : _currentTask.ContinueWith(_ => func());
+                : _currentTask.ContinueWith(_ => func(), TaskScheduler.Default);
             _currentTask = task;
         }
 
