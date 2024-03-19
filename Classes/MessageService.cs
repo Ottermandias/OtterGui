@@ -51,7 +51,7 @@ public class Notification : MessageService.IMessage
         => _ex?.ToString() ?? string.Empty;
 }
 
-public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat)
+public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat, INotificationManager notificationManager)
     : IReadOnlyDictionary<DateTime, MessageService.IMessage>
 {
     public interface IMessage
@@ -96,11 +96,12 @@ public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat)
             => Message;
     }
 
-    public readonly Logger    Log       = log;
-    public readonly UiBuilder UiBuilder = uiBuilder;
-    public readonly IChatGui  Chat      = chat;
+    public readonly Logger               Log                 = log;
+    public readonly UiBuilder            UiBuilder           = uiBuilder;
+    public readonly INotificationManager NotificationManager = notificationManager;
+    public readonly IChatGui             Chat                = chat;
 
-    private readonly SortedDictionary<DateTime, IMessage> _messages   = new();
+    private readonly SortedDictionary<DateTime, IMessage> _messages   = [];
     private          DateTime                             _deleteTime = DateTime.MinValue;
     private          Vector2                              _buttonSize;
 
@@ -121,8 +122,13 @@ public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat)
 
         var notificationMessage = message.NotificationMessage;
         if (doNotify && notificationMessage.Length > 0)
-            UiBuilder.AddNotification(message.NotificationMessage, message.NotificationTitle, message.NotificationType,
-                message.NotificationDuration);
+            NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+            {
+                Content         = message.NotificationMessage,
+                Title           = message.NotificationTitle,
+                Type            = message.NotificationType,
+                InitialDuration = TimeSpan.FromMilliseconds(message.NotificationDuration),
+            });
 
         var chatMessage = message.ChatMessage;
         if (doChat && chatMessage.Payloads.Count > 0)
