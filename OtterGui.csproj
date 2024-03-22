@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <RuntimeFrameworkVersion>8.0.0</RuntimeFrameworkVersion>
         <TargetFramework>net8.0-windows</TargetFramework>
         <LangVersion>preview</LangVersion>
         <PlatformTarget>x64</PlatformTarget>
