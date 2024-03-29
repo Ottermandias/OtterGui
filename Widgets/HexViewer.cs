@@ -58,6 +58,8 @@ public static partial class Widget
                 buffer[bufferI++] = @byte is >= 32 and < 127 ? @byte : (byte)'.';
             }
 
+            Debug.Assert(bufferI <= capacity);
+
             ImGuiNative.igTextUnformatted(buffer + (bytesPerRow == data.Length ? 2 : 0), buffer + bufferI);
         }
     }
