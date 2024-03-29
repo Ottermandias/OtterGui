@@ -6,9 +6,10 @@ namespace OtterGui.Widgets;
 
 public static partial class Widget
 {
-    private static readonly CompositeFormat ByteHexFormat = CompositeFormat.Parse(" {0:X2}");
+    private static ReadOnlySpan<byte> HexBytes
+        => "0123456789ABCDEF"u8;
 
-    public static void DrawHexViewer(ReadOnlySpan<byte> data)
+    public static unsafe void DrawHexViewer(ReadOnlySpan<byte> data)
     {
         if (data.Length == 0)
             return;
@@ -20,19 +21,42 @@ public static partial class Widget
         var addressDigitCount = 8 - (BitOperations.LeadingZeroCount((uint)data.Length - 1) >> 2);
         var addressFormat = CompositeFormat.Parse($"{{0:X{addressDigitCount}}}:");
         var charsPerRow = (int)MathF.Floor(ImGui.GetContentRegionAvail().X / emWidth);
-        var bytesPerRow = (charsPerRow - addressDigitCount - 1) / 3;
+        var bytesPerRow = (charsPerRow - addressDigitCount - 2) / 4;
         bytesPerRow = 1 << BitOperations.Log2((uint)bytesPerRow);
+        var capacity = addressDigitCount + 2 + 4 * bytesPerRow;
 
-        var builder = new StringBuilder();
+        var buffer = stackalloc byte[capacity];
         for (var rowAddress = 0; rowAddress < data.Length; rowAddress += bytesPerRow)
         {
-            builder.Clear();
+            var bufferI = 0;
+            for (var i = addressDigitCount; i-- > 0;)
+                buffer[bufferI++] = HexBytes[(rowAddress >> (i << 2)) & 0xF];
+            buffer[bufferI++] = (byte)':';
 
-            builder.AppendFormat(null, addressFormat, rowAddress);
             for (var i = rowAddress; i < data.Length && i < rowAddress + bytesPerRow; i++)
-                builder.AppendFormat(null, ByteHexFormat, data[i]);
+            {
+                buffer[bufferI++] = (byte)' ';
+                var @byte = data[i];
+                buffer[bufferI++] = HexBytes[@byte >> 4];
+                buffer[bufferI++] = HexBytes[@byte & 0xF];
+            }
 
-            ImGui.TextUnformatted(builder.ToString());
+            for (var i = data.Length; i < rowAddress + bytesPerRow; i++)
+            {
+                buffer[bufferI++] = (byte)' ';
+                buffer[bufferI++] = (byte)' ';
+                buffer[bufferI++] = (byte)' ';
+            }
+
+            buffer[bufferI++] = (byte)' ';
+
+            for (var i = rowAddress; i < data.Length && i < rowAddress + bytesPerRow; i++)
+            {
+                var @byte = data[i];
+                buffer[bufferI++] = @byte is >= 32 and < 127 ? @byte : (byte)'.';
+            }
+
+            ImGuiNative.igTextUnformatted(buffer, buffer + bufferI);
         }
     }
 }
