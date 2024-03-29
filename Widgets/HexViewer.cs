@@ -22,8 +22,10 @@ public static partial class Widget
         var addressFormat = CompositeFormat.Parse($"{{0:X{addressDigitCount}}}:");
         var charsPerRow = (int)MathF.Floor(ImGui.GetContentRegionAvail().X / emWidth);
         var bytesPerRow = (charsPerRow - addressDigitCount - 2) / 4;
-        bytesPerRow = 1 << BitOperations.Log2((uint)bytesPerRow);
-        var capacity = addressDigitCount + 2 + 4 * bytesPerRow;
+        bytesPerRow = Math.Min(1 << BitOperations.Log2((uint)bytesPerRow), data.Length);
+        if (bytesPerRow == data.Length)
+            addressDigitCount = 0;
+        var capacity = addressDigitCount + 2 + 4 * bytesPerRow; // address ':' {' ' hex hex} ' ' {printable}
 
         var buffer = stackalloc byte[capacity];
         for (var rowAddress = 0; rowAddress < data.Length; rowAddress += bytesPerRow)
@@ -56,7 +58,7 @@ public static partial class Widget
                 buffer[bufferI++] = @byte is >= 32 and < 127 ? @byte : (byte)'.';
             }
 
-            ImGuiNative.igTextUnformatted(buffer, buffer + bufferI);
+            ImGuiNative.igTextUnformatted(buffer + (bytesPerRow == data.Length ? 2 : 0), buffer + bufferI);
         }
     }
 }
