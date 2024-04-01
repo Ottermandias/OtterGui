@@ -22,6 +22,15 @@ public interface ISavable<in T>
         => GetType().Name;
 }
 
+public enum SaveType
+{
+    Queue,
+    Delay,
+    Immediate,
+    ImmediateSync,
+    None,
+}
+
 public class SaveServiceBase<T>
 {
 #if DEBUG
@@ -49,6 +58,26 @@ public class SaveServiceBase<T>
         _saveTask = awaiter;
     }
 
+    /// <summary> Save according to type. </summary>
+    public void Save(SaveType type, in ISavable<T> group)
+    {
+        switch (type)
+        {
+            case SaveType.Queue:
+                QueueSave(group);
+                return;
+            case SaveType.Delay:
+                DelaySave(group);
+                return;
+            case SaveType.Immediate:
+                ImmediateSave(group);
+                return;
+            case SaveType.ImmediateSync:
+                ImmediateSaveSync(group);
+                return;
+        }
+    }
+
     /// <summary> Queue a save for the next framework tick. </summary>
     public void QueueSave(ISavable<T> value)
     {
@@ -73,7 +102,9 @@ public class SaveServiceBase<T>
         var name = value.ToFilename(FileNames);
         lock (_saveTaskLock)
         {
-            _saveTask = _saveTask == null || _saveTask.IsCompleted ? Task.Run(SaveAction) : _saveTask.ContinueWith(_ => SaveAction(), TaskScheduler.Default);
+            _saveTask = _saveTask == null || _saveTask.IsCompleted
+                ? Task.Run(SaveAction)
+                : _saveTask.ContinueWith(_ => SaveAction(), TaskScheduler.Default);
         }
 
         return;
@@ -125,7 +156,9 @@ public class SaveServiceBase<T>
         var name = value.ToFilename(FileNames);
         lock (_saveTaskLock)
         {
-            _saveTask = _saveTask == null || _saveTask.IsCompleted ? Task.Run(DeleteAction) : _saveTask.ContinueWith(_ => DeleteAction(), TaskScheduler.Default);
+            _saveTask = _saveTask == null || _saveTask.IsCompleted
+                ? Task.Run(DeleteAction)
+                : _saveTask.ContinueWith(_ => DeleteAction(), TaskScheduler.Default);
         }
 
         return;
