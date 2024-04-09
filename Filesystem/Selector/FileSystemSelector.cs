@@ -36,11 +36,27 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
             Select(leaf, true, GetState(leaf));
     }
 
-    private void Select(FileSystem<T>.IPath? path, in TStateStorage storage, bool additional)
+    private void Select(FileSystem<T>.IPath? path, in TStateStorage storage, bool additional, bool all)
     {
         if (path == null)
         {
             Select(null, AllowMultipleSelection, storage);
+        }
+        else if (all && AllowMultipleSelection && SelectedLeaf != path)
+        {
+            var idxTo = _state.IndexOf(s => s.Path == path);
+            var depth = _state[idxTo].Depth;
+            if (SelectedLeaf != null && _selectedPaths.Count == 0)
+            {
+                var idxFrom = _state.IndexOf(s => s.Path == SelectedLeaf);
+                (idxFrom, idxTo) = idxFrom > idxTo ? (idxTo, idxFrom) : (idxFrom, idxTo);
+                if (_state.Skip(idxFrom).Take(idxTo - idxFrom + 1).All(s => s.Depth == depth))
+                {
+                    foreach (var p in _state.Skip(idxFrom).Take(idxTo - idxFrom + 1))
+                        _selectedPaths.Add(p.Path);
+                    Select(null, false);
+                }
+            }
         }
         else if (additional && AllowMultipleSelection)
         {

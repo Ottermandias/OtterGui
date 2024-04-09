@@ -33,7 +33,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     {
         DrawLeafName(leaf, state, leaf == SelectedLeaf || SelectedPaths.Contains(leaf));
         if(ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
-            Select(leaf, state, ImGui.GetIO().KeyCtrl);
+            Select(leaf, state, ImGui.GetIO().KeyCtrl, ImGui.GetIO().KeyShift);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
             ImGui.OpenPopup(leaf.Identifier.ToString());
@@ -149,7 +149,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         color.Pop();
 
         if (AllowMultipleSelection && ImGui.IsItemClicked(ImGuiMouseButton.Left) && ImGui.GetIO().KeyCtrl)
-            Select(folder, default, true);
+            Select(folder, default, true, false);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
             ImGui.OpenPopup(folder.Identifier.ToString());
