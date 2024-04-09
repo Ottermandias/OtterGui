@@ -64,13 +64,35 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).Push(ImGuiStyleVar.FrameRounding, 0);
         (width, var clear) = CustomFilters(width);
         ImGui.SetNextItemWidth(width);
-        var       tmp = FilterValue;
-        using var id  = ImRaii.PushId(0, clear);
-        if (ImGui.InputTextWithHint($"##Filter", "Filter...", ref tmp, 128) || clear)
+        var       tmp    = FilterValue;
+        using var id     = ImRaii.PushId(0, clear);
+        var       change = ImGui.InputTextWithHint("##Filter", "Filter...", ref tmp, 128);
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right) && !ImGui.IsItemFocused())
         {
-            tmp = clear ? string.Empty : tmp;
+            try
+            {
+                var x = ImGui.GetClipboardText();
+                if (x.Length > 0)
+                {
+                    tmp    = x;
+                    change = true;
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        if (clear)
+            tmp = string.Empty;
+
+        if (clear || change)
+        {
             if (ChangeFilterInternal(tmp) && ChangeFilter(tmp))
+            {
                 SetFilterDirty();
+            }
         }
 
         style.Pop();
