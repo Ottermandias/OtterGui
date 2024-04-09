@@ -144,21 +144,24 @@ public partial class FileSystemSelector<T, TStateStorage>
     {
         var currentName = leaf.Name;
         var currentPath = leaf.FullName();
-        foreach (var (folder, idx) in folders.WithIndex().Where(s => s.Item1.Length > 0))
+        foreach (var (folder, idx) in folders.WithIndex().Where(s => s.Value.Length > 0))
         {
-            var targetPath = $"{folder}/{currentName}";
+            using var id         = ImRaii.PushId(idx);
+            var       targetPath = $"{folder}/{currentName}";
             if (FileSystem.Equal(targetPath, currentPath))
                 continue;
 
-            if (ImGui.MenuItem($"Move to {folder}##QuickMove{idx}"))
+            if (ImGui.MenuItem($"Move to {folder}"))
                 _fsActions.Enqueue(() =>
                 {
+                    foreach(var path in _selectedPaths.OfType<FileSystem<T>.Leaf>())
+                        FileSystem.RenameAndMove(path, $"{folder}/{path.Name}");
                     FileSystem.RenameAndMove(leaf, targetPath);
                     _filterDirty |= ExpandAncestors(leaf);
                 });
         }
 
-        ImGuiUtil.HoverTooltip("Move the leaf to a previously set-up quick move location, if possible.");
+        ImGuiUtil.HoverTooltip("Move the selected objects to a previously set-up quick move location, if possible.");
     }
 
     protected void RenameLeaf(FileSystem<T>.Leaf leaf)
