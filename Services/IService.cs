@@ -44,3 +44,6 @@ public interface ILoadService : IService
 
 public interface IUiService : IService
 { }
+
+public interface IApiService : IService
+{ }

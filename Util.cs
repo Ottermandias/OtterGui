@@ -589,4 +589,16 @@ public static partial class ImGuiUtil
 
         return ret;
     }
+
+    public static bool GuidInput(string label, string hint, string tooltip, ref Guid? guid, ref string text, float width = 0)
+    {
+        if (width != 0)
+            ImGui.SetNextItemWidth(width);
+        var ret = ImGui.InputTextWithHint(label, hint, ref text, 64);
+        HoverTooltip(tooltip);
+        if (ret)
+            guid = Guid.TryParse(text, out var g) ? g : null;
+
+        return ret;
+    }
 }
