@@ -26,7 +26,7 @@ public static partial class Widget
         var bytesPerRow = (charsPerRow - addressDigitCount - 2) / 4;
 
         // Check that we actually need multiple lines and lock to power of 2.
-        bytesPerRow = Math.Min(1 << BitOperations.Log2((uint)bytesPerRow), data.Length);
+        bytesPerRow = Math.Max(8, Math.Min(1 << BitOperations.Log2((uint)bytesPerRow), data.Length));
         if (bytesPerRow == data.Length)
             addressDigitCount = 0;
 
@@ -92,20 +92,20 @@ public static partial class Widget
                 {
                     using var color = ImRaii.PushColor(ImGuiCol.Text, offsetColor);
                     ImGuiNative.igTextUnformatted(buffer, packStart);
+                    ImGui.SameLine(0, spacing);
                 }
 
                 // Then the 8 byte blocks in alternating colors with slight spacing in between.
                 for (var i = 0; i < bytesPerRow; i += 8)
                 {
-                    ImGui.SameLine(0, spacing);
                     var       packEnd = packStart + 24;
                     using var color   = ImRaii.PushColor(ImGuiCol.Text, (i & 8) == 0 ? color1 : color2);
                     ImGuiNative.igTextUnformatted(packStart, packEnd);
+                    ImGui.SameLine(0, spacing);
                     packStart = packEnd;
                 }
 
                 // Finally the printable block.
-                ImGui.SameLine(0, spacing);
                 ImGuiNative.igTextUnformatted(packStart, buffer + capacity);
             }
         }
