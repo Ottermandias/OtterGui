@@ -594,7 +594,12 @@ public static partial class ImGuiUtil
     {
         if (width != 0)
             ImGui.SetNextItemWidth(width);
-        var ret = ImGui.InputTextWithHint(label, hint, ref text, 64);
+        bool ret;
+        using (ImRaii.PushFont(UiBuilder.MonoFont))
+        {
+            ret = ImGui.InputTextWithHint(label, hint, ref text, 64);
+        }
+
         HoverTooltip(tooltip);
         if (ret)
             guid = Guid.TryParse(text, out var g) ? g : null;
