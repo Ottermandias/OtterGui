@@ -31,11 +31,11 @@ public static partial class ImRaii
 
     public sealed class Style : IDisposable
     {
-        internal static readonly List<(ImGuiStyleVar, Vector2)> Stack = new();
+        internal static readonly List<(ImGuiStyleVar, Vector2)> Stack = [];
 
         private int _count;
 
-        [System.Diagnostics.Conditional("DEBUG")]
+        [Conditional("DEBUG")]
         private static void CheckStyleIdx(ImGuiStyleVar idx, Type type)
         {
             var shouldThrow = idx switch

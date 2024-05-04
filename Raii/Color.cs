@@ -24,7 +24,7 @@ public static partial class ImRaii
 
     public sealed class Color : IDisposable
     {
-        internal static readonly List<(ImGuiCol, uint)> Stack = new();
+        internal static readonly List<(ImGuiCol, uint)> Stack = [];
         private                  int                    _count;
 
         public Color Push(ImGuiCol idx, uint color, bool condition = true)

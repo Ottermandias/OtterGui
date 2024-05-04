@@ -208,18 +208,11 @@ public static partial class ImRaii
 
     // Use end-function regardless of success.
     // Used by Child, Group and Tooltip.
-    private struct EndUnconditionally : IEndObject
+    private struct EndUnconditionally(Action endAction, bool success) : IEndObject
     {
-        private Action EndAction { get; }
-        public  bool   Success   { get; }
-        public  bool   Disposed  { get; private set; }
-
-        public EndUnconditionally(Action endAction, bool success)
-        {
-            EndAction = endAction;
-            Success   = success;
-            Disposed  = false;
-        }
+        private Action EndAction { get; }              = endAction;
+        public  bool   Success   { get; }              = success;
+        public  bool   Disposed  { get; private set; } = false;
 
         public void Dispose()
         {
@@ -232,18 +225,11 @@ public static partial class ImRaii
     }
 
     // Use end-function only on success.
-    private struct EndConditionally : IEndObject
+    private struct EndConditionally(Action endAction, bool success) : IEndObject
     {
-        private Action EndAction { get; }
-        public  bool   Success   { get; }
-        public  bool   Disposed  { get; private set; }
-
-        public EndConditionally(Action endAction, bool success)
-        {
-            EndAction = endAction;
-            Success   = success;
-            Disposed  = false;
-        }
+        private Action EndAction { get; }              = endAction;
+        public  bool   Success   { get; }              = success;
+        public  bool   Disposed  { get; private set; } = false;
 
         public void Dispose()
         {
