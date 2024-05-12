@@ -11,7 +11,7 @@ public static unsafe partial class ImUtf8
     /// <typeparam name="T"> The type of the numeric value to change. </typeparam>
     /// <param name="label"> The input label as a UTF8 string. HAS to be null-terminated. </param>
     /// <param name="value"> The numeric input/output value. </param>
-    /// <param name="format"> The printf format-string to display the number in as a UTF8 string. HAS to be null-terminated. </param>
+    /// <param name="format"> The printf format-string to display and parse the number in as a UTF8 string. HAS to be null-terminated. </param>
     /// <param name="step"> The step when clicking the +/- buttons. If this is 0, the buttons will not be displayed. </param>
     /// <param name="stepFast"> The step when holding the +/- buttons for a while. </param>
     /// <param name="flags"> Additional flags controlling the input behavior. </param>
@@ -19,7 +19,8 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputScalar<T>(ReadOnlySpan<byte> label, ref T value, ReadOnlySpan<byte> format, T step = default, T stepFast = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None) where T : unmanaged, INumber<T>
-        => ImGuiNative.igInputScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), &step, &stepFast, format.Start(), flags).Bool();
+        => ImGuiNative.igInputScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), step.Equals(default) ? null : &step, &stepFast,
+            format.Start(), flags).Bool();
 
     /// <param name="label"> The input label as a UTF16 string. </param>
     /// <inheritdoc cref="InputScalar{T}(ReadOnlySpan{byte},ref T, ReadOnlySpan{byte}, T, T, ImGuiInputTextFlags)"/>

@@ -3,14 +3,17 @@ namespace OtterGui;
 public static class ArrayExtensions
 {
     /// <summary> Iterate over enumerables with additional index. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static IEnumerable<(T Value, int Index)> WithIndex<T>(this IEnumerable<T> list)
         => list.Select((x, i) => (x, i));
 
     /// <summary> Remove an added index from an indexed enumerable. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static IEnumerable<T> WithoutIndex<T>(this IEnumerable<(T Value, int Index)> list)
         => list.Select(x => x.Value);
 
     /// <summary> Remove the value and only keep the index from an indexed enumerable. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static IEnumerable<int> WithoutValue<T>(this IEnumerable<(T Value, int Index)> list)
         => list.Select(x => x.Index);
 

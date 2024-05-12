@@ -22,14 +22,14 @@ public static partial class ImUtf8
     public static bool IconButton(FontAwesomeIcon icon, ReadOnlySpan<byte> tooltip, bool disabled = false, uint textColor = 0,
         uint buttonColor = 0)
     {
-        var  size = new Vector2(ImGui.GetFrameHeight());
+        var  size = new Vector2(FrameHeight);
         bool ret;
         using (ImRaii.PushFont(UiBuilder.IconFont))
         {
             using var color = ImRaii.PushColor(ImGuiCol.Text, textColor, textColor != 0)
                 .Push(ImGuiCol.Button, buttonColor, buttonColor != 0);
             using var _ = ImRaii.Disabled(disabled);
-            ret = Button(icon.Bytes(), size);
+            ret = Button(icon.Bytes().Span, size);
         }
 
         HoverTooltip(tooltip, ImGuiHoveredFlags.AllowWhenDisabled);
@@ -56,11 +56,11 @@ public static partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IconButton(FontAwesomeIcon icon, ReadOnlySpan<byte> tooltip)
     {
-        var  size = new Vector2(ImGui.GetFrameHeight());
+        var  size = new Vector2(FrameHeight);
         bool ret;
         using (ImRaii.PushFont(UiBuilder.IconFont))
         {
-            ret = Button(icon.Bytes(), size);
+            ret = Button(icon.Bytes().Span, size);
         }
 
         HoverTooltip(tooltip, ImGuiHoveredFlags.AllowWhenDisabled);
@@ -84,11 +84,28 @@ public static partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IconButton(FontAwesomeIcon icon)
     {
-        var size = new Vector2(ImGui.GetFrameHeight());
+        var size = new Vector2(FrameHeight);
         using (ImRaii.PushFont(UiBuilder.IconFont))
         {
-            return Button(icon.Bytes(), size);
+            return Button(icon.Bytes().Span, size);
         }
+    }
+
+    /// <inheritdoc cref="IconButton(FontAwesomeIcon,ReadOnlySpan{byte},bool,uint,uint)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IconButton(FontAwesomeIcon icon, bool disabled)
+    {
+        using var dis = ImRaii.Disabled(disabled);
+        return IconButton(icon);
+    }
+
+    /// <inheritdoc cref="IconButton(FontAwesomeIcon,ReadOnlySpan{byte},bool,uint,uint)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IconButton(FontAwesomeIcon icon, bool disabled, uint textColor = 0, uint buttonColor = 0)
+    {
+        using var color = ImRaii.PushColor(ImGuiCol.Text, textColor, textColor != 0)
+            .Push(ImGuiCol.Button, buttonColor, buttonColor != 0);
+        return IconButton(icon, disabled);
     }
 }
 
@@ -96,27 +113,26 @@ internal static class FontAwesomeExtensions
 {
     internal unsafe struct IconBuffer
     {
-        private fixed byte _buffer[8];
+        private ulong _buffer;
 
-        private Span<byte> Span
+        public IconBuffer(FontAwesomeIcon icon)
+        {
+            var   iconChar = icon.ToIconChar();
+            ulong tmp      = 0;
+            Encoding.UTF8.GetBytes(&iconChar, 1, (byte*)&tmp, 8);
+            _buffer = tmp;
+        }
+
+        public ReadOnlySpan<byte> Span
         {
             get
             {
-                fixed (byte* ptr = _buffer)
+                fixed (ulong* ptr = &_buffer)
                 {
                     return new Span<byte>(ptr, 8);
                 }
             }
         }
-
-        public IconBuffer(FontAwesomeIcon icon)
-        {
-            var written = Encoding.UTF8.GetBytes([icon.ToIconChar()], Span);
-            _buffer[written] = 0;
-        }
-
-        public static implicit operator ReadOnlySpan<byte>(IconBuffer buffer)
-            => buffer.Span;
     }
 
     internal static IconBuffer Bytes(this FontAwesomeIcon icon)

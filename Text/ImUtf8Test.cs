@@ -1,6 +1,112 @@
+using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
 namespace OtterGui.Text;
+
+public class ImUtf8TestWindow : Window
+{
+    public class BetterStopWatch(long dataPoints = 100)
+    {
+        private readonly Stopwatch _watch = new();
+
+        public void Start()
+            => _watch.Restart();
+
+        private          long   _totalElapsed;
+        private          int    _totalMeasurements;
+        private          int    _lastSlot;
+        private readonly long[] _elapsed = new long[dataPoints];
+
+        public void Measure()
+        {
+            var elapsed = _watch.ElapsedTicks;
+            _elapsed[_lastSlot++] =  elapsed;
+            _totalElapsed         += elapsed;
+            ++_totalMeasurements;
+
+            if (_lastSlot == _elapsed.Length)
+                _lastSlot = 0;
+        }
+
+        private double RollingAverage()
+        {
+            var sum = _totalMeasurements >= _elapsed.Length
+                ? _elapsed.Sum()
+                : _elapsed.Take(_lastSlot).Sum();
+            return (double)sum / TimeSpan.TicksPerMillisecond / Math.Min(_elapsed.Length, _totalMeasurements);
+        }
+
+        public void Draw(string pre)
+        {
+            ImUtf8.Text(
+                $"[{pre}] Total Ticks: {_totalElapsed}, Total Frames: {_totalMeasurements}, Total Average: {_totalElapsed / (double)TimeSpan.TicksPerMillisecond / _totalMeasurements:F4}, Rolling Average: {RollingAverage():F4}");
+        }
+    }
+
+    private readonly BetterStopWatch _watchImGui     = new();
+    private readonly BetterStopWatch _watchUtf8      = new();
+    private readonly BetterStopWatch _watchUtf16     = new();
+    private readonly BetterStopWatch _watchFormatted = new();
+
+    public ImUtf8TestWindow()
+        : base("ImUtf8Test", ImGuiWindowFlags.AlwaysAutoResize)
+        => IsOpen = true;
+
+    private string _input = string.Empty;
+
+    private bool _enableText = true;
+    private bool _enableButton = true;
+    private bool _enableInputText = true;
+
+    public override void Draw()
+    {
+        ImUtf8.Checkbox("Enable Text"u8,       ref _enableText);
+        ImUtf8.Checkbox("Enable Text Input"u8, ref _enableInputText);
+        ImUtf8.Checkbox("Enable Button"u8,     ref _enableButton);
+
+        _watchImGui.Start();
+        if (_enableText)
+            ImGui.TextUnformatted(
+                "Test Text of some considerable length that I can only imagine to be as long as text will ever be in this world.");
+        if (_enableButton)
+            ImGui.Button("This is a button.##imgui");
+        if (_enableInputText)
+            ImGui.InputTextWithHint("Input##imgui", "Hint...", ref _input, 1024);
+        _watchImGui.Measure();
+
+        _watchUtf8.Start();
+        if (_enableText)
+            ImUtf8.Text("Test Text of some considerable length that I can only imagine to be as long as text will ever be in this world."u8);
+        if (_enableButton)
+            ImUtf8.Button("This is a button.##u8"u8);
+        if (_enableInputText)
+            ImUtf8.InputText("Input##u8"u8, ref _input, "Hint..."u8);
+        _watchUtf8.Measure();
+
+        _watchUtf16.Start();
+        if (_enableText)
+            ImUtf8.Text("Test Text of some considerable length that I can only imagine to be as long as text will ever be in this world.");
+        if (_enableButton)
+            ImUtf8.Button("This is a button.##u16");
+        if (_enableInputText)
+            ImUtf8.InputText("Input##u16", ref _input, "Hint...");
+        _watchUtf16.Measure();
+
+        _watchFormatted.Start();
+        if (_enableText)
+            ImUtf8.Text($"Test Text of some considerable length that I can only imagine to be as long as text will ever be in this world{'.'}");
+        if (_enableButton)
+            ImUtf8.Button($"This is a button.##{"formatted"u8}");
+        if (_enableInputText)
+            ImUtf8.InputText($"Input##{"formatted"u8}", ref _input, $"Hint..{'.'}");
+        _watchFormatted.Measure();
+
+        _watchImGui.Draw("ImGui");
+        _watchUtf8.Draw("Utf8");
+        _watchUtf16.Draw("Utf16");
+        _watchFormatted.Draw("Format");
+    }
+}
 
 public class ImUtf8Test
 {
