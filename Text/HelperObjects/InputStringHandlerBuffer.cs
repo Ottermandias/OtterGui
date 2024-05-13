@@ -9,8 +9,8 @@ public unsafe struct InputStringHandlerBuffer : IStringHandlerBuffer
         => 8 * 1024 * 1024;
 
     public static byte* Buffer   { get; }
-    public static uint  LastId   { get; set; }
-    public static bool  IsActive { get; set; }
+    public static uint  LastId   { get; private set; }
+    public static bool  IsActive { get; private set; }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static void Update(Span<byte> span, uint id)
@@ -21,7 +21,7 @@ public unsafe struct InputStringHandlerBuffer : IStringHandlerBuffer
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-    public static bool Return(ReadOnlySpan<byte> oldValue, out Span<byte> result)
+    public static bool Return(ReadOnlySpan<byte> oldValue, out TerminatedByteString result)
     {
         if (ImGui.IsItemDeactivatedAfterEdit())
         {
@@ -34,7 +34,7 @@ public unsafe struct InputStringHandlerBuffer : IStringHandlerBuffer
         if (ImGui.IsItemDeactivated())
             IsActive = false;
 
-        result = [];
+        result = TerminatedByteString.Empty;
         return false;
     }
 

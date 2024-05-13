@@ -6,8 +6,6 @@ namespace OtterGui.Text;
 
 public static unsafe partial class ImUtf8
 {
-    private static readonly byte[] Null = [0];
-
     /// <summary> Copy the given text to the clipboard. </summary>
     /// <param name="text"> The text as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,11 +28,11 @@ public static unsafe partial class ImUtf8
 
     /// <summary> Obtain the current text from the clipboard. </summary>
     /// <returns> An owned, null-terminated span of UTF8 text. An empty (still null-terminated) span on failure. </returns>
-    public static Span<byte> GetClipboardTextUtf8()
+    public static TerminatedByteString GetClipboardTextUtf8()
     {
         var ptr = ImGuiNative.igGetClipboardText();
         return ptr == null
-            ? Null.AsSpan()[..0]
+            ? TerminatedByteString.Empty
             : MemoryHelper.CastNullTerminated<byte>((nint)ptr).CloneNullTerminated();
     }
 

@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     /// <param name="text"> The given text as a UTF8 string. Does not have to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Text(ReadOnlySpan<byte> text)
-        => ImGuiNative.igTextUnformatted(text.Start(), text.End());
+        => ImGuiNative.igTextUnformatted(text.Start(out var end), end);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="Text(ReadOnlySpan{byte})"/>

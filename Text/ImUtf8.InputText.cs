@@ -18,7 +18,7 @@ public static unsafe partial class ImUtf8
     /// <param name="flags"> Additional flags controlling the input behavior. </param>
     /// <returns> Whether the value changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out Span<byte> result, ReadOnlySpan<byte> hint = default,
+    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out TerminatedByteString result, ReadOnlySpan<byte> hint = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         if (InputText(label, buffer, hint, flags))
@@ -27,67 +27,67 @@ public static unsafe partial class ImUtf8
             return true;
         }
 
-        result = [];
+        result = TerminatedByteString.Empty;
         return false;
     }
 
     /// <param name="label"> The input label as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out Span<byte> result, ReadOnlySpan<byte> hint = default,
+    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out TerminatedByteString result, ReadOnlySpan<byte> hint = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span<LabelStringHandlerBuffer>(), buffer, out result, hint, flags);
 
     /// <param name="label"> The input label as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out Span<byte> result,
+    public static bool InputText(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out TerminatedByteString result,
         ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span(), buffer, out result, hint, flags);
 
 
     /// <param name="hint"> A hint to display in the input box as long as the input is empty as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out Span<byte> result, ReadOnlySpan<char> hint,
+    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out TerminatedByteString result, ReadOnlySpan<char> hint,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label, buffer, out result, hint.Span<HintStringHandlerBuffer>(), flags);
 
     /// <param name="hint"> A hint to display in the input box as long as the input is empty as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out Span<byte> result, ReadOnlySpan<char> hint,
+    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out TerminatedByteString result, ReadOnlySpan<char> hint,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span<LabelStringHandlerBuffer>(), buffer, out result, hint.Span<HintStringHandlerBuffer>(), flags);
 
     /// <param name="hint"> A hint to display in the input box as long as the input is empty as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ref Utf8StringHandler{LabelStringHandlerBuffer},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ref Utf8StringHandler{LabelStringHandlerBuffer},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out Span<byte> result,
+    public static bool InputText(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out TerminatedByteString result,
         ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span(), buffer, out result, hint.Span<HintStringHandlerBuffer>(), flags);
 
 
     /// <param name="hint"> A hint to display in the input box as long as the input is empty as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out Span<byte> result,
+    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out TerminatedByteString result,
         ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label, buffer, out result, hint.Span(), flags);
 
     /// <param name="hint"> A hint to display in the input box as long as the input is empty as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out Span{byte}, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out TerminatedByteString, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out Span<byte> result,
+    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out TerminatedByteString result,
         ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span<LabelStringHandlerBuffer>(), buffer, out result, hint.Span(), flags);
 
     /// <param name="hint"> A hint to display in the input box as long as the input is empty as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ref Utf8StringHandler{LabelStringHandlerBuffer},Span{byte}, out Span{byte}, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ref Utf8StringHandler{LabelStringHandlerBuffer},Span{byte}, out TerminatedByteString, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out Span<byte> result,
+    public static bool InputText(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out TerminatedByteString result,
         ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span(), buffer, out result, hint.Span(), flags);
 
@@ -96,7 +96,7 @@ public static unsafe partial class ImUtf8
     #region In ByteSpan, Out string
 
     /// <param name="result"> When true is returned, the current value transcoded to an UTF16 string. Otherwise, an empty string.  </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out string result, ReadOnlySpan<byte> hint = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
@@ -176,7 +176,7 @@ public static unsafe partial class ImUtf8
     #region In string, Out string
 
     /// <param name="text"> The input/output value as a UTF16 string. Is only changed when this function returns true. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8SizeException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputText(ReadOnlySpan<byte> label, ref string text, ReadOnlySpan<byte> hint = default,

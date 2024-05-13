@@ -12,7 +12,7 @@ public static unsafe partial class ImUtf8
     /// <returns> The ImGui ID of the label in the current ID stack. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint GetId(ReadOnlySpan<byte> label)
-        => ImGuiNative.igGetID_StrStr(label.Start(), label.End());
+        => ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
 
     /// <param name="label"> The object's label as a UTF16 string. </param>
     /// <inheritdoc cref="GetId(ReadOnlySpan{byte})"/>
@@ -32,7 +32,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="GetId(ReadOnlySpan{char})"/>
     /// <remarks> Only use this if the transcoding is expected to be more expensive than the allocation of a clone. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetId(ReadOnlySpan<char> label, out Span<byte> utf8)
+    public static uint GetId(ReadOnlySpan<char> label, out TerminatedByteString utf8)
     {
         utf8 = label.Span<LabelStringHandlerBuffer>().CloneNullTerminated();
         return GetId(utf8);
@@ -43,7 +43,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="GetId(ref Utf8StringHandler{LabelStringHandlerBuffer})"/>
     /// <remarks> Only use this if the formatting is expected to be more expensive than the allocation of a clone. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetId(ref Utf8StringHandler<LabelStringHandlerBuffer> label, out Span<byte> formatted)
+    public static uint GetId(ref Utf8StringHandler<LabelStringHandlerBuffer> label, out TerminatedByteString formatted)
     {
         formatted = label.Span().CloneNullTerminated();
         return GetId(formatted);

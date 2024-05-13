@@ -11,7 +11,7 @@ public static unsafe partial class ImUtf8
     /// <param name="text"> The given text as a UTF8 string. Does not have to be null-terminated. </param>
     /// <param name="flags"> Flags to pass to the hover-check. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void HoverTooltip(ReadOnlySpan<byte> text, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
+    public static void HoverTooltip(ImGuiHoveredFlags flags, ReadOnlySpan<byte> text)
     {
         if (text.Length == 0 || text[0] == 0 || !ImGui.IsItemHovered(flags))
             return;
@@ -20,12 +20,17 @@ public static unsafe partial class ImUtf8
         Text(text);
     }
 
+    /// <inheritdoc cref="HoverTooltip(ImGuiHoveredFlags, ReadOnlySpan{byte})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void HoverTooltip(ReadOnlySpan<byte> text)
+        => HoverTooltip(ImGuiHoveredFlags.None, text);
+
     /// <param name="text"> The given text as a UTF16 string. </param>
-    /// <inheritdoc cref="HoverTooltip(ReadOnlySpan{byte},ImGuiHoveredFlags)"/>>
+    /// <inheritdoc cref="HoverTooltip(ImGuiHoveredFlags, ReadOnlySpan{byte})"/>
     /// <exception cref="ImUtf8FormatException" />
     /// <remarks> The text is not transcoded when the tooltip is not displayed. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void HoverTooltip(ReadOnlySpan<char> text, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
+    public static void HoverTooltip(ImGuiHoveredFlags flags, ReadOnlySpan<char> text)
     {
         if (text.Length == 0 || text[0] == '\0' || !ImGui.IsItemHovered(flags))
             return;
@@ -34,9 +39,14 @@ public static unsafe partial class ImUtf8
         Text(text);
     }
 
+    /// <inheritdoc cref="HoverTooltip(ImGuiHoveredFlags, ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void HoverTooltip(ReadOnlySpan<char> text)
+        => HoverTooltip(ImGuiHoveredFlags.None, text);
+
     /// <param name="text"> The given text as a format string. </param>
     /// <remarks> The format string is not evaluated when the tooltip is not displayed. </remarks>
-    /// <inheritdoc cref="HoverTooltip(ReadOnlySpan{char},ImGuiHoveredFlags)"/>>
+    /// <inheritdoc cref="HoverTooltip(ImGuiHoveredFlags, ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void HoverTooltip(ImGuiHoveredFlags flags, [InterpolatedStringHandlerArgument(nameof(flags))] ref HoverUtf8StringHandler text)
     {

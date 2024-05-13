@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     public static Vector2 CalcTextSize(ReadOnlySpan<byte> text, bool hideTextAfterDashes = true, float wrapWidth = 0)
     {
         var ret = Vector2.Zero;
-        ImGuiNative.igCalcTextSize(&ret, text.Start(), text.End(), hideTextAfterDashes.Byte(), wrapWidth);
+        ImGuiNative.igCalcTextSize(&ret, text.Start(out var end), end, hideTextAfterDashes.Byte(), wrapWidth);
         return ret;
     }
 
@@ -39,7 +39,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="CalcTextSize(ReadOnlySpan{char}, bool, float)" />
     /// <remarks> Only use this if the transcoding is expected to be more expensive than the allocation of a clone. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 CalcTextSize(ReadOnlySpan<char> text, out Span<byte> formatted, bool hideTextAfterDashes = true, float wrapWidth = 0)
+    public static Vector2 CalcTextSize(ReadOnlySpan<char> text, out TerminatedByteString formatted, bool hideTextAfterDashes = true, float wrapWidth = 0)
     {
         formatted = text.Span<TextStringHandlerBuffer>().CloneNullTerminated();
         return CalcTextSize(formatted, hideTextAfterDashes, wrapWidth);
@@ -50,7 +50,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="CalcTextSize(ref Utf8StringHandler{TextStringHandlerBuffer}, bool, float)" />
     /// <remarks> Only use this if the formatting is expected to be more expensive than the allocation of a clone. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 CalcTextSize(ref Utf8StringHandler<TextStringHandlerBuffer> text, out Span<byte> formatted,
+    public static Vector2 CalcTextSize(ref Utf8StringHandler<TextStringHandlerBuffer> text, out TerminatedByteString formatted,
         bool hideTextAfterDashes = true, float wrapWidth = 0)
     {
         formatted = text.Span().CloneNullTerminated();

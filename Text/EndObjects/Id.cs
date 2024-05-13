@@ -30,7 +30,7 @@ public unsafe ref struct Id
     public Id Push(ReadOnlySpan<byte> label)
     {
         ++_counter;
-        ImGuiNative.igPushID_StrStr(label.Start(), label.End());
+        ImGuiNative.igPushID_StrStr(label.Start(out var end), end);
         return this;
     }
 
@@ -42,9 +42,9 @@ public unsafe ref struct Id
     /// <inheritdoc cref="ImUtf8.PushId(ref Utf8StringHandler{LabelStringHandlerBuffer})"/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public Id Push(ref Utf8StringHandler<LabelStringHandlerBuffer> label)
-#pragma warning disable CS9095 // This returns by reference a member of parameter through a ref parameter; but it can only safely be returned in a return statement
+#pragma warning disable CS9094
         => Push(label.Span());
-#pragma warning restore CS9095
+#pragma warning restore CS9045
 
     /// <summary> Pop a number of IDs from the ID stack, but at most as many as this object pushed. </summary>
     /// <param name="count"> The number of IDs to pop. </param>

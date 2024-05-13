@@ -20,11 +20,11 @@ public static unsafe partial class ImUtf8
     /// <paramref name="result"/> is only returned after the input gets deactivated and when this returns true. <br/>
     /// If something else changes <paramref name="input"/> while this item is activated, this change will not be reflected in the input and have no effect.
     /// </remarks>
-    public static bool InputTextOnDeactivated(ReadOnlySpan<byte> label, ReadOnlySpan<byte> input, out Span<byte> result,
+    public static bool InputTextOnDeactivated(ReadOnlySpan<byte> label, ReadOnlySpan<byte> input, out TerminatedByteString result,
         ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGuiNative.igGetID_StrStr(label.Start(), label.End());
+        var id = ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
         if (InputStringHandlerBuffer.IsActive && id == InputStringHandlerBuffer.LastId)
         {
             ImGuiNative.igInputText(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, flags, null!, null);
@@ -35,68 +35,68 @@ public static unsafe partial class ImUtf8
         if (InputText(label, TextStringHandlerBuffer.Span, hint, flags))
             InputStringHandlerBuffer.Update(TextStringHandlerBuffer.Span, id);
 
-        result = [];
+        result = TerminatedByteString.Empty;
         return false;
     }
 
     /// <param name="label"> The input label as a UTF16 string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{byte}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{byte}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ReadOnlySpan<char> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label.Span<LabelStringHandlerBuffer>(), input, out result, hint, flags);
 
     /// <param name="label"> The input label as a formatted string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{char}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{char}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label.Span(), input, out result, hint, flags);
 
 
     /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a UTF16 string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{byte}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{byte}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ReadOnlySpan<byte> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label, input, out result, hint.Span<HintStringHandlerBuffer>(), flags);
 
     /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a UTF16 string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{char}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{char}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ReadOnlySpan<char> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label.Span<LabelStringHandlerBuffer>(), input, out result, hint.Span<HintStringHandlerBuffer>(), flags);
 
     /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a UTF16 string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ref Utf8StringHandler{LabelStringHandlerBuffer}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ref Utf8StringHandler{LabelStringHandlerBuffer}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ReadOnlySpan<char> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label.Span(), input, out result, hint.Span<HintStringHandlerBuffer>(), flags);
 
 
     /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a formatted string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{byte}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{byte}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ReadOnlySpan<byte> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label, input, out result, hint.Span(), flags);
 
     /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a formatted string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{char}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ReadOnlySpan{char}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ReadOnlySpan<char> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label.Span<LabelStringHandlerBuffer>(), input, out result, hint.Span(), flags);
 
     /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a formatted string. </param>
-    /// <inheritdoc cref="InputTextOnDeactivated(ref Utf8StringHandler{LabelStringHandlerBuffer}, ReadOnlySpan{byte}, out Span{byte}, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputTextOnDeactivated(ref Utf8StringHandler{LabelStringHandlerBuffer}, ReadOnlySpan{byte}, out TerminatedByteString, ReadOnlySpan{char}, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputTextOnDeactivated(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ReadOnlySpan<byte> input,
-        out Span<byte> result, ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+        out TerminatedByteString result, ref Utf8StringHandler<HintStringHandlerBuffer> hint, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputTextOnDeactivated(label.Span(), input, out result, hint.Span(), flags);
 
     #endregion
@@ -119,7 +119,7 @@ public static unsafe partial class ImUtf8
         ReadOnlySpan<byte> hint = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGuiNative.igGetID_StrStr(label.Start(), label.End());
+        var id = ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
         if (InputStringHandlerBuffer.IsActive && id == InputStringHandlerBuffer.LastId)
         {
             ImGuiNative.igInputText(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, flags, null!, null);

@@ -18,7 +18,7 @@ public static unsafe partial class ImUtf8
     /// <param name="flags"> Additional flags controlling the input behavior. </param>
     /// <returns> Whether the value changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputMultiLine(ReadOnlySpan<byte> label, Span<byte> buffer, out Span<byte> result, Vector2 size = default,
+    public static bool InputMultiLine(ReadOnlySpan<byte> label, Span<byte> buffer, out TerminatedByteString result, Vector2 size = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         if (InputMultiLine(label, buffer, size, flags))
@@ -27,22 +27,22 @@ public static unsafe partial class ImUtf8
             return true;
         }
 
-        result = [];
+        result = TerminatedByteString.Empty;
         return false;
     }
 
     /// <param name="label"> The input label as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, Vector2, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputMultiLine(ReadOnlySpan<char> label, Span<byte> buffer, out Span<byte> result, Vector2 size = default,
+    public static bool InputMultiLine(ReadOnlySpan<char> label, Span<byte> buffer, out TerminatedByteString result, Vector2 size = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputMultiLine(label.Span<LabelStringHandlerBuffer>(), buffer, out result, size, flags);
 
     /// <param name="label"> The input label as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{char},Span{byte}, out TerminatedByteString, Vector2, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputMultiLine(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out Span<byte> result,
+    public static bool InputMultiLine(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out TerminatedByteString result,
         Vector2 size = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputMultiLine(label.Span(), buffer, out result, size, flags);
 
@@ -51,7 +51,7 @@ public static unsafe partial class ImUtf8
     #region In ByteSpan, Out string
 
     /// <param name="result"> When true is returned, a UTF16 string of the updated value. Otherwise, an empty string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out Span{byte}, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, Vector2, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputMultiLine(ReadOnlySpan<byte> label, Span<byte> buffer, out string result, Vector2 size = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
@@ -67,7 +67,7 @@ public static unsafe partial class ImUtf8
     }
 
     /// <param name="label"> The input label as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out string, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{byte},Span{byte}, out string, Vector2, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputMultiLine(ReadOnlySpan<char> label, Span<byte> buffer, out string result, Vector2 size = default,
@@ -75,7 +75,7 @@ public static unsafe partial class ImUtf8
         => InputMultiLine(label.Span<LabelStringHandlerBuffer>(), buffer, out result, size, flags);
 
     /// <param name="label"> The input label as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{char},Span{byte}, out string, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{char},Span{byte}, out string, Vector2, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputMultiLine(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Span<byte> buffer, out string result,
         Vector2 size = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
@@ -103,7 +103,7 @@ public static unsafe partial class ImUtf8
     }
 
     /// <param name="label"> The input label as a UTF16 string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{byte},ref string, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{byte},ref string, Vector2, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputMultiLine(ReadOnlySpan<char> label, ref string text, Vector2 size = default,
@@ -111,7 +111,7 @@ public static unsafe partial class ImUtf8
         => InputMultiLine(label.Span<LabelStringHandlerBuffer>(), ref text, size, flags);
 
     /// <param name="label"> The input label as a formatted string. </param>
-    /// <inheritdoc cref="InputText(ReadOnlySpan{char},ref string, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
+    /// <inheritdoc cref="InputMultiLine(ReadOnlySpan{char},ref string, Vector2, ImGuiInputTextFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputMultiLine(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref string text, Vector2 size = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)

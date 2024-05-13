@@ -32,7 +32,7 @@ public static partial class ImUtf8
             ret = Button(label, size);
         }
 
-        HoverTooltip(tooltip, ImGuiHoveredFlags.AllowWhenDisabled);
+        HoverTooltip(ImGuiHoveredFlags.AllowWhenDisabled, tooltip);
         return ret;
     }
 

@@ -3,21 +3,21 @@ namespace OtterGui.Text.HelperObjects;
 public static class ImTextExtensions
 {
     /// <summary> Clone the given byte span with an appended null-terminator. </summary>
-    public static Span<byte> CloneNullTerminated(this ReadOnlySpan<byte> input)
+    public static TerminatedByteString CloneNullTerminated(this ReadOnlySpan<byte> input)
     {
         var bytes = new byte[input.Length + 1];
         input.CopyTo(bytes);
         bytes[input.Length] = 0;
-        return bytes.AsSpan(0, input.Length);
+        return new TerminatedByteString(bytes);
     }
 
     /// <summary> Clone the given byte span with an appended null-terminator. </summary>
-    public static Span<byte> CloneNullTerminated(this Span<byte> input)
+    public static TerminatedByteString CloneNullTerminated(this Span<byte> input)
     {
         var bytes = new byte[input.Length + 1];
         input.CopyTo(bytes);
         bytes[input.Length] = 0;
-        return bytes.AsSpan(0, input.Length);
+        return new TerminatedByteString(bytes);
     }
 
     /// <summary> Copy a given span with null-termination into a buffer or throw if too large. </summary>
@@ -42,7 +42,7 @@ public static class ImTextExtensions
     }
 
     /// <summary> Read a null-terminated string from the buffer and clone it with null-terminator. </summary>
-    internal static Span<byte> ReadNullTerminated(this Span<byte> buffer)
+    internal static TerminatedByteString ReadNullTerminated(this Span<byte> buffer)
     {
         var nullTerminator = buffer.IndexOf((byte)0);
         if (nullTerminator == -1)
@@ -50,17 +50,17 @@ public static class ImTextExtensions
             var result = new byte[buffer.Length + 1];
             buffer.CopyTo(result);
             result[buffer.Length] = 0;
-            return result.AsSpan(^1);
+            return new TerminatedByteString(result);
         }
         else
         {
             var result = new byte[nullTerminator + 1];
             buffer[..(nullTerminator + 1)].CopyTo(result);
-            return result.AsSpan(^1);
+            return new TerminatedByteString(result);
         }
     }
 
-    /// <summary> Read a null-terminated string from the buffer copies it into the given buffer. </summary>
+    /// <summary> Read a null-terminated string from the buffer and copy it into the given buffer. </summary>
     internal static unsafe Span<byte> CopyNullTerminated<T>(this Span<byte> buffer) where T : IStringHandlerBuffer
     {
         var nullTerminator = buffer.IndexOf((byte)0);
@@ -84,13 +84,14 @@ public static class ImTextExtensions
         }
     }
 
-    /// <summary> Get the ending pointer for a span. </summary>
+    /// <summary> Get the starting and ending pointer for a span. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    internal static unsafe byte* End(this Span<byte> text)
+    internal static unsafe byte* Start(this Span<byte> text, out byte* end)
     {
         fixed (byte* ptr = text)
         {
-            return ptr + text.Length;
+            end = ptr + text.Length;
+            return ptr;
         }
     }
 
@@ -104,13 +105,14 @@ public static class ImTextExtensions
         }
     }
 
-    /// <summary> Get the ending pointer for a span. </summary>
+    /// <summary> Get the starting and ending pointer for a span. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    internal static unsafe byte* End(this ReadOnlySpan<byte> text)
+    internal static unsafe byte* Start(this ReadOnlySpan<byte> text, out byte* end)
     {
         fixed (byte* ptr = text)
         {
-            return ptr + text.Length;
+            end = ptr + text.Length;
+            return ptr;
         }
     }
 

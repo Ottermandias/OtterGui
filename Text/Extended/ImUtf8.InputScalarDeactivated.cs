@@ -18,7 +18,7 @@ public static unsafe partial class ImUtf8
         T stepFast = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None) where T : unmanaged, INumber<T>
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGuiNative.igGetID_StrStr(label.Start(), label.End());
+        var id = ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
         if (!DataCache<int>.IsActive || id != DataCache<int>.LastId)
         {
             var tmp = value;
