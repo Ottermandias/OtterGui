@@ -10,7 +10,7 @@ namespace OtterGui.Text;
 
 public static partial class ImUtf8
 {
-    /// <summary> Draw an icon button of frame height and width. </summary>
+    /// <summary> Draw a button with some attributes. </summary>
     /// <param name="label"> The icon to draw. </param>
     /// <param name="tooltip"> A tooltip to show when hovering the button as a UTF8 string. Does not have to be null-terminated. Nothing will be displayed for an empty span. </param>
     /// <param name="size">
@@ -24,14 +24,7 @@ public static partial class ImUtf8
     public static bool ButtonEx(ReadOnlySpan<byte> label, ReadOnlySpan<byte> tooltip = default, Vector2 size = default, bool disabled = false,
         uint textColor = 0, uint buttonColor = 0)
     {
-        bool ret;
-        using (ImRaii.PushColor(ImGuiCol.Text, textColor, textColor != 0)
-                   .Push(ImGuiCol.Button, buttonColor, buttonColor != 0))
-        {
-            using var _ = ImRaii.Disabled(disabled);
-            ret = Button(label, size);
-        }
-
+        var ret = ButtonEx(label, size, disabled, textColor, buttonColor);
         HoverTooltip(ImGuiHoveredFlags.AllowWhenDisabled, tooltip);
         return ret;
     }
@@ -100,4 +93,40 @@ public static partial class ImUtf8
         Vector2 size = default, bool disabled = false,
         uint textColor = 0, uint buttonColor = 0)
         => ButtonEx(label.Span(), tooltip.Span(), size, disabled, textColor, buttonColor);
+
+
+    /// <inheritdoc cref="ButtonEx(ReadOnlySpan{byte},ReadOnlySpan{byte},Vector2,bool,uint,uint)"/>
+    public static bool ButtonEx(ReadOnlySpan<byte> label, Vector2 size = default, bool disabled = false, uint textColor = 0,
+        uint buttonColor = 0)
+    {
+        using var _ = ImRaii.PushColor(ImGuiCol.Text, textColor, textColor != 0)
+            .Push(ImGuiCol.Button, buttonColor, buttonColor != 0);
+        return ButtonEx(label, size, disabled);
+    }
+
+    /// <inheritdoc cref="ButtonEx(ReadOnlySpan{char},ReadOnlySpan{byte},Vector2,bool,uint,uint)"/>
+    public static bool ButtonEx(ReadOnlySpan<char> label, Vector2 size = default, bool disabled = false, uint textColor = 0,
+        uint buttonColor = 0)
+        => ButtonEx(label.Span<LabelStringHandlerBuffer>(), size, disabled, textColor, buttonColor);
+
+    /// <inheritdoc cref="ButtonEx(ref Utf8StringHandler{LabelStringHandlerBuffer},ReadOnlySpan{byte},Vector2,bool,uint,uint)"/>
+    public static bool ButtonEx(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Vector2 size = default, bool disabled = false,
+        uint textColor = 0, uint buttonColor = 0)
+        => ButtonEx(label.Span(), size, disabled, textColor, buttonColor);
+
+
+    /// <inheritdoc cref="ButtonEx(ReadOnlySpan{byte},ReadOnlySpan{byte},Vector2,bool,uint,uint)"/>
+    public static bool ButtonEx(ReadOnlySpan<byte> label, Vector2 size = default, bool disabled = false)
+    {
+        using var _ = ImRaii.Disabled(disabled);
+        return Button(label, size);
+    }
+
+    /// <inheritdoc cref="ButtonEx(ReadOnlySpan{char},ReadOnlySpan{byte},Vector2,bool,uint,uint)"/>
+    public static bool ButtonEx(ReadOnlySpan<char> label, Vector2 size = default, bool disabled = false)
+        => ButtonEx(label.Span<LabelStringHandlerBuffer>(), size, disabled);
+
+    /// <inheritdoc cref="ButtonEx(ref Utf8StringHandler{LabelStringHandlerBuffer},ReadOnlySpan{byte},Vector2,bool,uint,uint)"/>
+    public static bool ButtonEx(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Vector2 size = default, bool disabled = false)
+        => ButtonEx(label.Span(), size, disabled);
 }

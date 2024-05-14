@@ -61,8 +61,11 @@ public static partial class Widget
 
             if (description.Length > 0)
             {
-                ImGui.SameLine(0, itemSpacing.X);
-                ImGuiComponents.HelpMarker(description);
+                ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
+                ImGui.PushFont(UiBuilder.IconFont);
+                ImGui.TextDisabled(FontAwesomeIcon.InfoCircle.ToIconString());
+                ImGui.PopFont();
+                ImGuiUtil.HoverTooltip(description);
             }
         }
 
