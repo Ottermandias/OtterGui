@@ -29,6 +29,7 @@ public static partial class ImUtf8
         var rect = new ImRect(pos, pos + size);
         using var color = ImRaii.PushColor(ImGuiCol.Border, borderColor, borderColor != 0)
             .Push(ImGuiCol.Text, textColor, textColor != 0);
+        using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, GlobalScale, borderColor != 0);
         ImGuiInternal.RenderFrame(rect, frameColor, borderColor != 0, Style.FrameRounding);
         ImGuiNativeInterop.RenderTextClippedEx(ImGui.GetWindowDrawList().NativePtr, rect.Min, rect.Max, text.Start(out var textEnd), textEnd,
             (ImVec2*)&textSize, Style.ButtonTextAlign, null);

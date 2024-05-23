@@ -44,7 +44,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool DragScalar<T>(ReadOnlySpan<byte> label, ref T value, T min, T max, float speed = 1,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
-        => DragScalar(label, ref value, DefaultSliderFormat<float>(), min, max, speed, flags);
+        => DragScalar(label, ref value, DefaultSliderFormat<T>(), min, max, speed, flags);
 
     /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

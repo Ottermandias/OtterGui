@@ -1,4 +1,5 @@
 using ImGuiNET;
+using OtterGui.Raii;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -16,7 +17,8 @@ public static unsafe partial class ImUtf8
         if (text.Length == 0 || text[0] == 0 || !ImGui.IsItemHovered(flags))
             return;
 
-        using var tt = Tooltip();
+        using var disabled = ImRaii.Enabled();
+        using var tt       = Tooltip();
         Text(text);
     }
 
@@ -35,7 +37,8 @@ public static unsafe partial class ImUtf8
         if (text.Length == 0 || text[0] == '\0' || !ImGui.IsItemHovered(flags))
             return;
 
-        using var tt = Tooltip();
+        using var disabled = ImRaii.Enabled();
+        using var tt       = Tooltip();
         Text(text);
     }
 
@@ -59,7 +62,8 @@ public static unsafe partial class ImUtf8
         if (end == text.Begin || *text.Begin == 0)
             return;
 
-        using var tt = Tooltip();
+        using var disabled = ImRaii.Enabled();
+        using var tt       = Tooltip();
         ImGuiNative.igTextUnformatted(text.Begin, end);
     }
 
