@@ -119,8 +119,8 @@ internal static class FontAwesomeExtensions
         {
             var   iconChar = icon.ToIconChar();
             ulong tmp      = 0;
-            Encoding.UTF8.GetBytes(&iconChar, 1, (byte*)&tmp, 8);
-            _buffer = tmp;
+            var bytes = (byte) Encoding.UTF8.GetBytes(&iconChar, 1, (byte*)&tmp, 8);
+            _buffer = tmp | ((ulong) bytes << 40);
         }
 
         public ReadOnlySpan<byte> Span
@@ -129,7 +129,7 @@ internal static class FontAwesomeExtensions
             {
                 fixed (ulong* ptr = &_buffer)
                 {
-                    return new Span<byte>(ptr, 8);
+                    return new Span<byte>(ptr, (int) (_buffer >> 40));
                 }
             }
         }

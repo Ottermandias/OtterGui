@@ -18,7 +18,8 @@ public static unsafe partial class ImUtf8
     /// <param name="flags"> Additional flags controlling the input behavior. </param>
     /// <returns> Whether the value changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out TerminatedByteString result, ReadOnlySpan<byte> hint = default,
+    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out TerminatedByteString result,
+        ReadOnlySpan<byte> hint = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         if (InputText(label, buffer, hint, flags))
@@ -35,7 +36,8 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out TerminatedByteString result, ReadOnlySpan<byte> hint = default,
+    public static bool InputText(ReadOnlySpan<char> label, Span<byte> buffer, out TerminatedByteString result,
+        ReadOnlySpan<byte> hint = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
         => InputText(label.Span<LabelStringHandlerBuffer>(), buffer, out result, hint, flags);
 
@@ -175,7 +177,7 @@ public static unsafe partial class ImUtf8
 
     #region In string, Out string
 
-    /// <param name="text"> The input/output value as a UTF16 string. Is only changed when this function returns true. </param>
+    /// <param name="text"> The input/output value as a UTF16 string. </param>
     /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8SizeException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -183,11 +185,10 @@ public static unsafe partial class ImUtf8
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         text.AsSpan().CopyInto<TextStringHandlerBuffer>(out _);
-        if (!InputText(label, TextStringHandlerBuffer.Span, hint, flags))
-            return false;
-
-        text = MemoryHelper.ReadStringNullTerminated((nint)TextStringHandlerBuffer.Buffer);
-        return true;
+        var ret = InputText(label, TextStringHandlerBuffer.Span, hint, flags);
+        if (ImGui.IsItemEdited())
+            text = MemoryHelper.ReadStringNullTerminated((nint)TextStringHandlerBuffer.Buffer);
+        return ret;
     }
 
     /// <param name="label"> The input label as a UTF16 string. </param>
