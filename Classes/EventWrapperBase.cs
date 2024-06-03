@@ -31,7 +31,7 @@ public abstract class EventWrapperBase<TPriority>(string name) : IDisposable, IS
 {
     public readonly    string                                        Name  = name;
     protected readonly List<(object Subscriber, TPriority Priority)> Event = [];
-    protected readonly ReaderWriterLockSlim                          Lock  = new();
+    protected readonly ReaderWriterLockSlim                          Lock  = new(LockRecursionPolicy.SupportsRecursion);
 
     public bool HasSubscribers
         => Event.Count > 0;
