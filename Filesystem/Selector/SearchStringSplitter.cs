@@ -1,4 +1,4 @@
-namespace Penumbra.UI.ModsTab;
+namespace OtterGui.Filesystem.Selector;
 
 public interface ISplitterEntry<TEnum, in TEntry>
 {
@@ -54,15 +54,15 @@ public abstract class SearchStringSplitter<TEnum, TObj, TEntry>
         }
 
         // Check if we have any filters.
-        State = General.Count is 0 && Forced.Count is 0 && Negated.Count is 0 && None.Count is 0 
-            ? FilterState.NoFilters 
+        State = General.Count is 0 && Forced.Count is 0 && Negated.Count is 0 && None.Count is 0
+            ? FilterState.NoFilters
             : FilterState.Normal;
     }
 
     protected enum FilterState
     {
         NoFilters = 0,
-        Normal = 1,
+        Normal    = 1,
         NoMatches = 2,
     }
 
@@ -186,6 +186,7 @@ public abstract class SearchStringSplitter<TEnum, TObj, TEntry>
             list          =  Forced;
             typeToken     =  default;
         }
+
         PostProcessing();
     }
 }
