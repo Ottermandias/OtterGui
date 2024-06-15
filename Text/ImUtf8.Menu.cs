@@ -22,7 +22,7 @@ public static partial class ImUtf8
     public static Menu Menu(ReadOnlySpan<char> label, bool enabled = true)
         => new(label.Span<LabelStringHandlerBuffer>(), enabled);
 
-    /// <param name="label"> The menu label as a UTF16 string. </param>
+    /// <param name="label"> The menu label as a formatted string. </param>
     /// <inheritdoc cref="Menu(ReadOnlySpan{char},bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Menu Menu(ref Utf8StringHandler<LabelStringHandlerBuffer> label, bool enabled = true)

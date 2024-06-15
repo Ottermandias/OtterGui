@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <param name="size"> The desired size of the selectable. </param>
     /// <returns> True if the selectable has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Selectable(ReadOnlySpan<byte> label, bool isSelected, ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
+    public static bool Selectable(ReadOnlySpan<byte> label, bool isSelected = false, ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
         Vector2 size = default)
         => ImGuiNative.igSelectable_Bool(label.Start(), isSelected.Byte(), flags, size).Bool();
 
@@ -22,7 +22,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="Selectable(ReadOnlySpan{byte},bool,ImGuiSelectableFlags,Vector2)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Selectable(ReadOnlySpan<char> label, bool isSelected, ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
+    public static bool Selectable(ReadOnlySpan<char> label, bool isSelected = false, ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
         Vector2 size = default)
         => Selectable(label.Span<LabelStringHandlerBuffer>(), isSelected, flags, size);
 
@@ -30,7 +30,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="Selectable(ReadOnlySpan{char},bool,ImGuiSelectableFlags,Vector2)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Selectable(ref Utf8StringHandler<TextStringHandlerBuffer> label, bool isSelected,
+    public static bool Selectable(ref Utf8StringHandler<TextStringHandlerBuffer> label, bool isSelected = false,
         ImGuiSelectableFlags flags = ImGuiSelectableFlags.None, Vector2 size = default)
         => Selectable(label.Span(), isSelected, flags, size);
 }
