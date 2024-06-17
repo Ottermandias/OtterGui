@@ -19,6 +19,8 @@ public delegate        void ActionRef34<in T1, in T2, T3, T4>(T1 a, T2 b, ref T3
 public unsafe delegate void ActionPtr<T1>(T1* a) where T1 : unmanaged;
 public unsafe delegate void ActionPtr<T1, T2>(T1* a, T2* b) where T1 : unmanaged where T2 : unmanaged;
 public unsafe delegate void ActionPtr<T1, T2, T3>(T1* a, T2* b, T3* c) where T1 : unmanaged where T2 : unmanaged where T3 : unmanaged;
+public unsafe delegate void ActionPtr1<T1, in T2>(T1* a, T2 b) where T1 : unmanaged;
+public unsafe delegate void ActionPtr1<T1, in T2, in T3>(T1* a, T2 b, T3 c) where T1 : unmanaged;
 
 public unsafe delegate void ActionPtr234<in T1, T2, T3, T4>(T1 a, T2* b, T3* c, T4* d)
     where T2 : unmanaged where T3 : unmanaged where T4 : unmanaged;
@@ -366,6 +368,58 @@ public abstract unsafe class EventWrapperPtr<T1, TPriority>(string name) : Event
             try
             {
                 action.Invoke(a);
+            }
+            catch (Exception ex)
+            {
+                EventWrapperBase.Logger?.Error($"[{Name}] Exception thrown during invocation:\n{ex}");
+            }
+        }
+    }
+}
+
+public abstract unsafe class EventWrapperPtr1<T1, T2, TPriority>(string name) : EventWrapperBase<TPriority>(name)
+    where TPriority : struct, Enum
+    where T1 : unmanaged
+{
+    public void Subscribe(ActionPtr1<T1, T2> subscriber, TPriority priority)
+        => base.Subscribe(subscriber, priority);
+
+    public void Unsubscribe(ActionPtr1<T1, T2> subscriber)
+        => base.Unsubscribe(subscriber);
+
+    public void Invoke(T1* a, T2 b)
+    {
+        foreach (var action in Enumerate<ActionPtr1<T1, T2>>())
+        {
+            try
+            {
+                action.Invoke(a, b);
+            }
+            catch (Exception ex)
+            {
+                EventWrapperBase.Logger?.Error($"[{Name}] Exception thrown during invocation:\n{ex}");
+            }
+        }
+    }
+}
+
+public abstract unsafe class EventWrapperPtr1<T1, T2, T3, TPriority>(string name) : EventWrapperBase<TPriority>(name)
+    where TPriority : struct, Enum
+    where T1 : unmanaged
+{
+    public void Subscribe(ActionPtr1<T1, T2, T3> subscriber, TPriority priority)
+        => base.Subscribe(subscriber, priority);
+
+    public void Unsubscribe(ActionPtr1<T1, T2, T3> subscriber)
+        => base.Unsubscribe(subscriber);
+
+    public void Invoke(T1* a, T2 b, T3 c)
+    {
+        foreach (var action in Enumerate<ActionPtr1<T1, T2, T3>>())
+        {
+            try
+            {
+                action.Invoke(a, b, c);
             }
             catch (Exception ex)
             {
