@@ -1,18 +1,19 @@
 using Dalamud.Plugin.Services;
 using OtterGui.Log;
+using OtterGui.Services;
 using OtterGui.Tasks;
 
 namespace OtterGui.Classes;
 
 /// <summary> Manage certain actions to only occur on framework updates. </summary>
-public class FrameworkManager : IDisposable
+public class FrameworkManager : IDisposable, IService
 {
     public readonly IFramework Framework;
 
     private readonly Logger                                 _log;
-    private readonly Dictionary<string, Action>             _important = new();
-    private readonly Dictionary<string, Action>             _onTick    = new();
-    private readonly LinkedList<(DateTime, string, Action)> _delayed   = new();
+    private readonly Dictionary<string, Action>             _important = [];
+    private readonly Dictionary<string, Action>             _onTick    = [];
+    private readonly LinkedList<(DateTime, string, Action)> _delayed   = [];
 
     public FrameworkManager(IFramework framework, Logger log)
     {
