@@ -20,4 +20,12 @@ public abstract class FastHook<T> : IHookService where T : Delegate
 
     public void Disable()
         => Task.Result.Disable();
+
+    public void Toggle(bool value)
+    {
+        if (value)
+            Enable();
+        else
+            Disable();
+    }
 }
