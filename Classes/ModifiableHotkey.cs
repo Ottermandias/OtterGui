@@ -95,8 +95,16 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
 
     public static bool operator !=(ModifiableHotkey lhs, ModifiableHotkey rhs)
         => !lhs.Equals(rhs);
-}
 
+    public override string ToString()
+        => Hotkey is VirtualKey.NO_KEY
+            ? "No Key"
+            : Modifier1.Modifier is VirtualKey.NO_KEY
+                ? Hotkey.GetFancyName()
+                : Modifier2.Modifier is VirtualKey.NO_KEY
+                    ? $"{Modifier1} + {Hotkey.GetFancyName()}"
+                    : $"{Modifier1} + {Modifier2} + {Hotkey.GetFancyName()}";
+}
 
 public static class VirtualKeyExtensions
 {
