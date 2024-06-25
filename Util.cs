@@ -1,6 +1,7 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Raii;
@@ -423,6 +424,16 @@ public static partial class ImGuiUtil
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(IDalamudTextureWrap icon, Vector2 iconSize)
         => HoverIcon(icon.ImGuiHandle, icon.Size, iconSize);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void HoverIcon(ISharedImmediateTexture icon, Vector2 iconSize)
+    {
+        if (icon.TryGetWrap(out var wrap, out _))
+            HoverIcon(wrap.ImGuiHandle, wrap.Size, iconSize);
+        else
+            ImGui.Dummy(iconSize);
+    }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(nint ptr, Vector2 contentSize, Vector2 iconSize)

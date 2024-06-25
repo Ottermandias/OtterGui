@@ -1,30 +1,44 @@
 ﻿using Dalamud.Interface.Internal;
+using Dalamud.Interface.Textures;
 using Dalamud.Plugin.Services;
 
 namespace OtterGui.Classes;
 
-public class TextureCache
+public class TextureCache(IDataManager dataManager, ITextureProvider textureProvider)
 {
-    public readonly IDataManager     DataManager;
-    public readonly ITextureProvider TextureProvider;
+    public readonly IDataManager     DataManager     = dataManager;
+    public readonly ITextureProvider TextureProvider = textureProvider;
 
-    public IDalamudTextureWrap? LoadIcon(uint iconId, bool keepAlive = false)
-        => TextureProvider.GetIcon(iconId, ITextureProvider.IconFlags.HiRes, null, keepAlive);
-
-    public IDalamudTextureWrap? LoadFile(string file, bool keepAlive = false)
-        => Path.IsPathRooted(file)
-            ? TextureProvider.GetTextureFromFile(new FileInfo(file), keepAlive)
-            : TextureProvider.GetTextureFromGame(file, keepAlive);
-
-    public bool TryLoadIcon(uint iconId, [NotNullWhen(true)] out IDalamudTextureWrap? wrap, bool keepAlive = false)
+    public IDalamudTextureWrap? LoadIcon(uint iconId)
     {
-        wrap = LoadIcon(iconId, keepAlive);
+        var icon = TextureProvider.GetFromGameIcon(new GameIconLookup(iconId));
+        if (!icon.TryGetWrap(out var wrap, out _))
+            return null;
+
+        return wrap;
+    }
+
+    public IDalamudTextureWrap? LoadFile(string file)
+    {
+        var texture = Path.IsPathRooted(file)
+            ? TextureProvider.GetFromFile(file)
+            : TextureProvider.GetFromGame(file);
+
+        if (!texture.TryGetWrap(out var wrap, out _))
+            return null;
+
+        return wrap;
+    }
+
+    public bool TryLoadIcon(uint iconId, [NotNullWhen(true)] out IDalamudTextureWrap? wrap)
+    {
+        wrap = LoadIcon(iconId);
         return wrap != null;
     }
 
-    public bool TryLoadFile(string file, [NotNullWhen(true)] out IDalamudTextureWrap? wrap, bool keepAlive = false)
+    public bool TryLoadFile(string file, [NotNullWhen(true)] out IDalamudTextureWrap? wrap)
     {
-        wrap = LoadFile(file, keepAlive);
+        wrap = LoadFile(file);
         return wrap != null;
     }
 
@@ -32,12 +46,6 @@ public class TextureCache
         => Path.IsPathRooted(file) ? File.Exists(file) : DataManager.FileExists(file);
 
     public bool IconExists(uint iconId)
-        => DataManager.FileExists(TextureProvider.GetIconPath(iconId) ?? string.Empty)
-         || DataManager.FileExists(TextureProvider.GetIconPath(iconId, ITextureProvider.IconFlags.None) ?? string.Empty);
-
-    public TextureCache(IDataManager dataManager, ITextureProvider textureProvider)
-    {
-        DataManager     = dataManager;
-        TextureProvider = textureProvider;
-    }
+        => DataManager.FileExists(TextureProvider.GetIconPath(new GameIconLookup(iconId)))
+         || DataManager.FileExists(TextureProvider.GetIconPath(new GameIconLookup(iconId, false, false)));
 }

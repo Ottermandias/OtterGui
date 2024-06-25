@@ -1,5 +1,5 @@
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 
 namespace OtterGui.Classes;
 

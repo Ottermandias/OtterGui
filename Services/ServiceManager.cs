@@ -133,7 +133,6 @@ public class ServiceManager : IDisposable
     private class DalamudServiceWrapper<T>
     {
         [PluginService]
-        [RequiredVersion("1.0")]
         public T Service { get; private set; } = default!;
 
         public DalamudServiceWrapper(DalamudPluginInterface pi)
