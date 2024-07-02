@@ -141,7 +141,7 @@ public partial class FileSystemSelector<T, TStateStorage>
             flags |= ImGuiTreeNodeFlags.Selected;
         var       expandedState = GetPathState(folder);
         using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse       = ImGui.TreeNodeEx((IntPtr)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
+        var       recurse       = ImGui.TreeNodeEx((nint)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
 
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);

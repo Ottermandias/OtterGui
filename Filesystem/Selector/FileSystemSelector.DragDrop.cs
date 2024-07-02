@@ -18,7 +18,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (!_)
             return;
 
-        ImGui.SetDragDropPayload(MoveLabel, IntPtr.Zero, 0);
+        ImGui.SetDragDropPayload(MoveLabel, nint.Zero, 0);
         _movedPathsDragDrop = MoveList(path);
         ImGui.TextUnformatted(_movedPathsDragDropCache.Count == 1
             ? $"Moving {_movedPathsDragDropCache.Keys.First()}..."

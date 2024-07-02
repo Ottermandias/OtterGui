@@ -88,7 +88,7 @@ public class ServiceManager : IDisposable
         }
     }
 
-    public ServiceManager AddDalamudService<T>(DalamudPluginInterface pi) where T : class
+    public ServiceManager AddDalamudService<T>(IDalamudPluginInterface pi) where T : class
     {
         var wrapper = new DalamudServiceWrapper<T>(pi);
         _collection.AddSingleton(wrapper.Service);
@@ -135,7 +135,7 @@ public class ServiceManager : IDisposable
         [PluginService]
         public T Service { get; private set; } = default!;
 
-        public DalamudServiceWrapper(DalamudPluginInterface pi)
+        public DalamudServiceWrapper(IDalamudPluginInterface pi)
         {
             pi.Inject(this);
         }

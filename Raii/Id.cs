@@ -12,7 +12,7 @@ public static partial class ImRaii
     public static Id PushId(int id, bool enabled = true)
         => enabled ? new Id().Push(id) : new Id();
 
-    public static Id PushId(IntPtr id, bool enabled = true)
+    public static Id PushId(nint id, bool enabled = true)
         => enabled ? new Id().Push(id) : new Id();
 
     public sealed class Id : IDisposable
@@ -41,7 +41,7 @@ public static partial class ImRaii
             return this;
         }
 
-        public Id Push(IntPtr id, bool condition = true)
+        public Id Push(nint id, bool condition = true)
         {
             if (condition)
             {

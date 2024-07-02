@@ -51,7 +51,7 @@ public class Notification : MessageService.IMessage
         => _ex?.ToString() ?? string.Empty;
 }
 
-public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat, INotificationManager notificationManager)
+public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INotificationManager notificationManager)
     : IReadOnlyDictionary<DateTime, MessageService.IMessage>
 {
     public interface IMessage
@@ -65,7 +65,7 @@ public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat, INot
         public string NotificationMessage
             => Message;
 
-        public string? NotificationTitle
+        public string NotificationTitle
             => NotificationType.ToString();
 
         public uint NotificationDuration
@@ -97,7 +97,7 @@ public class MessageService(Logger log, UiBuilder uiBuilder, IChatGui chat, INot
     }
 
     public readonly Logger               Log                 = log;
-    public readonly UiBuilder            UiBuilder           = uiBuilder;
+    public readonly IUiBuilder           Builder             = builder;
     public readonly INotificationManager NotificationManager = notificationManager;
     public readonly IChatGui             Chat                = chat;
 
