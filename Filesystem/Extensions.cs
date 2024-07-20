@@ -1,6 +1,6 @@
 namespace OtterGui.Filesystem;
 
-public static class Extensions
+public static partial class Extensions
 {
     // Add an object to a list if it does not exist yet, or replace the contained object comparing equal to it.
     // Returns the index of the added or replaced object.
@@ -71,7 +71,7 @@ public static class Extensions
     // If it is not, baseName is empty and number is 0.
     public static bool IsDuplicateName(this string name, out string baseName, out int number)
     {
-        var match = DuplicatePathRegex.Match(name);
+        var match = DuplicatePathRegex().Match(name);
         if (match.Success)
         {
             baseName = match.Groups["BaseName"].Value;
@@ -118,5 +118,7 @@ public static class Extensions
 
     // Data.
     private static readonly HashSet<char> Invalid            = new(Path.GetInvalidFileNameChars());
-    private static readonly Regex         DuplicatePathRegex = new(@"(?<BaseName>.*) \((?<Amount>([2-9]|\d\d+))\)$", RegexOptions.Compiled);
+
+    [GeneratedRegex(@"(?<BaseName>.*) \((?<Amount>([2-9]|\d\d+))\)$", RegexOptions.Compiled | RegexOptions.ExplicitCapture)]
+    private static partial Regex DuplicatePathRegex();
 }
