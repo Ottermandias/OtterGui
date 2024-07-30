@@ -29,7 +29,7 @@ public readonly struct TerminatedByteString
 
     private readonly byte[] _text;
 
-    public IReadOnlyList<byte> TextWithNull
+    public ReadOnlySpan<byte> TextWithNull
         => _text;
 
     public int Length
@@ -42,8 +42,7 @@ public readonly struct TerminatedByteString
         => _text.Length <= 1;
 
     public static implicit operator ReadOnlySpan<byte>(TerminatedByteString text)
-        => text._text.AsSpan(^1);
-
+        => text._text.AsSpan(0, text.Length);
     public override string ToString()
-        => Encoding.UTF8.GetString(_text.AsSpan(^1));
+        => Encoding.UTF8.GetString(_text.AsSpan(0, Length));
 }
