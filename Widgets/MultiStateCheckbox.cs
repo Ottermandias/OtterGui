@@ -1,4 +1,5 @@
 using ImGuiNET;
+using OtterGui.Text.HelperObjects;
 using OtterGuiInternal;
 using OtterGuiInternal.Structs;
 using OtterGuiInternal.Utility;
@@ -16,7 +17,15 @@ public abstract class MultiStateCheckbox<T>
     protected abstract T NextValue(T value);
     protected abstract T PreviousValue(T value);
 
-    public unsafe bool Draw(ReadOnlySpan<char> label, T currentValue, out T newValue)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Draw(ReadOnlySpan<byte> label, ref T value)
+        => Draw(label, value, out value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Draw(ReadOnlySpan<char> label, ref T value)
+        => Draw(label.Span<LabelStringHandlerBuffer>(), value, out value);
+
+    public bool Draw(ReadOnlySpan<byte> label, T currentValue, out T newValue)
     {
         newValue = currentValue;
         var window = ImGuiInternal.GetCurrentWindow();
@@ -63,4 +72,8 @@ public abstract class MultiStateCheckbox<T>
 
         return returnValue || rightClick;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Draw(ReadOnlySpan<char> label, T currentValue, out T newValue)
+        => Draw(label.Span<LabelStringHandlerBuffer>(), currentValue, out newValue);
 }
