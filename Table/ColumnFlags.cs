@@ -6,7 +6,8 @@ namespace OtterGui.Table;
 
 public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
 {
-    public T AllFlags = default;
+    public    T               AllFlags   = default;
+    protected ImGuiComboFlags ComboFlags = ImGuiComboFlags.NoArrowButton;
 
     protected virtual IReadOnlyList<T> Values
         => Enum.GetValues<T>();
@@ -20,6 +21,12 @@ public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
     protected virtual void SetValue(T value, bool enable)
     { }
 
+    protected virtual bool DrawCheckbox(int idx, out bool ret)
+    {
+        ret = FilterValue.HasFlag(Values[idx]);
+        return ImGui.Checkbox(Names[idx], ref ret);
+    }
+
     public override bool DrawFilter()
     {
         using var id    = ImRaii.PushId(FilterLabel);
@@ -27,7 +34,7 @@ public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
         ImGui.SetNextItemWidth(-Table.ArrowWidth * ImGuiHelpers.GlobalScale);
         var       all   = FilterValue.HasFlag(AllFlags);
         using var color = ImRaii.PushColor(ImGuiCol.FrameBg, 0x803030A0, !all);
-        using var combo = ImRaii.Combo(string.Empty, Label, ImGuiComboFlags.NoArrowButton);
+        using var combo = ImRaii.Combo(string.Empty, Label, ComboFlags);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
         {
@@ -53,8 +60,7 @@ public class ColumnFlags<T, TItem> : Column<TItem> where T : struct, Enum
         using var indent = ImRaii.PushIndent(10f);
         for (var i = 0; i < Names.Length; ++i)
         {
-            var tmp = FilterValue.HasFlag(Values[i]);
-            if (!ImGui.Checkbox(Names[i], ref tmp))
+            if (!DrawCheckbox(i, out var tmp))
                 continue;
 
             SetValue(Values[i], tmp);
