@@ -4,7 +4,9 @@ using OtterGuiInternal;
 using OtterGuiInternal.Structs;
 using OtterGuiInternal.Utility;
 
-namespace OtterGui.Widgets;
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+
+namespace OtterGui.Text.Widget;
 
 /// <summary>
 /// Draw a checkbox that toggles forward or backward between different states.
@@ -14,17 +16,38 @@ public abstract class MultiStateCheckbox<T>
     /// <summary> Render the symbol corresponding to <paramref name="value"/> starting at <paramref name="position"/> and with <paramref name="size"/> as box size. </summary>
     protected abstract void RenderSymbol(T value, Vector2 position, float size);
 
+    /// <summary> Increment the value. </summary>
     protected abstract T NextValue(T value);
+
+    /// <summary> Decrement the value. </summary>
     protected abstract T PreviousValue(T value);
 
+    /// <summary> Draw the multi state checkbox. </summary>
+    /// <param name="label"> The label for the checkbox as a UTF8 string. HAS to be null-terminated. </param>
+    /// <param name="value"> The input/output value. </param>
+    /// <returns> True when <paramref name="value"/> changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Draw(ReadOnlySpan<byte> label, ref T value)
         => Draw(label, value, out value);
 
+    /// <param name="label"> The label for the checkbox as a UTF16 string. </param>
+    /// <inheritdoc cref="Draw(ReadOnlySpan{byte},ref T)"/>
+    /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Draw(ReadOnlySpan<char> label, ref T value)
         => Draw(label.Span<LabelStringHandlerBuffer>(), value, out value);
 
+    /// <param name="label"> The label for the checkbox as a formatted string. </param>
+    /// <inheritdoc cref="Draw(ReadOnlySpan{char},ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Draw(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value)
+        => Draw(label.Span(), ref value);
+
+    /// <summary> Draw the multi state checkbox. </summary>
+    /// <param name="label"> The label for the checkbox as a UTF8 string. HAS to be null-terminated. </param>
+    /// <param name="currentValue"> The input value. </param>
+    /// <param name="newValue"> The output value. </param>
+    /// <returns> True when this was toggled this frame and a new value is returned. </returns>
     public bool Draw(ReadOnlySpan<byte> label, T currentValue, out T newValue)
     {
         newValue = currentValue;
@@ -73,7 +96,16 @@ public abstract class MultiStateCheckbox<T>
         return returnValue || rightClick;
     }
 
+    /// <param name="label"> The label for the checkbox as a UTF16 string. </param>
+    /// <inheritdoc cref="Draw(ReadOnlySpan{byte},T, out T)"/>
+    /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Draw(ReadOnlySpan<char> label, T currentValue, out T newValue)
         => Draw(label.Span<LabelStringHandlerBuffer>(), currentValue, out newValue);
+
+    /// <param name="label"> The label for the checkbox as a formatted string. </param>
+    /// <inheritdoc cref="Draw(ReadOnlySpan{char},T, out T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool Draw(ref Utf8StringHandler<LabelStringHandlerBuffer> label, T value, out T newValue)
+        => Draw(label.Span(), value, out newValue);
 }

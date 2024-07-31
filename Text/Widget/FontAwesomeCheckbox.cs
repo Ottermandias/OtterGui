@@ -1,14 +1,18 @@
 using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Raii;
-using OtterGui.Text;
 
-namespace OtterGui.Widgets;
+namespace OtterGui.Text.Widget;
 
+/// <summary> A two-state checkbox displaying an arbitrary icon instead of a checkmark. </summary>
+/// <param name="icon"> The icon to display for 'True'. </param>
+/// <param name="color"> The optional color to display the icon in. If null, TextColor will be used. </param>
 public class FontAwesomeCheckbox(FontAwesomeIcon icon, uint? color = null) : FontAwesomeCheckbox<bool>
 {
-    public readonly FontAwesomeIcon Icon  = icon;
-    public readonly uint?           Color = color;
+    /// <summary> The icon to display for 'True'. </summary>
+    public readonly FontAwesomeIcon Icon = icon;
+    /// <summary> The optional color to display the icon in. If null, TextColor will be used. </summary>
+    public readonly uint? Color = color;
 
     protected override (FontAwesomeIcon? Icon, uint? Color) GetIcon(bool value)
         => value ? (Icon, Color) : (null, null);
@@ -20,6 +24,7 @@ public class FontAwesomeCheckbox(FontAwesomeIcon icon, uint? color = null) : Fon
         => !value;
 }
 
+/// <summary> A base class for a multi state checkbox displaying different icons. </summary>
 public abstract class FontAwesomeCheckbox<T> : MultiStateCheckbox<T>
 {
     protected abstract (FontAwesomeIcon? Icon, uint? Color) GetIcon(T value);
@@ -35,7 +40,7 @@ public abstract class FontAwesomeCheckbox<T> : MultiStateCheckbox<T>
         // FIXME honor size parameter if possible
         using var font = ImRaii.PushFont(UiBuilder.IconFont);
 
-        var iconSize     = ImUtf8.CalcTextSize(icon.Span);
+        var iconSize = ImUtf8.CalcTextSize(icon.Span);
         var iconPosition = position + (new Vector2(size) - iconSize) * 0.5f;
 
         ImGui.GetWindowDrawList().AddText(icon.Span, iconPosition, color ?? ImGui.GetColorU32(ImGuiCol.CheckMark));
