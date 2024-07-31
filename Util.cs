@@ -381,13 +381,6 @@ public static partial class ImGuiUtil
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void DrawTableColumn(ReadOnlySpan<byte> text)
-    {
-        ImGui.TableNextColumn();
-        ImUtf8.Text(text);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawFrameColumn(string text)
     {
         ImGui.TableNextColumn();
@@ -553,12 +546,6 @@ public static partial class ImGuiUtil
         }
     }
 
-    /// <summary>
-    /// Input an ushort.
-    /// </summary>
-    public static unsafe bool InputUInt16(ReadOnlySpan<byte> label, ref ushort v, ImGuiInputTextFlags flags)
-        => ImUtf8.InputScalar(label, ref v, "%hu"u8, flags: flags);
-
     /// <inheritdoc cref="ColorIntensity(Vector4)"/>
     public static float ColorIntensity(uint color)
         => ColorIntensity(ColorHelpers.RgbaUintToVector4(color));
@@ -612,34 +599,6 @@ public static partial class ImGuiUtil
         }
 
         HoverTooltip(tooltip);
-
-        return ret;
-    }
-
-    /// <summary> Make a single-button color picker with a contrasted letter centered on it. </summary>
-    public static bool ColorPicker(ReadOnlySpan<byte> label, ReadOnlySpan<byte> tooltip, Vector3 input, Action<Vector3> setter, ReadOnlySpan<byte> letter = default)
-    {
-        var ret = false;
-        if (ImUtf8.ColorEdit(label, ref input,
-                ImGuiColorEditFlags.NoInputs
-              | ImGuiColorEditFlags.DisplayRGB
-              | ImGuiColorEditFlags.InputRGB
-              | ImGuiColorEditFlags.NoTooltip
-              | ImGuiColorEditFlags.HDR))
-        {
-            setter(input);
-            ret = true;
-        }
-
-        if (letter.Length > 0 && ImGui.IsItemVisible())
-        {
-            var textSize  = ImUtf8.CalcTextSize(letter);
-            var center    = ImGui.GetItemRectMin() + (ImGui.GetItemRectSize() - textSize) / 2;
-            var textColor = ContrastColorBw(new Vector4(input, 0.7f));
-            ImGui.GetWindowDrawList().AddText(letter, center, ImGui.ColorConvertFloat4ToU32(textColor));
-        }
-
-        ImUtf8.HoverTooltip(tooltip);
 
         return ret;
     }
