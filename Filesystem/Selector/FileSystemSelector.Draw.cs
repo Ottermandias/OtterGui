@@ -4,6 +4,7 @@ using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
+using OtterGui.Text;
 
 namespace OtterGui.FileSystem.Selector;
 
@@ -222,33 +223,26 @@ public partial class FileSystemSelector<T, TStateStorage>
             _jumpToSelection = null;
         }
 
-        ImGuiListClipperPtr clipper;
-        unsafe
-        {
-            clipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
-        }
-
         // TODO: do this right.
         //HandleKeyNavigation();
-        clipper.Begin(_state.Count, ImGui.GetTextLineHeightWithSpacing());
-        // Draw the clipped list.
-
-        while (clipper.Step())
+        using (var clipper = ImUtf8.ListClipper(_state.Count, ImGui.GetTextLineHeightWithSpacing()))
         {
-            _currentIndex = clipper.DisplayStart;
-            _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
-            if (_currentIndex >= _currentEnd)
-                continue;
+            // Draw the clipped list.
 
-            if (_state[_currentIndex].Depth != 0)
-                DrawPseudoFolders();
-            _currentEnd = Math.Min(_state.Count, _currentEnd);
-            for (; _currentIndex < _currentEnd; ++_currentIndex)
-                DrawStateStruct(_state[_currentIndex]);
+            while (clipper.Step())
+            {
+                _currentIndex = clipper.DisplayStart;
+                _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
+                if (_currentIndex >= _currentEnd)
+                    continue;
+
+                if (_state[_currentIndex].Depth != 0)
+                    DrawPseudoFolders();
+                _currentEnd = Math.Min(_state.Count, _currentEnd);
+                for (; _currentIndex < _currentEnd; ++_currentIndex)
+                    DrawStateStruct(_state[_currentIndex]);
+            }
         }
-
-        clipper.End();
-        clipper.Destroy();
 
         //// Handle all queued actions at the end of the iteration.
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
