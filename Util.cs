@@ -5,6 +5,7 @@ using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Raii;
+using OtterGui.Text;
 
 namespace OtterGui;
 
@@ -63,11 +64,11 @@ public static partial class ImGuiUtil
     }
 
     /// <summary> InputInt for ulong. </summary>
-    public static unsafe bool InputUlong(string label, ref ulong value, string format = "%llu",
+    public static bool InputUlong(string label, ref ulong value, string format = "%llu",
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         var v = value;
-        if (!ImGui.InputScalar(label, ImGuiDataType.U64, (nint)(&v), nint.Zero, nint.Zero, format, flags) || v == value)
+        if (!ImUtf8.InputScalar(label, ref v, format, flags: flags) || v == value)
             return false;
 
         value = v;
@@ -125,6 +126,7 @@ public static partial class ImGuiUtil
         drawList.AddText(position, foregroundColor, text);
     }
 
+
     /// <summary> Draw a group of texts with colors without additional spacing between them in the same line. </summary>
     public static void DrawColoredText(params (string, uint)[] data)
     {
@@ -142,15 +144,8 @@ public static partial class ImGuiUtil
     }
 
 
-    // Go to the next column, then enter text.
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void TextNextColumn(string text)
-    {
-        ImGui.TableNextColumn();
-        ImGui.TextUnformatted(text);
-    }
-
     // Draw a single piece of text in the given color.
+    /// <seealso cref="ImUtf8.Text(ReadOnlySpan{byte}, uint)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextColored(uint color, string text)
     {
@@ -270,6 +265,7 @@ public static partial class ImGuiUtil
         }
     }
 
+
     // Draw a selectable combo box for a generic enumerable.
     // Uses the supplied toString function if any, otherwise ToString.
     // Can specify enum values to skip at start or end and gives all those enum values as options.
@@ -312,25 +308,27 @@ public static partial class ImGuiUtil
         return ret && !disabled;
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void DrawTextButton(string text, Vector2 size, uint buttonColor)
+    public static bool DrawTextButton(string text, Vector2 size, uint buttonColor)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
             .Push(ImGuiCol.ButtonActive,  buttonColor)
             .Push(ImGuiCol.ButtonHovered, buttonColor);
-        ImGui.Button(text, size);
+        return ImGui.Button(text, size);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void DrawTextButton(string text, Vector2 size, uint buttonColor, uint textColor)
+    public static bool DrawTextButton(string text, Vector2 size, uint buttonColor, uint textColor)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
             .Push(ImGuiCol.ButtonActive,  buttonColor)
             .Push(ImGuiCol.ButtonHovered, buttonColor)
             .Push(ImGuiCol.Text,          textColor);
-        ImGui.Button(text, size);
+        return ImGui.Button(text, size);
     }
 
+    /// <seealso cref="ImUtf8.HoverTooltip(ImGuiHoveredFlags, ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverTooltip(string tooltip, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
     {
@@ -373,6 +371,7 @@ public static partial class ImGuiUtil
         setter(tmp);
         return true;
     }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawTableColumn(string text)
@@ -470,6 +469,7 @@ public static partial class ImGuiUtil
         ImGui.EndTooltip();
     }
 
+    /// <seealso cref="ImUtf8.TextRightAligned(ReadOnlySpan{byte}, float)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void RightAlign(string text, float offset = 0)
     {
@@ -485,6 +485,7 @@ public static partial class ImGuiUtil
         TextColored(color, text);
     }
 
+    /// <seealso cref="ImUtf8.TextCentered(ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void Center(string text)
     {
@@ -569,6 +570,7 @@ public static partial class ImGuiUtil
     public static Vector4 ContrastColorBw(Vector4 color)
         => ColorIntensity(color) >= 4 ? new Vector4(0, 0, 0, color.W) : new Vector4(1, 1, 1, color.W);
 
+    /// <seealso cref="Text.EndObjects.DragDropTarget.CheckPayload(ReadOnlySpan{byte}, ImGuiDragDropFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool IsDropping(string name)
         => ImGui.AcceptDragDropPayload(name).NativePtr != null;
@@ -617,4 +619,31 @@ public static partial class ImGuiUtil
 
         return ret;
     }
+
+    /// <summary> Halves the alpha of the given color. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfTransparent(uint baseColor)
+        => (baseColor & 0x00FFFFFFu) | ((baseColor & 0xFE000000u) >> 1);
+
+    /// <summary> Gets the current text color, but with halved alpha. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfTransparentText()
+        => HalfTransparent(ImGui.GetColorU32(ImGuiCol.Text));
+
+    /// <summary>
+    /// Blends the given colors in equal proportions.
+    /// <paramref name="overlayColor"/> can only be fully saturated black, red, green, blue, cyan, magenta, yellow or white.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfBlend(uint baseColor, uint overlayColor)
+        => (baseColor & 0xFF000000u) | ((baseColor & 0x00FEFEFEu) >> 1) | (overlayColor & 0x00808080u);
+
+    /// <summary> Gets the current text color, blended in equal proportions with the given fully saturated color. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfBlendText(uint overlayColor)
+        => HalfBlend(ImGui.GetColorU32(ImGuiCol.Text), overlayColor);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint ColorConvertFloat3ToU32(Vector3 color)
+        => ImGui.ColorConvertFloat4ToU32(new Vector4(color, 1.0f));
 }

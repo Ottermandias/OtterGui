@@ -1,5 +1,6 @@
 using ImGuiNET;
 using OtterGui.Raii;
+using OtterGui.Text;
 
 namespace OtterGui;
 
@@ -30,13 +31,7 @@ public static class ImGuiClip
     // Uses ImGuiListClipper and thus handles start- and end-dummies itself.
     public static void ClippedDraw<T>(IReadOnlyList<T> data, Action<T> draw, float lineHeight)
     {
-        ImGuiListClipperPtr clipper;
-        unsafe
-        {
-            clipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
-        }
-
-        clipper.Begin(data.Count, lineHeight);
+        using var clipper = ImUtf8.ListClipper(data.Count, lineHeight);
         while (clipper.Step())
         {
             for (var actualRow = clipper.DisplayStart; actualRow < clipper.DisplayEnd; actualRow++)
@@ -50,22 +45,13 @@ public static class ImGuiClip
                 draw(data[actualRow]);
             }
         }
-
-        clipper.End();
-        clipper.Destroy();
     }
 
     // Draw a clipped random-access collection of consistent height lineHeight.
     // Uses ImGuiListClipper and thus handles start- and end-dummies itself, but acts on type and index.
     public static void ClippedDraw<T>(IReadOnlyList<T> data, Action<T, int> draw, float lineHeight)
     {
-        ImGuiListClipperPtr clipper;
-        unsafe
-        {
-            clipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
-        }
-
-        clipper.Begin(data.Count, lineHeight);
+        using var clipper = ImUtf8.ListClipper(data.Count, lineHeight);
         while (clipper.Step())
         {
             for (var actualRow = clipper.DisplayStart; actualRow < clipper.DisplayEnd; actualRow++)
@@ -79,9 +65,6 @@ public static class ImGuiClip
                 draw(data[actualRow], actualRow);
             }
         }
-
-        clipper.End();
-        clipper.Destroy();
     }
 
     // Draw non-random-access data without storing state.

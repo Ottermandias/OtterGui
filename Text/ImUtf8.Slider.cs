@@ -107,7 +107,7 @@ public static unsafe partial class ImUtf8
     /// <summary> Obtain the correct ImGui data type for a number type. </summary>
     /// <exception cref="NotImplementedException"></exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private static ImGuiDataType Type<T>() where T : unmanaged, INumber<T>
+    internal static ImGuiDataType Type<T>() where T : unmanaged, INumber<T>
     {
         if (typeof(T) == typeof(byte))
             return ImGuiDataType.U8;
@@ -149,7 +149,7 @@ public static unsafe partial class ImUtf8
     }
 
     /// <summary> Obtain the default slider format for a number type. </summary>
-    private static ReadOnlySpan<byte> DefaultSliderFormat<T>()
+    internal static ReadOnlySpan<byte> DefaultSliderFormat<T>()
     {
         if (typeof(T) == typeof(byte))
             return "%u"u8;

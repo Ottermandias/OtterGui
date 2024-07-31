@@ -1,6 +1,7 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
+using OtterGui.Text;
 
 namespace OtterGui.Widgets;
 
@@ -48,9 +49,8 @@ public static partial class Widget
         for (var i = offset; i <= end; i += 3)
             buffer[i] = (byte)' ';
 
-        var clipper = new ImGuiListClipperPtr(ImGuiNative.ImGuiListClipper_ImGuiListClipper());
         var numRows = (data.Length + bytesPerRow - 1) / bytesPerRow;
-        clipper.Begin(numRows, ImGui.GetTextLineHeightWithSpacing());
+        using var clipper = ImUtf8.ListClipper(numRows, ImGui.GetTextLineHeightWithSpacing());
         while (clipper.Step())
         {
             for (var actualRow = clipper.DisplayStart; actualRow < clipper.DisplayEnd; actualRow++)
@@ -109,8 +109,5 @@ public static partial class Widget
                 ImGuiNative.igTextUnformatted(packStart, buffer + capacity);
             }
         }
-
-        clipper.End();
-        clipper.Destroy();
     }
 }

@@ -102,4 +102,14 @@ public static partial class ImUtf8
 
         HoverTooltip(tooltip.Span());
     }
+
+    /// <summary> Calculate the required size to display the given icon. </summary>
+    /// <param name="icon"> The given icon. </param>
+    /// <returns> The required size to display the icon. </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static Vector2 CalcIconSize(FontAwesomeIcon icon)
+    {
+        using var _ = ImRaii.PushFont(UiBuilder.IconFont);
+        return CalcTextSize(icon.Bytes().Span);
+    }
 }

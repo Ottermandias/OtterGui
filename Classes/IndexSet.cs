@@ -11,6 +11,12 @@ public class IndexSet : IEnumerable<int>
     public int Count
         => _count;
 
+    public bool IsEmpty
+        => _count == 0;
+
+    public bool IsFull
+        => _count == _set.Count;
+
     public bool this[Index index]
     {
         get => _set[index];
@@ -80,17 +86,19 @@ public class IndexSet : IEnumerable<int>
     /// <summary>
     /// Gets an enumerable that will return the indices that are either part of this set, or missing from it.
     /// </summary>
+    /// <param name="start">The beginning of the slice to enumerate</param>
+    /// <param name="length">The length of the slice to enumerate</param>
     /// <param name="complement">false (default) to get the indices that are part of this set, true to get those that are missing from it</param>
     /// <returns>The index enumerable</returns>
-    public IEnumerable<int> Indices(bool complement = false)
+    public IEnumerable<int> Indices(int start = 0, int? length = null, bool complement = false)
     {
-        var capacity = _set.Count;
-        var remaining = complement ? capacity - _count : _count;
+        var end       = length.HasValue ? Math.Min(start + length.Value, _set.Count) : _set.Count;
+        var remaining = complement ? _set.Count - _count : _count;
 
         if (remaining <= 0)
             yield break;
 
-        for (var i = 0; i < capacity; ++i)
+        for (var i = start; i < end; ++i)
         {
             if (_set[i] == complement)
                 continue;
@@ -111,28 +119,30 @@ public class IndexSet : IEnumerable<int>
     /// <summary>
     /// Gets an enumerable that will return the ranges of indices that are either part of this set, or missing from it.
     /// </summary>
+    /// <param name="start">The beginning of the slice to enumerate</param>
+    /// <param name="length">The length of the slice to enumerate</param>
     /// <param name="complement">false (default) to get the ranges of indices that are part of this set, true to get those that are missing from it</param>
     /// <returns>The range enumerable</returns>
-    public IEnumerable<(int Start, int End)> Ranges(bool complement = false)
+    public IEnumerable<(int Start, int End)> Ranges(int start = 0, int? length = null, bool complement = false)
     {
-        var capacity = _set.Count;
-        var remaining = complement ? capacity - _count : _count;
+        var end       = length.HasValue ? Math.Min(start + length.Value, _set.Count) : _set.Count;
+        var remaining = complement ? _set.Count - _count : _count;
 
         if (remaining <= 0)
             yield break;
 
-        for (var i = 0; i < capacity; ++i)
+        for (var i = start; i < end; ++i)
         {
             if (_set[i] == complement)
                 continue;
 
-            var start = i;
-            while (i < capacity && _set[i] != complement)
+            var rangeStart = i;
+            while (i < end && _set[i] != complement)
                 ++i;
 
-            yield return (start, i);
+            yield return (rangeStart, i);
 
-            remaining -= i - start;
+            remaining -= i - rangeStart;
             if (remaining == 0)
                 yield break;
         }
