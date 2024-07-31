@@ -197,6 +197,17 @@ public static class Functions
         return version;
     }
 
+    // If vec doesn't fit within max, return the largest vector of the same aspect ratio that does.
+    public static Vector2 Contain(this Vector2 vec, Vector2 max)
+    {
+        if (vec.X > max.X)
+            vec = max with { Y = vec.Y * max.X / vec.X };
+        if (vec.Y > max.Y)
+            vec = max with { X = vec.X * max.Y / vec.Y };
+
+        return vec;
+    }
+
     // Try to obtain the list of Quick Access folders from your system.
     public static bool GetQuickAccessFolders(out List<(string Name, string Path)> folders)
     {

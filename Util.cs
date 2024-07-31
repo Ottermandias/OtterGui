@@ -5,6 +5,7 @@ using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Raii;
+using OtterGui.Text;
 
 namespace OtterGui;
 
@@ -67,7 +68,7 @@ public static partial class ImGuiUtil
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         var v = value;
-        if (!ImGui.InputScalar(label, ImGuiDataType.U64, (nint)(&v), nint.Zero, nint.Zero, format, flags) || v == value)
+        if (!ImUtf8.InputScalar(label, ref v, format, flags: flags) || v == value)
             return false;
 
         value = v;
@@ -108,6 +109,30 @@ public static partial class ImGuiUtil
     }
 
     // Draw the same text multiple times to simulate a shadowed text.
+    public static void TextShadowed(ReadOnlySpan<byte> text, uint foregroundColor, uint shadowColor, byte shadowWidth = 1)
+    {
+        var x = ImGui.GetCursorPosX();
+        var y = ImGui.GetCursorPosY();
+
+        for (var i = -shadowWidth; i <= shadowWidth; i++)
+        {
+            for (var j = -shadowWidth; j <= shadowWidth; j++)
+            {
+                if (i == 0 && j == 0)
+                    continue;
+
+                ImGui.SetCursorPosX(x + i);
+                ImGui.SetCursorPosY(y + j);
+                ImUtf8.Text(text, shadowColor);
+            }
+        }
+
+        ImGui.SetCursorPosX(x);
+        ImGui.SetCursorPosY(y);
+        ImUtf8.Text(text, foregroundColor);
+    }
+
+    // Draw the same text multiple times to simulate a shadowed text.
     public static void TextShadowed(ImDrawListPtr drawList, Vector2 position, string text, uint foregroundColor, uint shadowColor,
         byte shadowWidth = 1)
     {
@@ -123,6 +148,24 @@ public static partial class ImGuiUtil
         }
 
         drawList.AddText(position, foregroundColor, text);
+    }
+
+    // Draw the same text multiple times to simulate a shadowed text.
+    public static void TextShadowed(ImDrawListPtr drawList, Vector2 position, ReadOnlySpan<byte> text, uint foregroundColor, uint shadowColor,
+        byte shadowWidth = 1)
+    {
+        for (var i = -shadowWidth; i <= shadowWidth; i++)
+        {
+            for (var j = -shadowWidth; j <= shadowWidth; j++)
+            {
+                if (i == 0 && j == 0)
+                    continue;
+
+                drawList.AddText(text, position + new Vector2(i, j), shadowColor);
+            }
+        }
+
+        drawList.AddText(text, position, foregroundColor);
     }
 
     /// <summary> Draw a group of texts with colors without additional spacing between them in the same line. </summary>
@@ -142,15 +185,8 @@ public static partial class ImGuiUtil
     }
 
 
-    // Go to the next column, then enter text.
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void TextNextColumn(string text)
-    {
-        ImGui.TableNextColumn();
-        ImGui.TextUnformatted(text);
-    }
-
     // Draw a single piece of text in the given color.
+    /// <seealso cref="ImUtf8.Text(ReadOnlySpan{byte}, uint)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void TextColored(uint color, string text)
     {
@@ -164,6 +200,14 @@ public static partial class ImGuiUtil
         ImGui.Bullet();
         ImGui.SameLine();
         TextColored(color, text);
+    }
+
+    public static void BulletTextColored(uint color, ReadOnlySpan<byte> text)
+    {
+        using var g = ImRaii.Group();
+        ImGui.Bullet();
+        ImGui.SameLine();
+        ImUtf8.Text(text, color);
     }
 
     // Create a selectable that copies a text to clipboard when clicked.
@@ -186,9 +230,33 @@ public static partial class ImGuiUtil
         HoverTooltip(tooltip);
     }
 
+    // Create a selectable that copies a text to clipboard when clicked.
+    // Also adds a tooltip on hover.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void CopyOnClickSelectable(ReadOnlySpan<byte> text, ReadOnlySpan<byte> copiedText, ReadOnlySpan<byte> tooltip)
+    {
+        if (ImUtf8.Selectable(text))
+        {
+            try
+            {
+                ImUtf8.SetClipboardText(copiedText);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        ImUtf8.HoverTooltip(tooltip);
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(string text)
         => CopyOnClickSelectable(text, text, "Click to copy to clipboard.");
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void CopyOnClickSelectable(ReadOnlySpan<byte> text)
+        => CopyOnClickSelectable(text, text, "Click to copy to clipboard."u8);
 
     // Draw a single FontAwesomeIcon.
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
@@ -205,6 +273,16 @@ public static partial class ImGuiUtil
         ImGuiComponents.HelpMarker(tooltip);
         ImGui.SameLine();
         ImGui.TextUnformatted(label);
+        HoverTooltip(tooltip);
+    }
+
+    // Draw a help marker, followed by a label.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void LabeledHelpMarker(ReadOnlySpan<byte> label, string tooltip)
+    {
+        ImGuiComponents.HelpMarker(tooltip);
+        ImGui.SameLine();
+        ImUtf8.Text(label);
         HoverTooltip(tooltip);
     }
 
@@ -227,6 +305,25 @@ public static partial class ImGuiUtil
         }
     }
 
+    // Draw a help marker on a selectable, typically for combo box items.
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void SelectableHelpMarker(ReadOnlySpan<byte> tooltip)
+    {
+        var hovered = ImGui.IsItemHovered();
+        ImGui.SameLine();
+        using (var _ = ImRaii.PushFont(UiBuilder.IconFont))
+        {
+            using var color = ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.TextDisabled));
+            ImUtf8.TextRightAligned(FontAwesomeIcon.InfoCircle.Bytes().Span, ImGui.GetStyle().ItemSpacing.X);
+        }
+
+        if (hovered)
+        {
+            using var tt = ImRaii.Tooltip();
+            ImUtf8.Text(tooltip);
+        }
+    }
+
     // Drag between min and max with the given speed and format.
     // Has width of width.
     // Returns true if the item was edited but is not active anymore.
@@ -242,10 +339,34 @@ public static partial class ImGuiUtil
     // Drag between min and max with the given speed and format.
     // Has width of width.
     // Returns true if the item was edited but is not active anymore.
+    public static bool DragFloat(ReadOnlySpan<byte> label, ref float value, float width, float speed, float min, float max, ReadOnlySpan<byte> format)
+    {
+        ImGui.SetNextItemWidth(width);
+        if (ImUtf8.DragScalar(label, ref value, format, min, max, speed))
+            value = Math.Clamp(value, min, max);
+
+        return ImGui.IsItemDeactivatedAfterEdit();
+    }
+
+    // Drag between min and max with the given speed and format.
+    // Has width of width.
+    // Returns true if the item was edited but is not active anymore.
     public static bool DragInt(string label, ref int value, float width, float speed, int min, int max, string format)
     {
         ImGui.SetNextItemWidth(width);
         if (ImGui.DragInt(label, ref value, speed, min, max, format))
+            value = Math.Clamp(value, min, max);
+
+        return ImGui.IsItemDeactivatedAfterEdit();
+    }
+
+    // Drag between min and max with the given speed and format.
+    // Has width of width.
+    // Returns true if the item was edited but is not active anymore.
+    public static bool DragInt(ReadOnlySpan<byte> label, ref int value, float width, float speed, int min, int max, ReadOnlySpan<byte> format)
+    {
+        ImGui.SetNextItemWidth(width);
+        if (ImUtf8.DragScalar(label, ref value, format, min, max, speed))
             value = Math.Clamp(value, min, max);
 
         return ImGui.IsItemDeactivatedAfterEdit();
@@ -266,6 +387,25 @@ public static partial class ImGuiUtil
             var          buttonCenter = (size.X - buttonSize) / 2 - ImGui.GetStyle().WindowPadding.X;
             ImGui.SetCursorPos(new Vector2(buttonCenter, size.Y - ImGui.GetFrameHeight() * 1.75f));
             if (ImGui.Button(buttonText, new Vector2(buttonSize, 0)))
+                ImGui.CloseCurrentPopup();
+        }
+    }
+
+    // Create a centered, modal help popup with the given content for the given label.
+    // It has a centered 'Understood' button to close the window.
+    public static void HelpPopup(ReadOnlySpan<byte> label, Vector2 size, Action content)
+    {
+        ImGui.SetNextWindowPos(ImGui.GetMainViewport().GetCenter(), ImGuiCond.Always, new Vector2(0.5f));
+        ImGui.SetNextWindowSize(size);
+        using var pop = ImUtf8.Popup(label, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove);
+        if (pop)
+        {
+            content();
+            var buttonText   = "Understood"u8;
+            var buttonSize   = Math.Max(size.X / 5, ImUtf8.CalcTextSize(buttonText).X + 2 * ImGui.GetStyle().FramePadding.X);
+            var buttonCenter = (size.X - buttonSize) / 2 - ImGui.GetStyle().WindowPadding.X;
+            ImGui.SetCursorPos(new Vector2(buttonCenter, size.Y - ImGui.GetFrameHeight() * 1.75f));
+            if (ImUtf8.Button(buttonText, new Vector2(buttonSize, 0)))
                 ImGui.CloseCurrentPopup();
         }
     }
@@ -313,24 +453,64 @@ public static partial class ImGuiUtil
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void DrawTextButton(string text, Vector2 size, uint buttonColor)
+    public static bool DrawDisabledButton(FontAwesomeIcon icon, Vector2 size, string description, bool disabled)
+        => DrawDisabledButton(icon.ToIconString(), size, description, disabled, true);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static bool DrawDisabledButton(ReadOnlySpan<byte> label, Vector2 size, ReadOnlySpan<byte> description, bool disabled, bool icon = false)
+    {
+        using var dis  = ImRaii.PushStyle(ImGuiStyleVar.Alpha, 0.5f, disabled);
+        using var font = ImRaii.PushFont(UiBuilder.IconFont, icon);
+        var       ret  = ImUtf8.Button(label, size);
+        font.Pop();
+        dis.Pop();
+        ImUtf8.HoverTooltip(description);
+        return ret && !disabled;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static bool DrawDisabledButton(FontAwesomeIcon icon, Vector2 size, ReadOnlySpan<byte> description, bool disabled)
+        => DrawDisabledButton(icon.Bytes().Span, size, description, disabled, true);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static bool DrawTextButton(string text, Vector2 size, uint buttonColor)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
             .Push(ImGuiCol.ButtonActive,  buttonColor)
             .Push(ImGuiCol.ButtonHovered, buttonColor);
-        ImGui.Button(text, size);
+        return ImGui.Button(text, size);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public static void DrawTextButton(string text, Vector2 size, uint buttonColor, uint textColor)
+    public static bool DrawTextButton(ReadOnlySpan<byte> text, Vector2 size, uint buttonColor)
+    {
+        using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
+            .Push(ImGuiCol.ButtonActive,  buttonColor)
+            .Push(ImGuiCol.ButtonHovered, buttonColor);
+        return ImUtf8.Button(text, size);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static bool DrawTextButton(string text, Vector2 size, uint buttonColor, uint textColor)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
             .Push(ImGuiCol.ButtonActive,  buttonColor)
             .Push(ImGuiCol.ButtonHovered, buttonColor)
             .Push(ImGuiCol.Text,          textColor);
-        ImGui.Button(text, size);
+        return ImGui.Button(text, size);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static bool DrawTextButton(ReadOnlySpan<byte> text, Vector2 size, uint buttonColor, uint textColor)
+    {
+        using var color = ImRaii.PushColor(ImGuiCol.Button, buttonColor)
+            .Push(ImGuiCol.ButtonActive,  buttonColor)
+            .Push(ImGuiCol.ButtonHovered, buttonColor)
+            .Push(ImGuiCol.Text,          textColor);
+        return ImUtf8.Button(text, size);
+    }
+
+    /// <seealso cref="ImUtf8.HoverTooltip(ImGuiHoveredFlags, ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverTooltip(string tooltip, ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
     {
@@ -374,6 +554,19 @@ public static partial class ImGuiUtil
         return true;
     }
 
+    public static bool Checkbox(ReadOnlySpan<byte> label, ReadOnlySpan<byte> description, bool current, Action<bool> setter,
+        ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
+    {
+        var tmp    = current;
+        var result = ImUtf8.Checkbox(label, ref tmp);
+        ImUtf8.HoverTooltip(flags, description);
+        if (!result || tmp == current)
+            return false;
+
+        setter(tmp);
+        return true;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawTableColumn(string text)
     {
@@ -382,11 +575,26 @@ public static partial class ImGuiUtil
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void DrawTableColumn(ReadOnlySpan<byte> text)
+    {
+        ImGui.TableNextColumn();
+        ImUtf8.Text(text);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void DrawFrameColumn(string text)
     {
         ImGui.TableNextColumn();
         ImGui.AlignTextToFramePadding();
         ImGui.TextUnformatted(text);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void DrawFrameColumn(ReadOnlySpan<byte> text)
+    {
+        ImGui.TableNextColumn();
+        ImGui.AlignTextToFramePadding();
+        ImUtf8.Text(text);
     }
 
     public static bool DrawEditButtonText(int id, string current, out string newText, ref bool edit, Vector2 buttonSize, float inputWidth,
@@ -470,6 +678,7 @@ public static partial class ImGuiUtil
         ImGui.EndTooltip();
     }
 
+    /// <seealso cref="ImUtf8.TextRightAligned(ReadOnlySpan{byte}, float)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void RightAlign(string text, float offset = 0)
     {
@@ -485,6 +694,14 @@ public static partial class ImGuiUtil
         TextColored(color, text);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public static void RightJustify(ReadOnlySpan<byte> text, uint color)
+    {
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() - ImUtf8.CalcTextSize(text).X);
+        ImUtf8.Text(text, color);
+    }
+
+    /// <seealso cref="ImUtf8.TextCentered(ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void Center(string text)
     {
@@ -545,6 +762,12 @@ public static partial class ImGuiUtil
         }
     }
 
+    /// <summary>
+    /// Input an ushort.
+    /// </summary>
+    public static unsafe bool InputUInt16(ReadOnlySpan<byte> label, ref ushort v, ImGuiInputTextFlags flags)
+        => ImUtf8.InputScalar(label, ref v, "%hu"u8, flags: flags);
+
     /// <inheritdoc cref="ColorIntensity(Vector4)"/>
     public static float ColorIntensity(uint color)
         => ColorIntensity(ColorHelpers.RgbaUintToVector4(color));
@@ -569,6 +792,7 @@ public static partial class ImGuiUtil
     public static Vector4 ContrastColorBw(Vector4 color)
         => ColorIntensity(color) >= 4 ? new Vector4(0, 0, 0, color.W) : new Vector4(1, 1, 1, color.W);
 
+    /// <seealso cref="Text.EndObjects.DragDropTarget.CheckPayload(ReadOnlySpan{byte}, ImGuiDragDropFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool IsDropping(string name)
         => ImGui.AcceptDragDropPayload(name).NativePtr != null;
@@ -601,6 +825,34 @@ public static partial class ImGuiUtil
         return ret;
     }
 
+    /// <summary> Make a single-button color picker with a contrasted letter centered on it. </summary>
+    public static bool ColorPicker(ReadOnlySpan<byte> label, ReadOnlySpan<byte> tooltip, Vector3 input, Action<Vector3> setter, ReadOnlySpan<byte> letter = default)
+    {
+        var ret = false;
+        if (ImUtf8.ColorEdit(label, ref input,
+                ImGuiColorEditFlags.NoInputs
+              | ImGuiColorEditFlags.DisplayRGB
+              | ImGuiColorEditFlags.InputRGB
+              | ImGuiColorEditFlags.NoTooltip
+              | ImGuiColorEditFlags.HDR))
+        {
+            setter(input);
+            ret = true;
+        }
+
+        if (letter.Length > 0 && ImGui.IsItemVisible())
+        {
+            var textSize  = ImUtf8.CalcTextSize(letter);
+            var center    = ImGui.GetItemRectMin() + (ImGui.GetItemRectSize() - textSize) / 2;
+            var textColor = ContrastColorBw(new Vector4(input, 0.7f));
+            ImGui.GetWindowDrawList().AddText(letter, center, ImGui.ColorConvertFloat4ToU32(textColor));
+        }
+
+        ImUtf8.HoverTooltip(tooltip);
+
+        return ret;
+    }
+
     public static bool GuidInput(string label, string hint, string tooltip, ref Guid? guid, ref string text, float width = 0)
     {
         if (width != 0)
@@ -617,4 +869,31 @@ public static partial class ImGuiUtil
 
         return ret;
     }
+
+    /// <summary> Halves the alpha of the given color. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfTransparent(uint baseColor)
+        => (baseColor & 0x00FFFFFFu) | ((baseColor & 0xFE000000u) >> 1);
+
+    /// <summary> Gets the current text color, but with halved alpha. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfTransparentText()
+        => HalfTransparent(ImGui.GetColorU32(ImGuiCol.Text));
+
+    /// <summary>
+    /// Blends the given colors in equal proportions.
+    /// <paramref name="overlayColor"/> can only be fully saturated black, red, green, blue, cyan, magenta, yellow or white.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfBlend(uint baseColor, uint overlayColor)
+        => (baseColor & 0xFF000000u) | ((baseColor & 0x00FEFEFEu) >> 1) | (overlayColor & 0x00808080u);
+
+    /// <summary> Gets the current text color, blended in equal proportions with the given fully saturated color. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint HalfBlendText(uint overlayColor)
+        => HalfBlend(ImGui.GetColorU32(ImGuiCol.Text), overlayColor);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint ColorConvertFloat3ToU32(Vector3 color)
+        => ImGui.ColorConvertFloat4ToU32(new Vector4(color, 1.0f));
 }
