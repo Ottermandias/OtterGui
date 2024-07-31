@@ -23,6 +23,18 @@ public static unsafe partial class ImUtf8
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => ImGuiNative.igDragScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), speed, &min, &max, format.Start(), flags).Bool();
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{byte},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<byte> label, ref T value, ReadOnlySpan<byte> format, T? min = null, T? max = null, float speed = 1,
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+    {
+        var bounds = stackalloc T[2];
+        bounds[0] = min.GetValueOrDefault();
+        bounds[1] = max.GetValueOrDefault();
+        return ImGuiNative.igDragScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), speed, min.HasValue ? bounds : null, max.HasValue ? bounds + 1 : null, format.Start(), flags).Bool();
+    }
+
+
     /// <param name="label"> The slider label as a UTF16 string. </param>
     /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{byte},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
@@ -31,11 +43,25 @@ public static unsafe partial class ImUtf8
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, format, min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<char> label, ref T value, ReadOnlySpan<byte> format, T? min = null, T? max = null, float speed = 1,
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, format, min, max, speed, flags);
+
+
     /// <param name="label"> The slider label as a formatted string. </param>
     /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value, ReadOnlySpan<byte> format,
         T min, T max, float speed = 1,
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span(), ref value, format, min, max, speed, flags);
+
+    /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value, ReadOnlySpan<byte> format,
+        T? min = null, T? max = null, float speed = 1,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span(), ref value, format, min, max, speed, flags);
 
@@ -46,15 +72,35 @@ public static unsafe partial class ImUtf8
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label, ref value, DefaultSliderFormat<T>(), min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{byte},ref T,T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<byte> label, ref T value, T? min = null, T? max = null, float speed = 1,
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label, ref value, DefaultSliderFormat<T>(), min, max, speed, flags);
+
+
     /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool DragScalar<T>(ReadOnlySpan<char> label, ref T value, T min, T max, float speed = 1,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<char> label, ref T value, T? min = null, T? max = null, float speed = 1,
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, min, max, speed, flags);
+
+
     /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value, T min, T max, float speed = 1,
+        ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span(), ref value, min, max, speed, flags);
+
+    /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value, T? min = null, T? max = null, float speed = 1,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span(), ref value, min, max, speed, flags);
 
@@ -67,6 +113,13 @@ public static unsafe partial class ImUtf8
         T min, T max, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label, ref value, format.Span<HintStringHandlerBuffer>(), min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{byte},ref T,ReadOnlySpan{char},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<byte> label, ref T value, ReadOnlySpan<char> format,
+        T? min = null, T? max = null, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label, ref value, format.Span<HintStringHandlerBuffer>(), min, max, speed, flags);
+
+
     /// <param name="format"> The printf format-string to display the number in as a UTF16 string. </param>
     /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -74,11 +127,25 @@ public static unsafe partial class ImUtf8
         T max, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span(), ref value, format.Span<HintStringHandlerBuffer>(), min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,ReadOnlySpan{char},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value, ReadOnlySpan<char> format, T? min = null,
+        T? max = null,
+        float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span(), ref value, format.Span<HintStringHandlerBuffer>(), min, max, speed, flags);
+
+
     /// <param name="format"> The printf format-string to display the number in as a UTF16 string. </param>
     /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool DragScalar<T>(ReadOnlySpan<char> label, ref T value, ReadOnlySpan<char> format,
         T min, T max, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, format.Span<HintStringHandlerBuffer>(), min, max, speed, flags);
+
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ref ReadOnlySpan{char},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<char> label, ref T value, ref ReadOnlySpan<char> format,
+        T? min = null, T? max = null, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, format.Span<HintStringHandlerBuffer>(), min, max, speed, flags);
 
 
@@ -90,6 +157,13 @@ public static unsafe partial class ImUtf8
         float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label, ref value, format.Span(), min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{byte},ref T,ref Utf8StringHandler{HintStringHandlerBuffer},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<byte> label, ref T value, ref Utf8StringHandler<HintStringHandlerBuffer> format, T? min = null, T? max = null,
+        float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label, ref value, format.Span(), min, max, speed, flags);
+
+
     /// <param name="format"> The printf format-string to display the number in as a format string. </param>
     /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,11 +171,25 @@ public static unsafe partial class ImUtf8
         float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
         => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, format.Span(), min, max, speed, flags);
 
+    /// <inheritdoc cref="DragScalar{T}(ReadOnlySpan{char},ref T,ref Utf8StringHandler{HintStringHandlerBuffer},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ReadOnlySpan<char> label, ref T value, ref Utf8StringHandler<HintStringHandlerBuffer> format, T? min = null, T? max = null,
+        float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
+        => DragScalar(label.Span<LabelStringHandlerBuffer>(), ref value, format.Span(), min, max, speed, flags);
+
+
     /// <param name="format"> The printf format-string to display the number in as a format string. </param>
     /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,ReadOnlySpan{byte},T,T,float,ImGuiSliderFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value, T min, T max,
-        ref Utf8StringHandler<HintStringHandlerBuffer> format, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None)
+    public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value,
+        ref Utf8StringHandler<HintStringHandlerBuffer> format, T min, T max, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None)
+        where T : unmanaged, INumber<T>
+        => DragScalar(label.Span(), ref value, format.Span(), min, max, speed, flags);
+
+    /// <inheritdoc cref="DragScalar{T}(ref Utf8StringHandler{LabelStringHandlerBuffer},ref T,ref Utf8StringHandler{HintStringHandlerBuffer},T,T,float,ImGuiSliderFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool DragScalar<T>(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ref T value,
+        ref Utf8StringHandler<HintStringHandlerBuffer> format, T? min = null, T? max = null, float speed = 1, ImGuiSliderFlags flags = ImGuiSliderFlags.None)
         where T : unmanaged, INumber<T>
         => DragScalar(label.Span(), ref value, format.Span(), min, max, speed, flags);
 }
