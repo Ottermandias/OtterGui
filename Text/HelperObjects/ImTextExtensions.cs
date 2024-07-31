@@ -2,6 +2,8 @@ namespace OtterGui.Text.HelperObjects;
 
 public static class ImTextExtensions
 {
+    private static byte _null;
+
     /// <summary> Clone the given byte span with an appended null-terminator. </summary>
     public static TerminatedByteString CloneNullTerminated(this ReadOnlySpan<byte> input)
     {
@@ -78,6 +80,9 @@ public static class ImTextExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal static unsafe byte* Start(this Span<byte> text)
     {
+        if (text.IsEmpty)
+            return (byte*)Unsafe.AsPointer(ref _null);
+
         fixed (byte* ptr = text)
         {
             return ptr;
@@ -88,6 +93,12 @@ public static class ImTextExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal static unsafe byte* Start(this Span<byte> text, out byte* end)
     {
+        if (text.IsEmpty)
+        {
+            end = (byte*)Unsafe.AsPointer(ref _null);
+            return end;
+        }
+
         fixed (byte* ptr = text)
         {
             end = ptr + text.Length;
@@ -99,6 +110,9 @@ public static class ImTextExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal static unsafe byte* Start(this ReadOnlySpan<byte> text)
     {
+        if (text.IsEmpty)
+            return (byte*)Unsafe.AsPointer(ref _null);
+
         fixed (byte* ptr = text)
         {
             return ptr;
@@ -109,6 +123,12 @@ public static class ImTextExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     internal static unsafe byte* Start(this ReadOnlySpan<byte> text, out byte* end)
     {
+        if (text.IsEmpty)
+        {
+            end = (byte*)Unsafe.AsPointer(ref _null);
+            return end;
+        }
+
         fixed (byte* ptr = text)
         {
             end = ptr + text.Length;
