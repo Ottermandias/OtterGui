@@ -60,7 +60,7 @@ public sealed class EnumEditor<T>(IReadOnlyList<(ReadOnlyMemory<byte> Label, T V
             }
 
             if (valueDescription.Length > 0)
-                ImGuiUtil.SelectableHelpMarker(valueDescription.Span);
+                ImUtf8.SelectableHelpMarker(valueDescription.Span);
         }
 
         return ret;

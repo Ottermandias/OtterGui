@@ -93,7 +93,7 @@ public static partial class ImUtf8
     /// <inheritdoc cref="ColorPicker(ref Utf8StringHandler{LabelStringHandlerBuffer},ReadOnlySpan{byte},Vector3,Action{Vector3},ReadOnlySpan{byte})"/>
     public static bool ColorPicker(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ReadOnlySpan<byte> tooltip, Vector3 input,
         Action<Vector3> setter, ref Utf8StringHandler<HintStringHandlerBuffer> letter)
-        => ColorPicker(ref label, tooltip, input, setter, letter.Span());
+        => ColorPicker(label.Span(), tooltip, input, setter, letter.Span());
 
 
     /// <param name="tooltip"> A tooltip when hovering the color picker as a UTF16 string. </param>
