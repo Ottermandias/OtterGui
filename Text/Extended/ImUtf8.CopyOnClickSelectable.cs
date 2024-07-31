@@ -29,24 +29,24 @@ public static partial class ImUtf8
         HoverTooltip(tooltip);
     }
 
+    /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{byte},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <exception cref="ImUtf8FormatException" />
-    /// <param name="text"> The given text as a UTF16 string. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<char> text, ReadOnlySpan<byte> copiedText, ReadOnlySpan<byte> tooltip)
         => CopyOnClickSelectable(text.Span<TextStringHandlerBuffer>(), copiedText, tooltip);
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <param name="text"> The given text as a formatted string. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ref Utf8StringHandler<TextStringHandlerBuffer> text, ReadOnlySpan<byte> copiedText,
         ReadOnlySpan<byte> tooltip)
         => CopyOnClickSelectable(text.Span(), copiedText, tooltip);
 
 
+    /// <param name="copiedText"> The text to copy as a UTF16 string. </param>
     /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{byte},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <exception cref="ImUtf8FormatException" />
-    /// <param name="copiedText"> The text to copy as a UTF16 string. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<byte> text, ReadOnlySpan<char> copiedText, ReadOnlySpan<byte> tooltip)
     {
@@ -65,22 +65,22 @@ public static partial class ImUtf8
         HoverTooltip(tooltip);
     }
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <param name="copiedText"> The text to copy as a UTF16 string. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<char> text, ReadOnlySpan<char> copiedText, ReadOnlySpan<byte> tooltip)
         => CopyOnClickSelectable(text.Span<TextStringHandlerBuffer>(), copiedText, tooltip);
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ref Utf8StringHandler{TextStringHandlerBuffer},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <param name="copiedText"> The text to copy as a UTF16 string. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ref Utf8StringHandler{TextStringHandlerBuffer},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ref Utf8StringHandler<TextStringHandlerBuffer> text, ReadOnlySpan<char> copiedText,
         ReadOnlySpan<byte> tooltip)
         => CopyOnClickSelectable(text.Span(), copiedText, tooltip);
 
+    /// <param name="tooltip"> The text to display on hover. </param>
     /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{byte},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <exception cref="ImUtf8FormatException" />
-    /// <param name="tooltip"> The text to display on hover. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<byte> text, ReadOnlySpan<byte> copiedText, ReadOnlySpan<char> tooltip)
     {
@@ -99,8 +99,8 @@ public static partial class ImUtf8
         HoverTooltip(tooltip);
     }
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     /// <param name="tooltip"> The text to display on hover. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<char> text, ReadOnlySpan<byte> copiedText, ReadOnlySpan<char> tooltip)
         => CopyOnClickSelectable(text.Span<TextStringHandlerBuffer>(), copiedText, tooltip);
@@ -113,8 +113,8 @@ public static partial class ImUtf8
         => CopyOnClickSelectable(text.Span(), copiedText, tooltip);
 
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{byte},ReadOnlySpan{char},ReadOnlySpan{byte})"/>
     /// <param name="tooltip"> The text to display on hover. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{byte},ReadOnlySpan{char},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<byte> text, ReadOnlySpan<char> copiedText, ReadOnlySpan<char> tooltip)
     {
@@ -133,14 +133,14 @@ public static partial class ImUtf8
         HoverTooltip(tooltip);
     }
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{char},ReadOnlySpan{byte})"/>
     /// <param name="tooltip"> The text to display on hover. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ReadOnlySpan{char},ReadOnlySpan{char},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ReadOnlySpan<char> text, ReadOnlySpan<char> copiedText, ReadOnlySpan<char> tooltip)
         => CopyOnClickSelectable(text.Span<TextStringHandlerBuffer>(), copiedText, tooltip);
 
-    /// <inheritdoc cref="CopyOnClickSelectable(ref Utf8StringHandler{TextStringHandlerBuffer},ReadOnlySpan{char},ReadOnlySpan{byte})"/>
     /// <param name="tooltip"> The text to display on hover. </param>
+    /// <inheritdoc cref="CopyOnClickSelectable(ref Utf8StringHandler{TextStringHandlerBuffer},ReadOnlySpan{char},ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void CopyOnClickSelectable(ref Utf8StringHandler<TextStringHandlerBuffer> text, ReadOnlySpan<char> copiedText,
         ReadOnlySpan<char> tooltip)
