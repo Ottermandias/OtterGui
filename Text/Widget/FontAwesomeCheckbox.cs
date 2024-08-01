@@ -6,16 +6,11 @@ namespace OtterGui.Text.Widget;
 
 /// <summary> A two-state checkbox displaying an arbitrary icon instead of a checkmark. </summary>
 /// <param name="icon"> The icon to display for 'True'. </param>
-/// <param name="color"> The optional color to display the icon in. If null, TextColor will be used. </param>
+/// <param name="color"> The optional color to display the icon in. If null, CheckMark color will be used. </param>
 public class FontAwesomeCheckbox(FontAwesomeIcon icon, uint? color = null) : FontAwesomeCheckbox<bool>
 {
-    /// <summary> The icon to display for 'True'. </summary>
-    public readonly FontAwesomeIcon Icon = icon;
-    /// <summary> The optional color to display the icon in. If null, TextColor will be used. </summary>
-    public readonly uint? Color = color;
-
     protected override (FontAwesomeIcon? Icon, uint? Color) GetIcon(bool value)
-        => value ? (Icon, Color) : (null, null);
+        => value ? (icon, color) : (null, null);
 
     protected override bool NextValue(bool value)
         => !value;
