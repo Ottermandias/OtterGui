@@ -6,6 +6,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
 using OtterGui.Log;
+using OtterGui.Text;
 
 namespace OtterGui.Classes;
 
@@ -15,7 +16,7 @@ public class Notification : MessageService.IMessage
 
     public string NotificationMessage { get; }
 
-    public uint NotificationDuration { get; }
+    public uint NotificationDuration { get; init; }
 
     private readonly string     _content2;
     private readonly Exception? _ex;
@@ -103,9 +104,29 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
 
     private readonly SortedDictionary<DateTime, IMessage> _messages   = [];
     private          DateTime                             _deleteTime = DateTime.MinValue;
-    private          Vector2                              _buttonSize;
 
-    public void AddMessage(IMessage message, bool doPrint = true, bool doNotify = true, bool doLog = true, bool doChat = false)
+    private readonly int      _lastTaggedMessageCLeanCycle = 128;
+    private readonly TimeSpan _lastTaggedMessageMaxAge     = TimeSpan.FromMinutes(5);
+    private          int      _taggedMessageCleanCounter;
+
+    private readonly ConcurrentDictionary<string, (DateTime LastMessage, IMessage Message)> _taggedMessages = [];
+
+    /// <summary> Print a message with a tag only if it has not been sent within <seealso cref="_lastTaggedMessageMaxAge"/>. </summary>
+    /// <param name="tag"> The tag to compare messages by. </param>
+    /// <param name="message"> The message. </param>
+    public void AddTaggedMessage(string tag, IMessage message)
+    {
+        CleanTaggedMessages(true);
+
+        // Don't warn twice for the same tag.
+        if (_taggedMessages.TryGetValue(tag, out _))
+            return;
+
+        var time = AddMessage(message);
+        _taggedMessages[tag] = (time, message);
+    }
+
+    public DateTime AddMessage(IMessage message, bool doPrint = true, bool doNotify = true, bool doLog = true, bool doChat = false)
     {
         var time         = DateTime.UtcNow;
         var printMessage = message.PrintMessage;
@@ -134,19 +155,38 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
         var chatMessage = message.ChatMessage;
         if (doChat && chatMessage.Payloads.Count > 0)
             Chat.Print(chatMessage);
+        return time;
+    }
+
+    /// <summary> Cleans up all tagged messages that happened long enough ago. </summary>
+    /// <param name="force"> If this is false, it only cleans up sporadically. </param>
+    public void CleanTaggedMessages(bool force)
+    {
+        if (!force && ++_taggedMessageCleanCounter >= _lastTaggedMessageCLeanCycle)
+        {
+            _taggedMessageCleanCounter = 0;
+            return;
+        }
+
+        var expiredDate = DateTime.UtcNow - _lastTaggedMessageMaxAge;
+        foreach (var (key, value) in _taggedMessages)
+        {
+            if (value.Item1 <= expiredDate && _taggedMessages.TryRemove(key, out var pair))
+                _messages.Remove(pair.LastMessage);
+        }
     }
 
     public void Draw()
     {
-        _buttonSize = new Vector2(ImGui.GetFrameHeight());
+        var buttonSize = new Vector2(ImGui.GetFrameHeight());
         _deleteTime = DateTime.MinValue;
 
-        using var table = ImRaii.Table("errors", 5, ImGuiTableFlags.RowBg);
-        ImGui.TableSetupColumn("##del",   ImGuiTableColumnFlags.WidthFixed, _buttonSize.X);
-        ImGui.TableSetupColumn("Time",    ImGuiTableColumnFlags.WidthFixed, ImGui.CalcTextSize("00:00:00.0000").X);
-        ImGui.TableSetupColumn("##icon",  ImGuiTableColumnFlags.WidthFixed, _buttonSize.X);
-        ImGui.TableSetupColumn("##multi", ImGuiTableColumnFlags.WidthFixed, _buttonSize.X);
-        ImGui.TableSetupColumn("Message", ImGuiTableColumnFlags.WidthStretch);
+        using var table = ImUtf8.Table("errors"u8, 5, ImGuiTableFlags.RowBg);
+        ImUtf8.TableSetupColumn("##del"u8,   ImGuiTableColumnFlags.WidthFixed, buttonSize.X);
+        ImUtf8.TableSetupColumn("Time"u8,    ImGuiTableColumnFlags.WidthFixed, ImUtf8.CalcTextSize("00:00:00.0000"u8).X);
+        ImUtf8.TableSetupColumn("##icon"u8,  ImGuiTableColumnFlags.WidthFixed, buttonSize.X);
+        ImUtf8.TableSetupColumn("##multi"u8, ImGuiTableColumnFlags.WidthFixed, buttonSize.X);
+        ImUtf8.TableSetupColumn("Message"u8, ImGuiTableColumnFlags.WidthStretch);
 
         ImGui.TableHeadersRow();
         ImGui.TableNextRow();
@@ -171,15 +211,14 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
     {
         using var id = ImRaii.PushId(message.Item2);
         ImGui.TableNextColumn();
-        if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), _buttonSize, "Remove this from the list.", false, true))
+        if (ImUtf8.IconButton(FontAwesomeIcon.Trash, "Remove this from the list."u8))
             _deleteTime = message.Item1.Key;
 
         ImGui.TableNextColumn();
-        ImGui.AlignTextToFramePadding();
-        ImGui.TextUnformatted(message.Item1.Key.ToLocalTime().ToString("HH:mm:ss.fff"));
+        ImUtf8.TextFrameAligned($"{message.Item1.Key.ToLocalTime():HH:mm:ss.fff}");
 
         ImGui.TableNextColumn();
-        using (var font = ImRaii.PushFont(UiBuilder.IconFont))
+        using (ImRaii.PushFont(UiBuilder.IconFont))
         {
             var (icon, color) = message.Item1.Value.NotificationType switch
             {
@@ -192,7 +231,7 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
             };
             using var c = ImRaii.PushColor(ImGuiCol.Text, color);
             ImGui.AlignTextToFramePadding();
-            ImGui.TextUnformatted(icon.ToIconString());
+            ImUtf8.Icon(icon);
         }
 
         var text      = message.Item1.Value.PrintMessage;
@@ -214,9 +253,8 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
         }
 
         ImGui.TableNextColumn();
-        ImGui.AlignTextToFramePadding();
-        ImGui.TextUnformatted(firstLine);
-        ImGuiUtil.HoverTooltip(tooltip);
+        ImUtf8.TextFrameAligned(firstLine);
+        ImUtf8.HoverTooltip(tooltip);
     }
 
     public IEnumerator<KeyValuePair<DateTime, IMessage>> GetEnumerator()
