@@ -48,8 +48,9 @@ public class FileCompactor(Logger logger) : IDisposable, IService
     /// <summary> Start a new mass compact operation on a set of files. </summary>
     /// <param name="files"> The set of files we want to compact. </param>
     /// <param name="algorithm"> The compression algorithm to use. Use None to decompress files instead. </param>
+    /// <param name="logFileNotFound"> Whether files that were listed but then could not be found during the iteration should incur errors in the log. </param>
     /// <returns> If the task could successfully be started. </returns>
-    public bool StartMassCompact(IEnumerable<FileInfo> files, CompressionAlgorithm algorithm)
+    public bool StartMassCompact(IEnumerable<FileInfo> files, CompressionAlgorithm algorithm, bool logFileNotFound)
     {
         if (!CanCompact)
             return false;
@@ -78,9 +79,9 @@ public class FileCompactor(Logger logger) : IDisposable, IService
 
                 CurrentFile = list[CurrentIndex];
                 if (algorithm is CompressionAlgorithm.None)
-                    Interop.DecompactFile(CurrentFile.FullName);
+                    DecompactFile(CurrentFile.FullName, logFileNotFound);
                 else
-                    CompactFile(CurrentFile.FullName, algorithm);
+                    CompactFile(CurrentFile.FullName, algorithm, logFileNotFound);
             }
         }, token);
         return true;
@@ -94,7 +95,7 @@ public class FileCompactor(Logger logger) : IDisposable, IService
         if (!CanCompact)
             return new FileInfo(filePath).Length;
 
-        var size        = Interop.GetCompressedFileSize(filePath);
+        var size = Interop.GetCompressedFileSize(filePath);
         if (size < 0)
             return new FileInfo(filePath).Length;
 
@@ -152,8 +153,29 @@ public class FileCompactor(Logger logger) : IDisposable, IService
         return size;
     }
 
+    /// <summary> Try to decompact a file. </summary>
+    private bool DecompactFile(string filePath, bool logFileNotFound = true)
+    {
+        try
+        {
+            Interop.DecompactFile(filePath);
+            return true;
+        }
+        catch (FileNotFoundException ex)
+        {
+            if (logFileNotFound)
+                logger.Error($"Unexpected problem when compacting file {filePath}:\n{ex}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.Error($"Unexpected problem when compacting file {filePath}:\n{ex}");
+            return false;
+        }
+    }
+
     /// <summary> Try to compact a file with a given algorithm. </summary>
-    private bool CompactFile(string filePath, CompressionAlgorithm algorithm = CompressionAlgorithm.Xpress8K)
+    private bool CompactFile(string filePath, CompressionAlgorithm algorithm = CompressionAlgorithm.Xpress8K, bool logFileNotFound = true)
     {
         try
         {
@@ -186,8 +208,15 @@ public class FileCompactor(Logger logger) : IDisposable, IService
 
 
             Interop.CompactFile(filePath, algorithm);
-            logger.Verbose($"Compacted {filePath} from {oldSize} bytes to {new LazyString(() => GetFileSizeOnDisk(filePath).ToString())} bytes.");
+            logger.Verbose(
+                $"Compacted {filePath} from {oldSize} bytes to {new LazyString(() => GetFileSizeOnDisk(filePath).ToString())} bytes.");
             return true;
+        }
+        catch (FileNotFoundException ex)
+        {
+            if (logFileNotFound)
+                logger.Error($"Unexpected problem when compacting file {filePath}:\n{ex}");
+            return false;
         }
         catch (Exception ex)
         {
