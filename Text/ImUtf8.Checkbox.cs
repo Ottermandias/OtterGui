@@ -92,9 +92,9 @@ public static unsafe partial class ImUtf8
     private static (uint, uint) ConvertEnum<T>(T value, T flags) where T : unmanaged, Enum
         => sizeof(T) switch
         {
-            1 => (*(byte*)Unsafe.AsPointer(ref value), *(byte*)&flags),
-            2 => (*(ushort*)Unsafe.AsPointer(ref value), *(ushort*)&flags),
-            4 => (*(uint*)Unsafe.AsPointer(ref value), *(uint*)&flags),
+            1 => (*(byte*)&value, *(byte*)&flags),
+            2 => (*(ushort*)&value, *(ushort*)&flags),
+            4 => (*(uint*)&value, *(uint*)&flags),
             _ => throw new ArgumentException($"Enum type {typeof(T)} has size {sizeof(T)} > 4, which is not supported for flag checkboxes."),
         };
 }

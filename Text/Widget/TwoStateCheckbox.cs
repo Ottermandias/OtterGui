@@ -3,7 +3,6 @@ using OtterGuiInternal.Utility;
 
 namespace OtterGui.Text.Widget;
 
-#pragma warning disable CS1573
 /// <summary> A two-state Checkbox that displays either a checkmark for True values or an X for False values, with no empty state. </summary>
 public sealed class TwoStateCheckbox : MultiStateCheckbox<bool>
 {
