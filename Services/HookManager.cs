@@ -20,6 +20,8 @@ public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, I
     public Task<Hook<T>> CreateHook<T>(string name, nint address, T detour, bool enable = false) where T : Delegate
     {
         CheckDisposed();
+        if (address <= 0)
+            throw new Exception($"Creating Hook {name} failed: address 0x{address:X} is invalid.");
         return AppendTask(Func);
 
         Hook<T> Func()

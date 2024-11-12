@@ -41,6 +41,30 @@ public static partial class Extensions
         return true;
     }
 
+    // Move an item in a list from index 1 to index 2.
+    // The indices are clamped to the valid range and returned.
+    // Other list entries are shifted accordingly.
+    public static bool Move<T>(this IList<T> list, ref int idx1, ref int idx2)
+    {
+        idx1 = Math.Clamp(idx1, 0, list.Count - 1);
+        idx2 = Math.Clamp(idx2, 0, list.Count - 1);
+        if (idx1 == idx2)
+            return false;
+
+        var tmp = list[idx1];
+        // move element down and shift other elements up
+        if (idx1 < idx2)
+            for (var i = idx1; i < idx2; i++)
+                list[i] = list[i + 1];
+        // move element up and shift other elements down
+        else
+            for (var i = idx1; i > idx2; i--)
+                list[i] = list[i - 1];
+
+        list[idx2] = tmp;
+        return true;
+    }
+
     // A filesystem name may not contain forward-slashes, as they are used to split paths.
     // The empty string as name signifies the root, so it can also not be used.
     public static string FixName(this string name)
