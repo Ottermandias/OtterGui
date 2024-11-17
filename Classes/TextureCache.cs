@@ -46,6 +46,6 @@ public class TextureCache(IDataManager dataManager, ITextureProvider textureProv
         => Path.IsPathRooted(file) ? File.Exists(file) : DataManager.FileExists(file);
 
     public bool IconExists(uint iconId)
-        => DataManager.FileExists(TextureProvider.GetIconPath(new GameIconLookup(iconId)))
-         || DataManager.FileExists(TextureProvider.GetIconPath(new GameIconLookup(iconId, false, false)));
+        => TextureProvider.TryGetIconPath(new GameIconLookup(iconId), out _)
+         || TextureProvider.TryGetIconPath(new GameIconLookup(iconId, false, false), out _);
 }
