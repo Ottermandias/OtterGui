@@ -211,6 +211,7 @@ public class ItemSelector<T>
         // Add a slight distance from the border so that the padding of a selectable fills the whole border.
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X);
         // Assume that OnDraw functions like a Selectable, if it returns true, select the value.
+        using var id = ImRaii.PushId(idx);
         if (OnDraw(idx) && idx != CurrentIdx)
         {
             CurrentIdx = idx;
