@@ -1,6 +1,7 @@
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Raii;
+using OtterGui.Text;
 
 namespace OtterGui.Table;
 
@@ -38,6 +39,7 @@ public class Table<T>
       | ImGuiTableFlags.ScrollY
       | ImGuiTableFlags.ScrollX
       | ImGuiTableFlags.PreciseWidths
+      | ImGuiTableFlags.SizingFixedFit
       | ImGuiTableFlags.BordersInnerV
       | ImGuiTableFlags.NoBordersInBodyUntilResize;
 
@@ -138,7 +140,7 @@ public class Table<T>
 
     private void DrawTableInternal()
     {
-        using var table = ImRaii.Table("Table", Headers.Length, Flags,
+        using var table = ImUtf8.Table("Table"u8, Headers.Length, Flags,
             ImGui.GetContentRegionAvail() - ExtraHeight * Vector2.UnitY * ImGuiHelpers.GlobalScale);
         if (!table)
             return;

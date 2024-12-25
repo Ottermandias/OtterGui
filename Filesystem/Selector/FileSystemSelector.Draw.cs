@@ -33,7 +33,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     private (Vector2, Vector2) DrawLeaf(FileSystem<T>.Leaf leaf, in TStateStorage state)
     {
         DrawLeafName(leaf, state, leaf == SelectedLeaf || SelectedPaths.Contains(leaf));
-        if(ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
+        if (ImGui.IsItemHovered() && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
             Select(leaf, state, ImGui.GetIO().KeyCtrl, ImGui.GetIO().KeyShift);
 
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
@@ -200,54 +200,60 @@ public partial class FileSystemSelector<T, TStateStorage>
         // Filter row is outside the child for scrolling.
         DrawFilterRow(width);
 
-        using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        using var _     = ImRaii.Child(Label, new Vector2(width, -ImGui.GetFrameHeight()), true);
-        style.Pop();
-        MainContext();
-        if (!_)
-            return false;
-
-        ImGui.SetScrollX(0);
-        _stateStorage = ImGui.GetStateStorage();
-        style.Push(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
-            .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
-            .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y));
-        //// Check if filters are dirty and recompute them before the draw iteration if necessary.
-        ApplyFilters();
-        if (_jumpToSelection != null)
+        using (var outerStyle = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero)
+                   .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero))
         {
-            var idx = _state.FindIndex(s => s.Path == _jumpToSelection);
-            if (idx >= 0)
-                ImGui.SetScrollFromPosY(ImGui.GetTextLineHeightWithSpacing() * idx - ImGui.GetScrollY());
+            using var child = ImRaii.Child(Label, new Vector2(width, -ImGui.GetFrameHeight()), true);
+            outerStyle.Pop(2);
+            MainContext();
+            if (!child)
+                return false;
 
-            _jumpToSelection = null;
-        }
-
-        // TODO: do this right.
-        //HandleKeyNavigation();
-        using (var clipper = ImUtf8.ListClipper(_state.Count, ImGui.GetTextLineHeightWithSpacing()))
-        {
-            // Draw the clipped list.
-
-            while (clipper.Step())
+            ImGui.SetScrollX(0);
+            _stateStorage = ImGui.GetStateStorage();
+            using (var innerStyle = ImRaii.PushStyle(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
+                       .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
+                       .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y)))
             {
-                _currentIndex = clipper.DisplayStart;
-                _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
-                if (_currentIndex >= _currentEnd)
-                    continue;
+                //// Check if filters are dirty and recompute them before the draw iteration if necessary.
+                ApplyFilters();
+                if (_jumpToSelection != null)
+                {
+                    var idx = _state.FindIndex(s => s.Path == _jumpToSelection);
+                    if (idx >= 0)
+                        ImGui.SetScrollFromPosY(ImGui.GetTextLineHeightWithSpacing() * idx - ImGui.GetScrollY());
 
-                if (_state[_currentIndex].Depth != 0)
-                    DrawPseudoFolders();
-                _currentEnd = Math.Min(_state.Count, _currentEnd);
-                for (; _currentIndex < _currentEnd; ++_currentIndex)
-                    DrawStateStruct(_state[_currentIndex]);
+                    _jumpToSelection = null;
+                }
+
+                // TODO: do this right.
+                //HandleKeyNavigation();
+                using (var clipper = ImUtf8.ListClipper(_state.Count, ImGui.GetTextLineHeightWithSpacing()))
+                {
+                    // Draw the clipped list.
+
+                    while (clipper.Step())
+                    {
+                        _currentIndex = clipper.DisplayStart;
+                        _currentEnd   = Math.Min(_state.Count, clipper.DisplayEnd);
+                        if (_currentIndex >= _currentEnd)
+                            continue;
+
+                        if (_state[_currentIndex].Depth != 0)
+                            DrawPseudoFolders();
+                        _currentEnd = Math.Min(_state.Count, _currentEnd);
+                        for (; _currentIndex < _currentEnd; ++_currentIndex)
+                            DrawStateStruct(_state[_currentIndex]);
+                    }
+                }
             }
+
+            //// Handle all queued actions at the end of the iteration.
+            HandleActions();
+            outerStyle.Push(ImGuiStyleVar.WindowPadding, Vector2.Zero)
+                .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
         }
 
-        //// Handle all queued actions at the end of the iteration.
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
-        HandleActions();
-        style.Push(ImGuiStyleVar.WindowPadding, Vector2.Zero);
         return true;
     }
 

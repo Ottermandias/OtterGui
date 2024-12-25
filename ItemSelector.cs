@@ -1,6 +1,7 @@
 using Dalamud.Interface;
 using ImGuiNET;
 using OtterGui.Raii;
+using OtterGui.Text;
 
 namespace OtterGui;
 
@@ -260,7 +261,7 @@ public class ItemSelector<T>
         var       newFilter = Filter;
         using var style     = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
         ImGui.SetNextItemWidth(width);
-        var enterPressed = ImGui.InputTextWithHint(string.Empty, "Filter...", ref newFilter, 64, ImGuiInputTextFlags.EnterReturnsTrue);
+        var enterPressed = ImUtf8.InputText("##"u8, ref newFilter, "Filter..."u8, ImGuiInputTextFlags.EnterReturnsTrue);
         if (newFilter != Filter)
         {
             Filter      = newFilter;
@@ -382,7 +383,8 @@ public class ItemSelector<T>
     private void DrawDeleteButton(float width)
     {
         using var font = ImRaii.DefaultFont();
-        if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(width, 0), DeleteButtonTooltip(), !DeleteButtonEnabled(), true)
+        if (ImGuiUtil.DrawDisabledButton(FontAwesomeIcon.Trash.ToIconString(), new Vector2(width, 0), DeleteButtonTooltip(),
+                !DeleteButtonEnabled(), true)
          && CurrentIdx >= 0
          && OnDelete(CurrentIdx))
         {
@@ -428,22 +430,25 @@ public class ItemSelector<T>
 
     public void Draw(float width)
     {
-        using var id    = ImRaii.PushId(Label);
-        using var style = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        using var group = ImRaii.Group();
-        using var child = ImRaii.Child(string.Empty, new Vector2(width, -ImGui.GetFrameHeight()), true);
-        if (!child)
-            return;
-
-        style.Pop();
-
-        DrawFilter(width);
-        UpdateFilteredItems();
-        ImGuiClip.ClippedDraw(FilteredItems, InternalDraw, ImGui.GetTextLineHeightWithSpacing());
-        style.Push(ImGuiStyleVar.FrameRounding, 0)
+        using var id = ImRaii.PushId(Label);
+        using var outerStyle = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0)
             .Push(ImGuiStyleVar.WindowPadding, Vector2.Zero)
             .Push(ImGuiStyleVar.ItemSpacing,   Vector2.Zero);
-        child.Dispose();
+        using var group = ImRaii.Group();
+        using (var child = ImRaii.Child(string.Empty, new Vector2(width, -ImGui.GetFrameHeight()), true))
+        {
+            if (!child)
+                return;
+
+            outerStyle.Pop(3);
+            DrawFilter(width);
+            UpdateFilteredItems();
+            ImGuiClip.ClippedDraw(FilteredItems, InternalDraw, ImGui.GetTextLineHeightWithSpacing());
+            outerStyle.Push(ImGuiStyleVar.FrameRounding, 0)
+                .Push(ImGuiStyleVar.WindowPadding, Vector2.Zero)
+                .Push(ImGuiStyleVar.ItemSpacing,   Vector2.Zero);
+        }
+
         DrawButtons(width);
     }
 }
