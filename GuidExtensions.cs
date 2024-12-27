@@ -19,6 +19,24 @@ public static class GuidExtensions
     private static readonly FrozenDictionary<byte, byte> ReverseBytes =
         ReverseChars.ToFrozenDictionary(kvp => (byte)kvp.Key, kvp => kvp.Value);
 
+    /// <summary> Write only the first 8 hexadecimal digits of a GUID to a string (the digits up to the first dash in the default format). </summary>
+    public static unsafe string ShortGuid(this Guid guid)
+    {
+        var bytes = (byte*)&guid;
+        Span<char> text =
+        [
+            Chars[bytes[3] >> 4],
+            Chars[bytes[3] & 0x0F],
+            Chars[bytes[2] >> 4],
+            Chars[bytes[2] & 0x0F],
+            Chars[bytes[1] >> 4],
+            Chars[bytes[1] & 0x0F],
+            Chars[bytes[0] >> 4],
+            Chars[bytes[0] & 0x0F],
+        ];
+        return new string(text);
+    }
+
     public static unsafe string OptimizedString(this Guid guid)
     {
         var bytes = stackalloc ulong[2];
