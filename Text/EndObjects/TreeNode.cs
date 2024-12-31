@@ -10,7 +10,10 @@ public unsafe ref struct TreeNode
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal TreeNode(ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags)
-        => Success = ImGuiNative.igTreeNodeEx_Str(label.Start(), flags).Bool();
+    {
+        Success  = ImGuiNative.igTreeNodeEx_Str(label.Start(), flags).Bool();
+        Disposed = flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(TreeNode value)
