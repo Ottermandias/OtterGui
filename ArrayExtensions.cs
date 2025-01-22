@@ -109,4 +109,44 @@ public static class ArrayExtensions
         result = default;
         return false;
     }
+
+    /// <summary> Write a byte span as a list of hexadecimal bytes separated by spaces. </summary>
+    public static string WriteHexBytes(this ReadOnlySpan<byte> bytes)
+    {
+        var sb = new StringBuilder(bytes.Length * 3);
+        for (var i = 0; i < bytes.Length - 1; ++i)
+            sb.Append($"{bytes[i]:X2} ");
+        sb.Append($"{bytes[^1]:X2}");
+        return sb.ToString();
+    }
+
+    /// <inheritdoc cref="WriteHexBytes(ReadOnlySpan{byte})"/>
+    public static string WriteHexBytes(this Span<byte> bytes)
+        => ((ReadOnlySpan<byte>)bytes).WriteHexBytes();
+
+    /// <summary> Write only the difference of a byte span as a list of hexadecimal bytes separated by spaces, keeping equal bytes as double spaces. </summary>
+    public static string WriteHexByteDiff(this ReadOnlySpan<byte> bytes, ReadOnlySpan<byte> diff)
+    {
+        var shorter = Math.Min(bytes.Length, diff.Length);
+        var sb      = new StringBuilder(shorter * 3);
+        for (var i = 0; i < shorter - 1; ++i)
+        {
+            var d = (byte) (bytes[i] ^ diff[i]);
+            if (d == 0)
+                sb.Append("   ");
+            else
+                sb.Append($"{d:X2} ");
+        }
+
+        var last = (byte) (bytes[shorter - 1] ^ diff[shorter - 1]);
+        if (last == 0)
+            sb.Append("   ");
+        else
+            sb.Append($"{last:X2}");
+        return sb.ToString();
+    }
+
+    /// <inheritdoc cref="WriteHexByteDiff(ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
+    public static string WriteHexByteDiff(this Span<byte> bytes, ReadOnlySpan<byte> diff)
+        => ((ReadOnlySpan<byte>)bytes).WriteHexByteDiff(diff);
 }
