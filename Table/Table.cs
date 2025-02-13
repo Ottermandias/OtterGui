@@ -96,10 +96,19 @@ public class Table<T>
         if (Headers.Length <= SortIdx)
             SortIdx = 0;
 
+        var header = Headers[SortIdx];
         if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Ascending)
-            FilteredItems.StableSort((a, b) => Headers[SortIdx].Compare(a.Item1, b.Item1));
+        {
+            header.PreSort();
+            FilteredItems.StableSort((a, b) => header.Compare(a.Item1, b.Item1));
+            header.PostSort();
+        }
         else if (sortSpecs.Specs.SortDirection == ImGuiSortDirection.Descending)
-            FilteredItems.StableSort((a, b) => Headers[SortIdx].CompareInv(a.Item1, b.Item1));
+        {
+            header.PreSort();
+            FilteredItems.StableSort((a, b) => header.CompareInv(a.Item1, b.Item1));
+            header.PostSort();
+        }
         else
             SortIdx = -1;
         SortDirty            = false;

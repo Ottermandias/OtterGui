@@ -29,6 +29,12 @@ public class Column<TItem>
     public virtual void DrawColumn(TItem item, int idx)
     { }
 
+    public virtual void PreSort()
+    { }
+
+    public virtual void PostSort()
+    { }
+
     public int CompareInv(TItem lhs, TItem rhs)
         => Compare(rhs, lhs);
 }
