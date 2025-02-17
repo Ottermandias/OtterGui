@@ -17,7 +17,9 @@ public static unsafe partial class ImUtf8
         var screenPos   = ImGui.GetCursorScreenPos();
         fixed (byte* ptr = text)
         {
+            ImGuiNative.ImDrawList_PushClipRectFullScreen(dl);
             ImGuiNative.ImDrawList_AddText_Vec2(dl, screenPos, ImGui.GetColorU32(ImGuiCol.Text), ptr, ptr + text.Length);
+            ImGuiNative.ImDrawList_PopClipRect(dl);
         }
 
         var textSize     = CalcTextSize(text, false);
