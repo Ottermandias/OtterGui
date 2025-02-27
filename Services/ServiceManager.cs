@@ -67,13 +67,13 @@ public class ServiceManager : IDisposable
 
     public ServiceManager AddSingleton<T>(Func<IServiceProvider, T> factory) where T : class
     {
-        _collection.AddSingleton<T>(Func);
+        _collection.AddSingleton(Func);
         return this;
 
         T Func(IServiceProvider p)
         {
             _logger.Verbose($"Constructing Service {typeof(T).Name} with custom factory function.");
-            using var timer = Timers.Measure(typeof(T).Name!);
+            using var timer = Timers.Measure(typeof(T).Name);
             return factory(p);
         }
     }
@@ -125,7 +125,7 @@ public class ServiceManager : IDisposable
             var parameters     = parameterTypes.Select(t => p.GetRequiredService(t.ParameterType)).ToArray();
             _logger.Verbose(
                 $"Constructing Service {type.Name} with {string.Join(", ", parameterTypes.Select(name => $"{name.ParameterType}"))}.");
-            using var timer = Timers.Measure(type.Name!);
+            using var timer = Timers.Measure(type.Name);
             return constructor.Invoke(parameters);
         }
     }
