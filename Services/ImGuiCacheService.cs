@@ -90,9 +90,11 @@ public class ImGuiCacheService : IDisposable, IUiService
 
         c = new CacheData();
         if (c.CreateCache(_log, generator, id, KeepAliveFrames))
+        {
+            _caches.Add(id, c);
             return (T)c.Cache!;
+        }
 
-        _caches.Remove(id);
         return default;
     }
 
@@ -124,7 +126,7 @@ public class ImGuiCacheService : IDisposable, IUiService
         for (var i = 0; i < _caches.Count; ++i)
         {
             var cache = _caches.Values[i];
-            if (cache.Frame < frame)
+            if (cache.Frame > frame)
                 continue;
 
             var id = _caches.Keys[i];
@@ -177,7 +179,7 @@ public class ImGuiCacheService : IDisposable, IUiService
         }
     }
 
-    public readonly struct CacheId(int id) : IEquatable<CacheId>
+    public readonly struct CacheId(int id) : IEquatable<CacheId>, IComparable<CacheId>
     {
         private readonly int _id = id;
 
@@ -198,5 +200,8 @@ public class ImGuiCacheService : IDisposable, IUiService
 
         public static bool operator !=(CacheId left, CacheId right)
             => !left.Equals(right);
+
+        public int CompareTo(CacheId other)
+            => _id.CompareTo(other._id);
     }
 }
