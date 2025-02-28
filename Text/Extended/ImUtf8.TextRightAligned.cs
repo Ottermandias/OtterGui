@@ -24,11 +24,11 @@ public static partial class ImUtf8
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void TextRightAligned(ReadOnlySpan<char> text, float offset = 0)
-        => TextRightAligned(text.Span<TextStringHandlerBuffer>());
+        => TextRightAligned(text.Span<TextStringHandlerBuffer>(), offset);
 
     /// <param name="text"> The given text as a formatted string. </param>
     /// <inheritdoc cref="TextRightAligned(ReadOnlySpan{char}, float)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void TextRightAligned(ref Utf8StringHandler<TextStringHandlerBuffer> text, float offset = 0)
-        => TextRightAligned(text.Span());
+        => TextRightAligned(text.Span(), offset);
 }
