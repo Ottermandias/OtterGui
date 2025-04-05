@@ -17,6 +17,9 @@ public class Logger
     private readonly string          _pluginName;
     private readonly string          _prefix;
 
+    public string PluginName
+        => _pluginName;
+
     public Serilog.ILogger MainLogger
         => _pluginLogger;
 
