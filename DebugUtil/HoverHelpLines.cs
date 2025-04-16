@@ -1,6 +1,6 @@
 using ImGuiNET;
 
-namespace OtterGui.Debug;
+namespace OtterGui.DebugUtil;
 
 public static partial class ImDebug
 {

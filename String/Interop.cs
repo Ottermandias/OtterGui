@@ -1,6 +1,6 @@
 using Dalamud.Memory;
 
-namespace OtterGui.Utf8;
+namespace OtterGui.String;
 
 public static unsafe partial class Interop
 {

@@ -1,12 +1,11 @@
 using System.Buffers;
 using Lumina.Misc;
 
-namespace OtterGui.Utf8;
+namespace OtterGui.String;
 
 /// <summary> An UTF8 string container that is not a ref-struct and is guaranteed to be null-terminated. </summary>
-/// <remarks> </remarks>
-public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>, IEqualityOperators<Utf8String, Utf8String, bool>,
-    IComparable<Utf8String>, IComparisonOperators<Utf8String, Utf8String, bool>
+public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>, IComparable<Utf8String>,
+    IComparisonOperators<Utf8String, Utf8String, bool>
 {
     private static readonly ReadOnlyMemory<byte>                EmptyData        = new([0], 0, 0);
     private static readonly ConcurrentDictionary<nint, Manager> AssemblyManagers = [];
