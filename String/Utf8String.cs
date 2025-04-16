@@ -1,9 +1,11 @@
 using System.Buffers;
+using System.Text.Unicode;
 using Lumina.Misc;
 
 namespace OtterGui.String;
 
 /// <summary> An UTF8 string container that is not a ref-struct and is guaranteed to be null-terminated. </summary>
+/// <remarks> Using this with memory mapped files will lead to undefined behavior, since mapped pointers are used to identify literals. </remarks>
 public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>, IComparable<Utf8String>,
     IComparisonOperators<Utf8String, Utf8String, bool>
 {
@@ -63,9 +65,10 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
             }
             else
             {
-                var manager = AssemblyManagers.GetOrAdd(info.BaseAddress, static (_, i) => new Manager(i.BaseAddress, (int)i.RegionSize),
+                var manager = AssemblyManagers.GetOrAdd(info.BaseAddress,
+                    static (_, i) => new Manager(i.AllocationBase, (int)(i.BaseAddress - i.AllocationBase + i.RegionSize)),
                     info);
-                _value = manager.Memory.Slice((int)(ptr - (byte*)info.BaseAddress), data.Length);
+                _value = manager.Memory.Slice((int)(ptr - (byte*)info.AllocationBase), data.Length);
             }
         }
     }
@@ -93,6 +96,17 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
             _value = data;
         }
     }
+
+    public Utf8String(ref Utf8InterpolatedStringHandler text)
+    {
+        _value = text.WriteAndClear();
+        _value = _value[..^1];
+    }
+
+    public Utf8String(IFormatProvider? provider,
+        [InterpolatedStringHandlerArgument(nameof(provider))] ref Utf8InterpolatedStringHandler text)
+        : this(ref text)
+    { }
 
     public unsafe Utf8String(byte* ptr)
         : this(FindNullTerminator(ptr))
@@ -198,4 +212,94 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
 
     public static bool operator <=(Utf8String left, Utf8String right)
         => left.CompareTo(right) <= 0;
+
+    [InterpolatedStringHandler]
+    public ref partial struct Utf8InterpolatedStringHandler
+    {
+        private const int ArrayPoolSize = 4 * 1024 * 1024;
+
+        private readonly byte[]                                 _array;
+        private          Utf8.TryWriteInterpolatedStringHandler _handler;
+        private          bool                                   _success;
+        private readonly bool                                   _hasCustomFormatter;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Utf8InterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
+        {
+            _array       = ArrayPool<byte>.Shared.Rent(ArrayPoolSize);
+            _handler     = new Utf8.TryWriteInterpolatedStringHandler(literalLength, formattedCount, _array, out _success);
+            shouldAppend = _success;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Utf8InterpolatedStringHandler(int literalLength, int formattedCount, IFormatProvider? formatProvider, out bool shouldAppend)
+        {
+            _array       = ArrayPool<byte>.Shared.Rent(ArrayPoolSize);
+            _handler     = new Utf8.TryWriteInterpolatedStringHandler(literalLength, formattedCount, _array, formatProvider, out _success);
+            shouldAppend = _success;
+        }
+
+        public byte[] WriteAndClear()
+        {
+            if (Utf8.TryWrite([], ref _handler, out var written))
+            {
+                var ret = new byte[written + 1];
+                ret[written] = 0;
+                _array.AsSpan(0, written).CopyTo(ret);
+                ArrayPool<byte>.Shared.Return(_array);
+                return ret;
+            }
+
+            ArrayPool<byte>.Shared.Return(_array);
+            throw new InvalidOperationException($"Interpolating a Utf8String using more than {ArrayPoolSize} bytes is not supported.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendLiteral(string value)
+            => _handler.AppendLiteral(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted<TValue>(TValue value)
+            => _handler.AppendFormatted(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted<TValue>(TValue value, string? format)
+            => _handler.AppendFormatted(value, format);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted<TValue>(TValue value, int alignment)
+            => _handler.AppendFormatted(value, alignment);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted<TValue>(TValue value, int alignment, string? format)
+            => _handler.AppendFormatted(value, alignment, format);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(scoped ReadOnlySpan<char> value)
+            => _handler.AppendFormatted(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(scoped ReadOnlySpan<char> value, int alignment = 0, string? format = null)
+            => _handler.AppendFormatted(value, alignment, format);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _handler.AppendFormatted(utf8Value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _handler.AppendFormatted(utf8Value, alignment, format);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(string? value)
+            => _handler.AppendFormatted(value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(string? value, int alignment = 0, string? format = null)
+            => _handler.AppendFormatted(value, alignment, format);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AppendFormatted(object? value, int alignment = 0, string? format = null)
+            => _handler.AppendFormatted(value, alignment, format);
+    }
 }

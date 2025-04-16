@@ -17,8 +17,7 @@ public class ImGuiCacheService : IDisposable, IUiService
             if (value == _keepAliveFrames)
                 return;
 
-            if (value < 1)
-                throw new ArgumentOutOfRangeException($"KeepAliveFrames can not be less than 1.");
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
 
             var diff = value - _keepAliveFrames;
             _keepAliveFrames = diff;
@@ -33,7 +32,6 @@ public class ImGuiCacheService : IDisposable, IUiService
     private int _cacheCounter = -1;
 
     private readonly SortedList<CacheId, CacheData> _caches = [];
-
 
     public ImGuiCacheService(IUiBuilder uiBuilder, Logger log)
     {
