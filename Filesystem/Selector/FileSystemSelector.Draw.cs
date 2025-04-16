@@ -2,6 +2,7 @@ using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using OtterGui.Classes;
+using OtterGui.Extensions;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 using OtterGui.Text;

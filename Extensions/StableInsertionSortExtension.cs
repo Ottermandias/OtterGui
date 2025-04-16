@@ -1,7 +1,8 @@
-namespace OtterGui;
+namespace OtterGui.Extensions;
 
 public static class StableInsertionSortExtension
 {
+    /// <summary> Sort <paramref name="list"/> by <paramref name="selector"/> while keeping the current order for equal objects. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void StableSort<T, TKey>(this IList<T> list, Func<T, TKey> selector)
     {
@@ -11,6 +12,7 @@ public static class StableInsertionSortExtension
             list[i] = tmpList[i];
     }
 
+    /// <summary> Sort <paramref name="list"/> by <paramref name="comparer"/> while keeping the current order for equal objects. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void StableSort<T>(this IList<T> list, Comparison<T> comparer)
     {

@@ -1,4 +1,5 @@
 using ImGuiNET;
+using OtterGui.Extensions;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 

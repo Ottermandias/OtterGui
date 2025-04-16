@@ -1,4 +1,4 @@
-namespace OtterGui;
+namespace OtterGui.Extensions;
 
 public static class FileExtensions
 {

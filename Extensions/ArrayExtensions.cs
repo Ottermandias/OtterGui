@@ -1,4 +1,4 @@
-namespace OtterGui;
+namespace OtterGui.Extensions;
 
 public static class ArrayExtensions
 {
@@ -17,9 +17,10 @@ public static class ArrayExtensions
     public static IEnumerable<int> WithoutValue<T>(this IEnumerable<(T Value, int Index)> list)
         => list.Select(x => x.Index);
 
-
-    // Find the index of the first object fulfilling predicate's criteria in the given list.
-    // Returns -1 if no such object is found.
+    /// <summary>
+    /// Find the index of the first object fulfilling predicate's criteria in <paramref name="array"/>.
+    /// </summary>
+    /// <returns> -1 if an object is found, otherwise the index. </returns>
     public static int IndexOf<T>(this IEnumerable<T> array, Predicate<T> predicate)
     {
         var i = 0;
@@ -34,8 +35,10 @@ public static class ArrayExtensions
         return -1;
     }
 
-    // Find the index of the first occurrence of needle in the given list.
-    // Returns -1 if needle is not contained in the list.
+    /// <summary>
+    /// Find the index of the first occurrence of <paramref name="needle"/> in <paramref name="array"/>.
+    /// </summary>
+    /// <returns> -1 if <paramref name="needle"/> is not contained, otherwise its index. </returns>
     public static int IndexOf<T>(this IEnumerable<T> array, T needle) where T : notnull
     {
         var i = 0;
@@ -50,8 +53,10 @@ public static class ArrayExtensions
         return -1;
     }
 
-    // Find the first object fulfilling predicate's criteria in the given list, if one exists.
-    // Returns true if an object is found, false otherwise.
+    /// <summary>
+    /// Find the first object fulfilling <paramref name="predicate"/>'s criteria in <paramref name="array"/>>, if one exists.
+    /// </summary>
+    /// <returns> True if an object is found, false otherwise. </returns>
     public static bool FindFirst<T>(this IEnumerable<T> array, Predicate<T> predicate, [NotNullWhen(true)] out T? result)
     {
         foreach (var obj in array)
@@ -67,8 +72,10 @@ public static class ArrayExtensions
         return false;
     }
 
-    // Find the first occurrence of needle in the given list and return the value contained in the list in result.
-    // Returns true if an object is found, false otherwise.
+    /// <summary>
+    /// Find the first occurrence of <paramref name="needle"/> in <paramref name="array"/> and return the value contained in the list in result.
+    /// </summary>
+    /// <returns> True if <paramref name="needle"/> is found, false otherwise. </returns>
     public static bool FindFirst<T>(this IEnumerable<T> array, T needle, [NotNullWhen(true)] out T? result) where T : notnull
     {
         foreach (var obj in array)
@@ -88,13 +95,13 @@ public static class ArrayExtensions
     public static IEnumerable<TOut> SelectWhere<TIn, TOut>(this IEnumerable<TIn> enumerable, Func<TIn, (bool, TOut?)> filterMap)
         => enumerable.Select(filterMap).Where(p => p.Item1).Select(p => p.Item2!);
 
-    // Find the first object fulfilling predicate's criteria in the given Span, if one exists.
-    // Returns true if an object is found, false otherwise.
+    /// <summary> Find the first object fulfilling <paramref name="predicate"/>'s criteria in <paramref name="array"/>, if one exists. </summary>
+    /// <returns> True if an object is found, false otherwise. </returns>
     public static bool FindFirst<T>(this Span<T> array, Predicate<T> predicate, [NotNullWhen(true)] out T? result)
         => ((ReadOnlySpan<T>)array).FindFirst(predicate, out result);
 
-    // Find the first object fulfilling predicate's criteria in the given ReadOnlySpan, if one exists.
-    // Returns true if an object is found, false otherwise.
+    /// <summary> Find the first object fulfilling <paramref name="predicate"/>'s criteria in <paramref name="array"/>, if one exists. </summary>
+    /// <returns> True if an object is found, false otherwise. </returns>
     public static bool FindFirst<T>(this ReadOnlySpan<T> array, Predicate<T> predicate, [NotNullWhen(true)] out T? result)
     {
         foreach (var obj in array)

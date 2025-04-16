@@ -1,5 +1,6 @@
 using Dalamud.Plugin.Services;
 using ImGuiNET;
+using OtterGui.Extensions;
 using OtterGui.Filesystem;
 using OtterGui.Log;
 using OtterGui.Raii;

@@ -5,6 +5,7 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
+using OtterGui.Extensions;
 using OtterGui.Log;
 using OtterGui.Text;
 

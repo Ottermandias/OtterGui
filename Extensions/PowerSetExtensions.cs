@@ -1,6 +1,6 @@
 using OtterGui.Filesystem;
 
-namespace OtterGui;
+namespace OtterGui.Extensions;
 
 public static class PowerSetExtensions
 {

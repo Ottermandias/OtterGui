@@ -1,6 +1,6 @@
 using System.Collections.Frozen;
 
-namespace OtterGui;
+namespace OtterGui.Extensions;
 
 public static class GuidExtensions
 {
