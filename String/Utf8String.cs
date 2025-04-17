@@ -1,11 +1,14 @@
 using System.Buffers;
 using System.Text.Unicode;
 using Lumina.Misc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace OtterGui.String;
 
 /// <summary> An UTF8 string container that is not a ref-struct and is guaranteed to be null-terminated. </summary>
 /// <remarks> Using this with memory mapped files will lead to undefined behavior, since mapped pointers are used to identify literals. </remarks>
+[JsonConverter(typeof(Converter))]
 public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, IComparable<StringU8>,
     IComparisonOperators<StringU8, StringU8, bool>
 {
@@ -100,16 +103,36 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
         }
     }
 
+    [OverloadResolutionPriority(100)]
     public StringU8(ref Utf8InterpolatedStringHandler text)
     {
         _value = text.WriteAndClear();
         _value = _value[..^1];
     }
 
+    [OverloadResolutionPriority(101)]
     public StringU8(IFormatProvider? provider,
-        [InterpolatedStringHandlerArgument(nameof(provider))] ref Utf8InterpolatedStringHandler text)
+        [InterpolatedStringHandlerArgument(nameof(provider))]
+        ref Utf8InterpolatedStringHandler text)
         : this(ref text)
     { }
+
+    [OverloadResolutionPriority(50)]
+    public StringU8(ReadOnlySpan<char> utf16)
+    {
+        if (utf16.Length is 0)
+        {
+            _value = EmptyData;
+            return;
+        }
+
+        var data  = ArrayPool<byte>.Shared.Rent(utf16.Length * 4 + 1);
+        var count = Encoding.UTF8.GetBytes(utf16, data);
+        var bytes = new byte[count + 1];
+        bytes[count] = 0;
+        data.AsSpan(0, count).CopyTo(bytes);
+        _value = bytes;
+    }
 
     public unsafe StringU8(byte* ptr)
         : this(FindNullTerminator(ptr))
@@ -139,7 +162,6 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
 
     public bool EndsWith(ReadOnlySpan<byte> other)
         => Span.EndsWith(other);
-
 
     public override string ToString()
     {
@@ -193,6 +215,9 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
         => GetEnumerator();
 
     public int Count
+        => _value.Length;
+
+    public int Length
         => _value.Length;
 
     public byte this[int index]
@@ -304,5 +329,21 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AppendFormatted(object? value, int alignment = 0, string? format = null)
             => _handler.AppendFormatted(value, alignment, format);
+    }
+
+    /// <summary>
+    /// Conversion from and to string.
+    /// </summary>
+    private class Converter : JsonConverter<StringU8>
+    {
+        public override void WriteJson(JsonWriter writer, StringU8 value, JsonSerializer serializer)
+            => writer.WriteValue(value.ToString());
+
+        public override StringU8 ReadJson(JsonReader reader, Type objectType, StringU8 existingValue, bool hasExistingValue,
+            JsonSerializer serializer)
+        {
+            var token = JToken.Load(reader).ToString();
+            return new StringU8(token);
+        }
     }
 }
