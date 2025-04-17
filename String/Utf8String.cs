@@ -6,24 +6,27 @@ namespace OtterGui.String;
 
 /// <summary> An UTF8 string container that is not a ref-struct and is guaranteed to be null-terminated. </summary>
 /// <remarks> Using this with memory mapped files will lead to undefined behavior, since mapped pointers are used to identify literals. </remarks>
-public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>, IComparable<Utf8String>,
-    IComparisonOperators<Utf8String, Utf8String, bool>
+public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, IComparable<StringU8>,
+    IComparisonOperators<StringU8, StringU8, bool>
 {
     private static readonly ReadOnlyMemory<byte>                EmptyData        = new([0], 0, 0);
     private static readonly ConcurrentDictionary<nint, Manager> AssemblyManagers = [];
 
-    public static readonly Utf8String Empty = new(EmptyData);
+    public static readonly StringU8 Empty = new(EmptyData);
 
     private readonly ReadOnlyMemory<byte> _value;
 
     public ReadOnlySpan<byte> Span
         => _value.Span;
 
-    public static implicit operator ReadOnlySpan<byte>(in Utf8String s)
+    public static implicit operator ReadOnlySpan<byte>(StringU8 s)
         => s.Span;
 
+    public static explicit operator StringU8(ReadOnlySpan<byte> text)
+        => new(text);
+
     [OverloadResolutionPriority(100)]
-    public Utf8String(byte[] data)
+    public StringU8(byte[] data)
     {
         if (data.Length is 0)
         {
@@ -40,7 +43,7 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
     }
 
     [OverloadResolutionPriority(50)]
-    public unsafe Utf8String(ReadOnlySpan<byte> data, bool nullTerminated = true)
+    public unsafe StringU8(ReadOnlySpan<byte> data, bool nullTerminated = true)
     {
         if (data.Length is 0)
         {
@@ -74,7 +77,7 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
     }
 
     [OverloadResolutionPriority(75)]
-    public unsafe Utf8String(ReadOnlyMemory<byte> data, bool nullTerminated = true)
+    public unsafe StringU8(ReadOnlyMemory<byte> data, bool nullTerminated = true)
     {
         if (data.Length is 0)
         {
@@ -97,23 +100,23 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
         }
     }
 
-    public Utf8String(ref Utf8InterpolatedStringHandler text)
+    public StringU8(ref Utf8InterpolatedStringHandler text)
     {
         _value = text.WriteAndClear();
         _value = _value[..^1];
     }
 
-    public Utf8String(IFormatProvider? provider,
+    public StringU8(IFormatProvider? provider,
         [InterpolatedStringHandlerArgument(nameof(provider))] ref Utf8InterpolatedStringHandler text)
         : this(ref text)
     { }
 
-    public unsafe Utf8String(byte* ptr)
+    public unsafe StringU8(byte* ptr)
         : this(FindNullTerminator(ptr))
     { }
 
     [OverloadResolutionPriority(100)]
-    public bool Equals(Utf8String other)
+    public bool Equals(StringU8 other)
         => Span.SequenceEqual(other);
 
     [OverloadResolutionPriority(50)]
@@ -121,10 +124,10 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
         => Span.SequenceEqual(other);
 
     public override bool Equals(object? obj)
-        => obj is Utf8String other && Equals(other);
+        => obj is StringU8 other && Equals(other);
 
     [OverloadResolutionPriority(100)]
-    public int CompareTo(Utf8String other)
+    public int CompareTo(StringU8 other)
         => Span.SequenceCompareTo(other);
 
     [OverloadResolutionPriority(50)]
@@ -161,7 +164,7 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
         => MemoryMarshal.CreateReadOnlySpanFromNullTerminated(ptr);
 
     [OverloadResolutionPriority(1000)]
-    private Utf8String(ReadOnlyMemory<byte> data)
+    private StringU8(ReadOnlyMemory<byte> data)
         => _value = data;
 
     private sealed unsafe class Manager(nint allocationBase, int allocationSize) : MemoryManager<byte>
@@ -195,22 +198,22 @@ public readonly struct Utf8String : IReadOnlyList<byte>, IEquatable<Utf8String>,
     public byte this[int index]
         => _value.Span[index];
 
-    public static bool operator ==(Utf8String left, Utf8String right)
+    public static bool operator ==(StringU8 left, StringU8 right)
         => left.Equals(right);
 
-    public static bool operator !=(Utf8String left, Utf8String right)
+    public static bool operator !=(StringU8 left, StringU8 right)
         => !left.Equals(right);
 
-    public static bool operator >(Utf8String left, Utf8String right)
+    public static bool operator >(StringU8 left, StringU8 right)
         => left.CompareTo(right) > 0;
 
-    public static bool operator >=(Utf8String left, Utf8String right)
+    public static bool operator >=(StringU8 left, StringU8 right)
         => left.CompareTo(right) >= 0;
 
-    public static bool operator <(Utf8String left, Utf8String right)
+    public static bool operator <(StringU8 left, StringU8 right)
         => left.CompareTo(right) < 0;
 
-    public static bool operator <=(Utf8String left, Utf8String right)
+    public static bool operator <=(StringU8 left, StringU8 right)
         => left.CompareTo(right) <= 0;
 
     [InterpolatedStringHandler]
