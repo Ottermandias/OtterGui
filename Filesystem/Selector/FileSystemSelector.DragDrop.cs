@@ -14,6 +14,9 @@ public partial class FileSystemSelector<T, TStateStorage>
 
     private void DragDropSource(FileSystem<T>.IPath path)
     {
+        if (path.IsLocked)
+            return;
+
         using var _ = ImRaii.DragDropSource();
         if (!_)
             return;

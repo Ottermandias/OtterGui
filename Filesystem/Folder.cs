@@ -2,33 +2,40 @@ namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>
 {
-    public class Folder : IWritePath
+    public class Folder(Folder parent, string name, uint identifier) : IWritePath
     {
         internal const byte RootDepth = byte.MaxValue;
 
         // The folder internally keeps track of total descendants and total leaves.
-        public int TotalDescendants { get; internal set; } = 0;
-        public int TotalLeaves      { get; internal set; } = 0;
+        public int TotalDescendants { get; internal set; }
+        public int TotalLeaves      { get; internal set; }
 
-        internal readonly List<IWritePath> Children = new();
+        internal readonly List<IWritePath> Children = [];
 
         public int TotalChildren
             => Children.Count;
 
-        public Folder Parent        { get; internal set; }
-        public string Name          { get; private set; }
-        public uint   Identifier    { get; }
-        public ushort IndexInParent { get; internal set; }
-        public byte   Depth         { get; internal set; }
+        public Folder    Parent        { get; internal set; } = parent;
+        public string    Name          { get; private set; }  = name.FixName();
+        public uint      Identifier    { get; }               = identifier;
+        public ushort    IndexInParent { get; internal set; }
+        public byte      Depth         { get; internal set; }
+        public PathFlags Flags         { get; private set; }
 
         public bool IsRoot
             => Depth == RootDepth;
+
+        public bool IsLocked
+            => Flags.HasFlag(PathFlags.Locked);
 
         void IWritePath.SetParent(Folder parent)
             => Parent = parent;
 
         void IWritePath.SetName(string name, bool fix)
             => Name = fix ? name.FixName() : name;
+
+        public void SetLocked(bool value)
+            => Flags = value ? Flags | PathFlags.Locked : Flags & ~PathFlags.Locked;
 
         void IWritePath.UpdateDepth()
         {
@@ -46,13 +53,6 @@ public partial class FileSystem<T>
             if (index < 0)
                 index = Parent.Children.IndexOf(this);
             IndexInParent = (ushort)(index < 0 ? 0 : index);
-        }
-
-        public Folder(Folder parent, string name, uint identifier)
-        {
-            Parent     = parent;
-            Name       = name.FixName();
-            Identifier = identifier;
         }
 
         public IEnumerable<Folder> GetSubFolders()

@@ -3,7 +3,6 @@ using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
 
-
 public unsafe ref struct Child
 {
     public readonly bool Success;

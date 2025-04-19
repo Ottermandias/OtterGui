@@ -14,6 +14,7 @@ public partial class FileSystem<T>
         j.Formatting = Formatting.Indented;
 
         var emptyFolders = new List<string>();
+        var lockedPaths  = new List<IPath>();
         j.WriteStartObject();
         j.WritePropertyName("Data");
         j.WriteStartObject();
@@ -22,6 +23,9 @@ public partial class FileSystem<T>
         if (Root.Children.Count > 0)
             foreach (var path in Root.GetAllDescendants(ISortMode<T>.Lexicographical))
             {
+                if (path.IsLocked)
+                    lockedPaths.Add(path);
+
                 switch (path)
                 {
                     case Folder f:
@@ -49,6 +53,15 @@ public partial class FileSystem<T>
             j.WriteStartArray();
             foreach (var emptyFolder in emptyFolders)
                 j.WriteValue(emptyFolder);
+            j.WriteEndArray();
+        }
+
+        if (lockedPaths.Count > 0)
+        {
+            j.WritePropertyName("LockedPaths");
+            j.WriteStartArray();
+            foreach (var path in lockedPaths)
+                j.WriteValue(path.FullName());
             j.WriteEndArray();
         }
 
@@ -83,16 +96,16 @@ public partial class FileSystem<T>
             changes = false;
             try
             {
-                var data         = jObject["Data"]?.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-                var emptyFolders = jObject["EmptyFolders"]?.ToObject<string[]>() ?? Array.Empty<string>();
+                var data         = jObject["Data"]?.ToObject<Dictionary<string, string>>() ?? [];
+                var emptyFolders = jObject["EmptyFolders"]?.ToObject<string[]>() ?? [];
+                var locked       = jObject["LockedPaths"]?.ToObject<string[]>() ?? [];
 
                 foreach (var value in objects)
                 {
                     var identifier = toIdentifier(value);
                     // If the data has a path in the filesystem, create all necessary folders and set the leaf.
-                    if (data.TryGetValue(identifier, out var path))
+                    if (data.Remove(identifier, out var path))
                     {
-                        data.Remove(identifier);
                         var split = path.SplitDirectories();
                         var (result, folder) = CreateAllFolders(split[..^1]);
                         if (result is not Result.Success and not Result.SuccessNothingDone)
@@ -125,6 +138,14 @@ public partial class FileSystem<T>
                 {
                     var (result, _) = CreateAllFolders(split);
                     if (result is not Result.Success and not Result.SuccessNothingDone)
+                        changes = true;
+                }
+
+                foreach (var path in locked)
+                {
+                    if (Find(path, out var child))
+                        ((IWritePath)child).SetLocked(true);
+                    else
                         changes = true;
                 }
             }

@@ -2,16 +2,24 @@ namespace OtterGui.Filesystem;
 
 public partial class FileSystem<T>
 {
+    [Flags]
+    public enum PathFlags : byte
+    {
+        Locked = 0x01,
+    }
+
     public interface IPath
     {
-        public Folder Parent        { get; }
-        public string Name          { get; }
-        public uint   Identifier    { get; }
-        public ushort IndexInParent { get; }
-        public byte   Depth         { get; }
+        public Folder    Parent        { get; }
+        public string    Name          { get; }
+        public uint      Identifier    { get; }
+        public ushort    IndexInParent { get; }
+        public byte      Depth         { get; }
 
         public bool IsRoot
             => Depth == Folder.RootDepth;
+
+        public bool IsLocked { get; }
 
         // Obtain the full path of a filesystem path.
         public string FullName()
@@ -21,7 +29,7 @@ public partial class FileSystem<T>
         public Folder[] Parents()
         {
             if (IsRoot || Parent.IsRoot)
-                return Array.Empty<Folder>();
+                return [];
 
             var ret    = new Folder[Depth];
             var parent = Parent;
@@ -63,6 +71,7 @@ public partial class FileSystem<T>
     {
         public void SetParent(Folder parent);
         public void SetName(string name, bool fix = true);
+        public void SetLocked(bool value);
 
         public void UpdateDepth();
         public void UpdateIndex(int idx);
@@ -86,6 +95,9 @@ public partial class FileSystem<T>
         public ushort IndexInParent
             => 0;
 
+        public bool IsLocked
+            => false;
+
         public static implicit operator SearchPath(string path)
             => new() { Name = path };
 
@@ -95,6 +107,9 @@ public partial class FileSystem<T>
             => throw new NotImplementedException();
 
         public void SetName(string name, bool fix)
+            => throw new NotImplementedException();
+
+        public void SetLocked(bool value)
             => throw new NotImplementedException();
 
         public void UpdateDepth()

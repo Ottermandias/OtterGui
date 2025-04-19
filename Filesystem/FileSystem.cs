@@ -10,6 +10,7 @@ public enum FileSystemChangeType
     FolderMerged,
     PartialMerge,
     Reload,
+    LockChange,
 }
 
 // The public facing filesystem methods all throw descriptive exceptions if they are unsuccessful.
@@ -39,6 +40,18 @@ public partial class FileSystem<T> where T : class
     /// <summary> Check if two paths compare equal completely. </summary>
     public bool Equal(string lhs, string rhs)
         => _stringComparer.Compare(lhs, rhs) == 0;
+
+    /// <summary> Change the lock state of an item and invoke a change for it if it actually changes. </summary>
+    /// <returns> True on change, false if nothing changed. </returns>
+    public bool ChangeLockState(IPath path, bool value)
+    {
+        if (path.IsLocked == value)
+            return false;
+
+        ((IWritePath)path).SetLocked(value);
+        Changed?.Invoke(FileSystemChangeType.LockChange, path, null, null);
+        return true;
+    }
 
     // Find a specific child by its path from Root.
     // Returns true if the folder was found, and false if not.
@@ -130,9 +143,7 @@ public partial class FileSystem<T> where T : class
         var (res, folder) = CreateAllFolders(path.SplitDirectories());
         switch (res)
         {
-            case Result.Success:
-                Changed?.Invoke(FileSystemChangeType.FolderAdded, folder, null, folder.Parent);
-                break;
+            case Result.Success: Changed?.Invoke(FileSystemChangeType.FolderAdded, folder, null, folder.Parent); break;
             case Result.ItemExists:
                 throw new Exception(
                     $"Could not create new folder for {path}: {folder.FullName()} already contains an object with a required name.");
@@ -233,9 +244,7 @@ public partial class FileSystem<T> where T : class
     {
         switch (MoveChild((IWritePath)child, newParent, out var oldParent, out var newIdx))
         {
-            case Result.Success:
-                Changed?.Invoke(FileSystemChangeType.ObjectMoved, child, oldParent, newParent);
-                break;
+            case Result.Success:            Changed?.Invoke(FileSystemChangeType.ObjectMoved, child, oldParent, newParent); break;
             case Result.SuccessNothingDone: return;
             case Result.InvalidOperation:   throw new Exception("Can not move root directory.");
             case Result.CircularReference:
