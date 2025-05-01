@@ -4,9 +4,10 @@ using Dalamud.Plugin.Services;
 namespace OtterGui.Services;
 
 /// <summary> A utility to asynchronously create hooks, and dispose of them. </summary>
-public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, IService
+public sealed class HookManager(IGameInteropProvider provider) : IDisposable, IService
 {
-    private readonly ConcurrentDictionary<string, (IDalamudHook, long)> _hooks = [];
+    public readonly  IGameInteropProvider                               Provider = provider;
+    private readonly ConcurrentDictionary<string, (IDalamudHook, long)> _hooks   = [];
     private          Task?                                              _currentTask;
     private          bool                                               _disposed;
 
@@ -22,12 +23,13 @@ public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, I
         CheckDisposed();
         if (address <= 0)
             throw new Exception($"Creating Hook {name} failed: address 0x{address:X} is invalid.");
+
         return AppendTask(Func);
 
         Hook<T> Func()
         {
             var timer = Stopwatch.StartNew();
-            var hook  = _provider.HookFromAddress(address, detour);
+            var hook  = Provider.HookFromAddress(address, detour);
             if (enable)
                 hook.Enable();
             AddHook(name, hook, timer);
@@ -44,7 +46,7 @@ public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, I
         Hook<T> Func()
         {
             var timer = Stopwatch.StartNew();
-            var hook  = _provider.HookFromSignature(signature, detour);
+            var hook  = Provider.HookFromSignature(signature, detour);
             if (enable)
                 hook.Enable();
             AddHook(name, hook, timer);
@@ -66,7 +68,7 @@ public sealed class HookManager(IGameInteropProvider _provider) : IDisposable, I
 
             var enabled = oldHook.Item1.IsEnabled;
             oldHook.Item1.Dispose();
-            var newHook = _provider.HookFromAddress(oldHook.Item1.Address, detour);
+            var newHook = Provider.HookFromAddress(oldHook.Item1.Address, detour);
             if (enabled)
                 newHook.Enable();
             AddHook(name, newHook, timer);
