@@ -17,14 +17,14 @@ public static partial class ImUtf8
     /// <returns> A disposable object that evaluates to true if the begun popup is currently open. Use with using. </returns>
     /// <remarks> Popups are subject to the ID stack. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PopupContextItem PopupContextItem(ReadOnlySpan<byte> id, ImGuiPopupFlags flags = ImGuiPopupFlags.None)
+    public static PopupContextItem PopupContextItem(ReadOnlySpan<byte> id, ImGuiPopupFlags flags = ImGuiPopupFlags.MouseButtonDefault)
         => new(id, flags);
 
     /// <param name="id"> The popup ID as a UTF16 string. </param>
     /// <inheritdoc cref="PopupContextItem(ReadOnlySpan{byte},ImGuiPopupFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PopupContextItem PopupContextItem(ReadOnlySpan<char> id, ImGuiPopupFlags flags = ImGuiPopupFlags.None)
+    public static PopupContextItem PopupContextItem(ReadOnlySpan<char> id, ImGuiPopupFlags flags = ImGuiPopupFlags.MouseButtonDefault)
         => new(id.Span<LabelStringHandlerBuffer>(), flags);
 
     /// <param name="id"> The popup ID as a format string. </param>
