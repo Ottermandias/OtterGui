@@ -10,22 +10,23 @@ namespace OtterGui.Services;
 public class DynamisIpc : IDisposable
 {
     private readonly IDalamudPluginInterface _pluginInterface;
-    private readonly Logger _log;
+    private readonly Logger                  _log;
 
-    private readonly ICallGateSubscriber<uint, uint, Version, object?> _initialized;
-    private readonly ICallGateSubscriber<object?> _disposed;
+    private readonly ICallGateSubscriber<uint, uint, ulong, Version, object?> _initialized;
+    private readonly ICallGateSubscriber<object?>                             _disposed;
 
-    private uint _currentVersionMajor;
-    private uint _currentVersionMinor;
+    private uint  _currentVersionMajor;
+    private uint  _currentVersionMinor;
+    private ulong _featureFlags;
 
-    private ICallGateSubscriber<nint, object?>? _inspectObject;
+    private ICallGateSubscriber<nint, object?>?                           _inspectObject;
     private ICallGateSubscriber<nint, uint, string, uint, uint, object?>? _inspectRegion;
-    private ICallGateSubscriber<nint, object?>? _imGuiDrawPointer;
-    private Action<nint>? _drawPointerAction;
-    private ICallGateSubscriber<nint, object?>? _imGuiDrawPointerTooltipDetails;
-    private ICallGateSubscriber<nint, (string, Type?, uint, uint)>? _getClass;
-    private ICallGateSubscriber<nint, string?, Type?, (bool, uint)>? _isInstanceOf;
-    private ICallGateSubscriber<object?>? _preloadDataYaml;
+    private ICallGateSubscriber<nint, object?>?                           _imGuiDrawPointer;
+    private Action<nint>?                                                 _drawPointerAction;
+    private ICallGateSubscriber<nint, object?>?                           _imGuiDrawPointerTooltipDetails;
+    private ICallGateSubscriber<nint, (string, Type?, uint, uint)>?       _getClass;
+    private ICallGateSubscriber<nint, string?, Type?, (bool, uint)>?      _isInstanceOf;
+    private ICallGateSubscriber<object?>?                                 _preloadDataYaml;
 
     public bool IsSubscribed
         => _currentVersionMajor > 0;
@@ -33,11 +34,11 @@ public class DynamisIpc : IDisposable
     public DynamisIpc(IDalamudPluginInterface pi, Logger log)
     {
         _pluginInterface = pi;
-        _log = log;
+        _log             = log;
 
         try
         {
-            _initialized = _pluginInterface.GetIpcSubscriber<uint, uint, Version, object?>("Dynamis.ApiInitialized");
+            _initialized = _pluginInterface.GetIpcSubscriber<uint, uint, ulong, Version, object?>("Dynamis.ApiInitialized");
             _initialized.Subscribe(OnInitialized);
             _disposed = _pluginInterface.GetIpcSubscriber<object?>("Dynamis.ApiDisposing");
             _disposed.Subscribe(OnDisposed);
@@ -46,7 +47,7 @@ public class DynamisIpc : IDisposable
         catch (Exception ex)
         {
             _initialized = null!;
-            _disposed = null!;
+            _disposed    = null!;
             _log.Error($"Error subscribing to Dynamis IPC Events:\n{ex}");
         }
     }
@@ -66,13 +67,14 @@ public class DynamisIpc : IDisposable
             _log.Debug($"Detaching from Dynamis {_currentVersionMajor}.{_currentVersionMinor}.");
         _currentVersionMajor = 0;
         _currentVersionMinor = 0;
+        _featureFlags        = 0;
 
-        _inspectObject = null;
-        _inspectRegion = null;
+        _inspectObject    = null;
+        _inspectRegion    = null;
         _imGuiDrawPointer = null;
-        _getClass = null;
-        _isInstanceOf = null;
-        _preloadDataYaml = null;
+        _getClass         = null;
+        _isInstanceOf     = null;
+        _preloadDataYaml  = null;
     }
 
     public void InspectObject(nint address)
@@ -101,12 +103,19 @@ public class DynamisIpc : IDisposable
         }
         else
         {
-            using var font = ImRaii.PushFont(UiBuilder.MonoFont, address != nint.Zero);
-            ImUtf8.Selectable(address == nint.Zero ? "nullptr" : $"0x{address:X}");
+            if (address == nint.Zero)
+            {
+                ImUtf8.CopyOnClickSelectable("nullptr"u8, "0x0"u8);
+            }
+            else
+            {
+                using var font = ImRaii.PushFont(UiBuilder.MonoFont);
+                ImUtf8.CopyOnClickSelectable($"0x{address:X}");
+            }
         }
     }
 
-    private void OnInitialized(uint major, uint minor, Version _)
+    private void OnInitialized(uint major, uint minor, ulong flags, Version _)
     {
         OnDisposed();
         if (_currentVersionMajor is not 1)
@@ -123,6 +132,7 @@ public class DynamisIpc : IDisposable
 
         _currentVersionMajor = major;
         _currentVersionMinor = minor;
+        _featureFlags        = flags;
 
         try
         {
@@ -147,10 +157,10 @@ public class DynamisIpc : IDisposable
     {
         try
         {
-            if (_pluginInterface.GetIpcSubscriber<(uint Major, uint Minor)>("Dynamis.GetApiVersion") is { } subscriber)
+            if (_pluginInterface.GetIpcSubscriber<(uint Major, uint Minor, ulong Flags)>("Dynamis.GetApiVersion") is { } subscriber)
             {
-                var (major, minor) = subscriber.InvokeFunc();
-                OnInitialized(major, minor, null!);
+                var (major, minor, flags) = subscriber.InvokeFunc();
+                OnInitialized(major, minor, flags, null!);
             }
             else
             {
