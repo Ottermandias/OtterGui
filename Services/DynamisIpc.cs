@@ -181,11 +181,13 @@ public class DynamisIpc : IDisposable
         VersionMinor = 0;
         Features     = 0;
 
-        _inspectObject   = null;
-        _inspectRegion   = null;
-        _getClass        = null;
-        _isInstanceOf    = null;
-        _preloadDataYaml = null;
+        _inspectObject                  = null;
+        _inspectRegion                  = null;
+        _getClass                       = null;
+        _isInstanceOf                   = null;
+        _preloadDataYaml                = null;
+        _drawPointerAction              = null;
+        _imGuiDrawPointerTooltipDetails = null;
     }
 
     private void UpdateVersion()
