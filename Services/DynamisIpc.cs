@@ -1,7 +1,7 @@
 using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
+using ImGuiNET;
 using OtterGui.Log;
 using OtterGui.Text;
 
@@ -15,13 +15,8 @@ public class DynamisIpc : IDisposable
     private readonly ICallGateSubscriber<uint, uint, ulong, Version, object?> _initialized;
     private readonly ICallGateSubscriber<object?>                             _disposed;
 
-    private uint  _currentVersionMajor;
-    private uint  _currentVersionMinor;
-    private ulong _featureFlags;
-
     private ICallGateSubscriber<nint, object?>?                           _inspectObject;
     private ICallGateSubscriber<nint, uint, string, uint, uint, object?>? _inspectRegion;
-    private ICallGateSubscriber<nint, object?>?                           _imGuiDrawPointer;
     private Action<nint>?                                                 _drawPointerAction;
     private ICallGateSubscriber<nint, object?>?                           _imGuiDrawPointerTooltipDetails;
     private ICallGateSubscriber<nint, (string, Type?, uint, uint)>?       _getClass;
@@ -29,7 +24,15 @@ public class DynamisIpc : IDisposable
     private ICallGateSubscriber<object?>?                                 _preloadDataYaml;
 
     public bool IsSubscribed
-        => _currentVersionMajor > 0;
+        => VersionMajor > 0;
+
+    public ulong Features { get; private set; }
+
+    public uint VersionMajor { get; private set; }
+
+    public uint VersionMinor { get; private set; }
+
+    public Exception? Error { get; private set; }
 
     public DynamisIpc(IDalamudPluginInterface pi, Logger log)
     {
@@ -43,11 +46,13 @@ public class DynamisIpc : IDisposable
             _disposed = _pluginInterface.GetIpcSubscriber<object?>("Dynamis.ApiDisposing");
             _disposed.Subscribe(OnDisposed);
             UpdateVersion();
+            Error = null;
         }
         catch (Exception ex)
         {
             _initialized = null!;
             _disposed    = null!;
+            Error        = ex;
             _log.Error($"Error subscribing to Dynamis IPC Events:\n{ex}");
         }
     }
@@ -55,26 +60,11 @@ public class DynamisIpc : IDisposable
 
     public void Dispose()
     {
-        _currentVersionMajor = 0;
+        Error        = null;
+        VersionMajor = 0;
         OnDisposed();
         _initialized.Unsubscribe(OnInitialized);
         _disposed.Unsubscribe(OnDisposed);
-    }
-
-    public void OnDisposed()
-    {
-        if (_currentVersionMajor > 0)
-            _log.Debug($"Detaching from Dynamis {_currentVersionMajor}.{_currentVersionMinor}.");
-        _currentVersionMajor = 0;
-        _currentVersionMinor = 0;
-        _featureFlags        = 0;
-
-        _inspectObject    = null;
-        _inspectRegion    = null;
-        _imGuiDrawPointer = null;
-        _getClass         = null;
-        _isInstanceOf     = null;
-        _preloadDataYaml  = null;
     }
 
     public void InspectObject(nint address)
@@ -104,53 +94,101 @@ public class DynamisIpc : IDisposable
         else
         {
             if (address == nint.Zero)
-            {
                 ImUtf8.CopyOnClickSelectable("nullptr"u8, "0x0"u8);
-            }
             else
-            {
-                using var font = ImRaii.PushFont(UiBuilder.MonoFont);
-                ImUtf8.CopyOnClickSelectable($"0x{address:X}");
-            }
+                ImUtf8.CopyOnClickSelectable($"0x{address:X}", UiBuilder.MonoFont);
+        }
+    }
+
+    public void DrawDebugInfo()
+    {
+        using var table = ImUtf8.Table("##Dynamis"u8, 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg);
+        if (!table)
+            return;
+
+        ImUtf8.DrawTableColumn("Available"u8);
+        ImUtf8.DrawTableColumn($"{IsSubscribed}");
+        if (IsSubscribed)
+        {
+            ImUtf8.DrawTableColumn("Version"u8);
+            ImUtf8.DrawTableColumn($"{VersionMajor}.{VersionMinor}");
+            ImUtf8.DrawTableColumn("Features"u8);
+            ImUtf8.DrawTableColumn($"{Features:X4}");
+            ImUtf8.DrawTableColumn("Detach"u8);
+            ImGui.TableNextColumn();
+            if (ImUtf8.SmallButton("Try##Detach"u8))
+                OnDisposed();
+
+            ImUtf8.DrawTableColumn("Reattach"u8);
+            ImGui.TableNextColumn();
+            if (ImUtf8.SmallButton("Try##Reattach"u8))
+                UpdateVersion();
+        }
+        else
+        {
+            ImUtf8.DrawTableColumn("Error"u8);
+            ImUtf8.DrawTableColumn($"{Error?.Message}");
+            ImUtf8.DrawTableColumn("Attach"u8);
+            ImGui.TableNextColumn();
+            if (ImUtf8.SmallButton("Try##Attach"u8))
+                UpdateVersion();
         }
     }
 
     private void OnInitialized(uint major, uint minor, ulong flags, Version _)
     {
         OnDisposed();
-        if (_currentVersionMajor is not 1)
+        if (major is not 1)
         {
-            _log.Debug($"Could not attach to Dynamis {_currentVersionMajor}.{_currentVersionMinor}, only 1.X is supported.");
+            _log.Debug($"Could not attach to Dynamis {VersionMajor}.{VersionMinor}, only 1.X is supported.");
             return;
         }
 
-        if (_currentVersionMinor < 3)
+        if (minor < 3)
         {
-            _log.Debug($"Could not attach to Dynamis {_currentVersionMajor}.{_currentVersionMinor}, only 1.3 or higher is supported.");
+            _log.Debug($"Could not attach to Dynamis {VersionMajor}.{VersionMinor}, only 1.3 or higher is supported.");
             return;
         }
 
-        _currentVersionMajor = major;
-        _currentVersionMinor = minor;
-        _featureFlags        = flags;
+        VersionMajor = major;
+        VersionMinor = minor;
+        Features     = flags;
 
         try
         {
             _inspectObject = _pluginInterface.GetIpcSubscriber<nint, object?>("Dynamis.InspectObject.V1");
             _inspectRegion = _pluginInterface.GetIpcSubscriber<nint, uint, string, uint, uint, object?>("Dynamis.InspectRegion.V1");
-            _imGuiDrawPointer = _pluginInterface.GetIpcSubscriber<nint, object?>("Dynamis.ImGuiDrawPointer.V1");
             _imGuiDrawPointerTooltipDetails = _pluginInterface.GetIpcSubscriber<nint, object?>("Dynamis.ImGuiDrawPointerTooltipDetails.V1");
             _getClass = _pluginInterface.GetIpcSubscriber<nint, (string, Type?, uint, uint)>("Dynamis.GetClass.V1");
             _isInstanceOf = _pluginInterface.GetIpcSubscriber<nint, string?, Type?, (bool, uint)>("Dynamis.IsInstanceOf.V1");
             _preloadDataYaml = _pluginInterface.GetIpcSubscriber<object?>("Dynamis.PreloadDataYaml.V1");
             _drawPointerAction = _pluginInterface.GetIpcSubscriber<Action<nint>>("Dynamis.GetImGuiDrawPointerDelegate.V1").InvokeFunc();
-            _log.Debug($"Attached to Dynamis {_currentVersionMajor}.{_currentVersionMinor}.");
+            _log.Verbose("Preloading Dynamis data.yml...");
+            _preloadDataYaml.InvokeAction();
+            _log.Debug($"Attached to Dynamis {VersionMajor}.{VersionMinor}.");
         }
         catch (Exception ex)
         {
+            Error = ex;
             _log.Error($"Error subscribing to Dynamis IPC:\n{ex}");
             OnDisposed();
         }
+    }
+
+    private void OnDisposed()
+    {
+        if (VersionMajor > 0)
+            _log.Debug($"Detaching from Dynamis {VersionMajor}.{VersionMinor}.");
+        Error        = null;
+        VersionMajor = 0;
+        VersionMinor = 0;
+        Features     = 0;
+
+        _inspectObject   = null;
+        _inspectRegion   = null;
+        _getClass        = null;
+        _isInstanceOf    = null;
+        _preloadDataYaml = null;
     }
 
     private void UpdateVersion()
@@ -169,6 +207,7 @@ public class DynamisIpc : IDisposable
         }
         catch (Exception ex)
         {
+            Error = ex;
             _log.Verbose($"Error subscribing to Dynamis IPC:\n{ex}");
             OnDisposed();
         }
