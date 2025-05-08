@@ -70,20 +70,17 @@ public class DynamisIpc : IDisposable
     public void InspectObject(nint address)
         => _inspectObject?.InvokeAction(address);
 
-    public void InspectRegion(nint address, uint unk, string unk2, uint unk3, uint unk4)
-        => _inspectRegion?.InvokeAction(address, unk, unk2, unk3, unk4);
+    public void InspectRegion(nint address, uint size, string typeName, uint typeTemplateId, uint classKindId)
+        => _inspectRegion?.InvokeAction(address, size, typeName, typeTemplateId, classKindId);
 
     public void DrawTooltipDetails(nint address)
         => _imGuiDrawPointerTooltipDetails?.InvokeAction(address);
 
-    public (string Name, Type? Type, uint Unk, uint Unk2) GetClass(nint address)
+    public (string Name, Type? BestManagedType, uint EstimatedSize, uint Displacement) GetClass(nint address)
         => _getClass?.InvokeFunc(address) ?? ("Unavailable", null, 0, 0);
 
-    public (bool IsInstance, uint Unk) IsInstanceOf(nint address, string? className, Type? classType)
+    public (bool IsInstance, uint Displacement) IsInstanceOf(nint address, string? className, Type? classType)
         => _isInstanceOf?.InvokeFunc(address, className, classType) ?? (false, 0);
-
-    public void PreloadDataYaml()
-        => _preloadDataYaml?.InvokeAction();
 
     public void DrawPointer(nint address)
     {
