@@ -10,12 +10,16 @@ namespace OtterGui.String;
 /// <remarks> Using this with memory mapped files will lead to undefined behavior, since mapped pointers are used to identify literals. </remarks>
 [JsonConverter(typeof(Converter))]
 public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, IComparable<StringU8>,
-    IComparisonOperators<StringU8, StringU8, bool>
+    IComparisonOperators<StringU8, StringU8, bool>, ISpanFormattable, IUtf8SpanFormattable
 {
-    private static readonly ReadOnlyMemory<byte>                EmptyData        = new([0], 0, 0);
-    private static readonly ConcurrentDictionary<nint, Manager> AssemblyManagers = [];
+    internal const           int                                 ArrayPoolSize    = 4 * 1024 * 1024;
+    internal const           int                                 HoleEstimate     = 128;
+    internal static readonly ArrayPool<byte>                     ArrayPool        = ArrayPool<byte>.Shared;
+    private static readonly  ReadOnlyMemory<byte>                EmptyData        = new([0], 0, 0);
+    private static readonly  ConcurrentDictionary<nint, Manager> AssemblyManagers = [];
 
-    public static readonly StringU8 Empty = new(EmptyData);
+    public static readonly   StringU8 Empty      = new(EmptyData);
+    internal static readonly StringU8 NullString = new("<NULL>"u8);
 
     private readonly ReadOnlyMemory<byte> _value;
 
@@ -111,9 +115,8 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
     }
 
     [OverloadResolutionPriority(101)]
-    public StringU8(IFormatProvider? provider,
-        [InterpolatedStringHandlerArgument(nameof(provider))]
-        ref Utf8InterpolatedStringHandler text)
+    // ReSharper disable once EntityNameCapturedOnly.Local
+    public StringU8(IFormatProvider? provider, [InterpolatedStringHandlerArgument(nameof(provider))] ref Utf8InterpolatedStringHandler text)
         : this(ref text)
     { }
 
@@ -126,12 +129,13 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
             return;
         }
 
-        var data  = ArrayPool<byte>.Shared.Rent(utf16.Length * 4 + 1);
+        var data  = ArrayPool.Rent(utf16.Length * 4 + 1);
         var count = Encoding.UTF8.GetBytes(utf16, data);
         var bytes = new byte[count + 1];
         bytes[count] = 0;
         data.AsSpan(0, count).CopyTo(bytes);
         _value = bytes;
+        ArrayPool.Return(data);
     }
 
     public unsafe StringU8(byte* ptr)
@@ -165,10 +169,7 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
 
     public override string ToString()
     {
-        if (Count is 0)
-            return string.Empty;
-
-        return Encoding.UTF8.GetString(Span);
+        return $"{nameof(_value)}: {_value}";
     }
 
     public override int GetHashCode()
@@ -242,29 +243,23 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
         => left.CompareTo(right) <= 0;
 
     [InterpolatedStringHandler]
-    public ref partial struct Utf8InterpolatedStringHandler
+    public ref struct Utf8InterpolatedStringHandler
     {
-        private const int ArrayPoolSize = 4 * 1024 * 1024;
-
         private readonly byte[]                                 _array;
         private          Utf8.TryWriteInterpolatedStringHandler _handler;
-        private          bool                                   _success;
-        private readonly bool                                   _hasCustomFormatter;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Utf8InterpolatedStringHandler(int literalLength, int formattedCount, out bool shouldAppend)
         {
-            _array       = ArrayPool<byte>.Shared.Rent(ArrayPoolSize);
-            _handler     = new Utf8.TryWriteInterpolatedStringHandler(literalLength, formattedCount, _array, out _success);
-            shouldAppend = _success;
+            _array   = ArrayPool.Rent(ArrayPoolSize);
+            _handler = new Utf8.TryWriteInterpolatedStringHandler(literalLength, formattedCount, _array, out shouldAppend);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Utf8InterpolatedStringHandler(int literalLength, int formattedCount, IFormatProvider? formatProvider, out bool shouldAppend)
         {
-            _array       = ArrayPool<byte>.Shared.Rent(ArrayPoolSize);
-            _handler     = new Utf8.TryWriteInterpolatedStringHandler(literalLength, formattedCount, _array, formatProvider, out _success);
-            shouldAppend = _success;
+            _array   = ArrayPool.Rent(ArrayPoolSize);
+            _handler = new Utf8.TryWriteInterpolatedStringHandler(literalLength, formattedCount, _array, formatProvider, out shouldAppend);
         }
 
         public byte[] WriteAndClear()
@@ -278,7 +273,7 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
                 return ret;
             }
 
-            ArrayPool<byte>.Shared.Return(_array);
+            ArrayPool.Return(_array);
             throw new InvalidOperationException($"Interpolating a Utf8String using more than {ArrayPoolSize} bytes is not supported.");
         }
 
@@ -307,6 +302,7 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
             => _handler.AppendFormatted(value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once MethodOverloadWithOptionalParameter
         public bool AppendFormatted(scoped ReadOnlySpan<char> value, int alignment = 0, string? format = null)
             => _handler.AppendFormatted(value, alignment, format);
 
@@ -315,6 +311,7 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
             => _handler.AppendFormatted(utf8Value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once MethodOverloadWithOptionalParameter
         public bool AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
             => _handler.AppendFormatted(utf8Value, alignment, format);
 
@@ -323,6 +320,7 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
             => _handler.AppendFormatted(value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // ReSharper disable once MethodOverloadWithOptionalParameter
         public bool AppendFormatted(string? value, int alignment = 0, string? format = null)
             => _handler.AppendFormatted(value, alignment, format);
 
@@ -345,5 +343,338 @@ public readonly struct StringU8 : IReadOnlyList<byte>, IEquatable<StringU8>, ICo
             var token = JToken.Load(reader).ToString();
             return new StringU8(token);
         }
+    }
+
+    public static StringU8 Join(byte separator, params IReadOnlyCollection<StringU8> strings)
+    {
+        if (strings.Count is 0)
+            return Empty;
+        if (strings.Count is 1)
+            return strings.First();
+
+        var size  = (strings.Count - 1) * strings.Sum(s => s.Length) + 1;
+        var array = new byte[size];
+        array[size] = 0;
+        var idx = 0;
+        foreach (var word in strings.SkipLast(1))
+        {
+            word._value.CopyTo(array.AsMemory(idx));
+            idx          += word.Length;
+            array[idx++] =  separator;
+        }
+
+        strings.Last()._value.CopyTo(array.AsMemory(idx));
+
+        return new StringU8(array);
+    }
+
+    public static StringU8 Join(ReadOnlySpan<byte> separator, params IReadOnlyCollection<StringU8> strings)
+    {
+        if (strings.Count is 0)
+            return Empty;
+        if (strings.Count is 1)
+            return strings.First();
+
+        var size  = (strings.Count - 1) * separator.Length * strings.Sum(s => s.Length) + 1;
+        var array = new byte[size];
+        array[size] = 0;
+        var idx = 0;
+        foreach (var word in strings.SkipLast(1))
+        {
+            word._value.CopyTo(array.AsMemory(idx));
+            idx += word.Length;
+            separator.CopyTo(array.AsSpan(idx));
+            idx += separator.Length;
+        }
+
+        strings.Last()._value.CopyTo(array.AsMemory(idx));
+
+        return new StringU8(array);
+    }
+
+    public static unsafe StringU8 Join(char separator, params IReadOnlyCollection<StringU8> strings)
+    {
+        var count = Encoding.UTF8.GetByteCount(&separator, 1);
+        if (count is 1)
+            return Join((byte)separator, strings);
+
+        Span<byte> sep = stackalloc byte[4];
+        sep = sep[..count];
+        Encoding.UTF8.GetBytes(new ReadOnlySpan<char>(&separator, 1), sep);
+
+        return Join(sep, strings);
+    }
+
+    public static StringU8 Join(ReadOnlySpan<char> separator, params IReadOnlyCollection<StringU8> strings)
+    {
+        var count = Encoding.UTF8.GetByteCount(separator);
+        if (count is 1)
+            return Join((byte)separator[0], strings);
+
+        var array = ArrayPool.Rent(count);
+        Encoding.UTF8.GetBytes(separator, array);
+
+        var ret = Join(array.AsSpan(0, count), strings);
+        ArrayPool.Return(array);
+        return ret;
+    }
+
+    [OverloadResolutionPriority(50)]
+    public static StringU8 Join(byte separator, params IReadOnlyCollection<object?> strings)
+    {
+        if (strings.Count is 0)
+            return Empty;
+
+        var array = ArrayPool.Rent(strings.Count * (1 + HoleEstimate));
+        if (strings.Count is 1)
+            return ToU8String(ref array, strings.First());
+
+        var idx = 0;
+        foreach (var text in strings.SkipLast(1))
+        {
+            AppendU8String(ref array, ref idx, text);
+            var span = array.AsSpan(idx);
+            if (span.Length < 1)
+                ExchangeArray(ref array, array.Length * 2, idx);
+            array[idx++] = separator;
+        }
+
+        AppendU8String(ref array, ref idx, strings.Last());
+        return new StringU8(AddNull(array.AsSpan(0, idx)));
+    }
+
+    [OverloadResolutionPriority(50)]
+    public static StringU8 Join(ReadOnlySpan<byte> separator, params IReadOnlyCollection<object?> strings)
+    {
+        if (strings.Count is 0)
+            return Empty;
+
+        var array = ArrayPool.Rent(strings.Count * (separator.Length + HoleEstimate));
+        if (strings.Count is 1)
+            return ToU8String(ref array, strings.First());
+
+        var idx = 0;
+        foreach (var text in strings.SkipLast(1))
+        {
+            AppendU8String(ref array, ref idx, text);
+            while (!separator.TryCopyTo(array.AsSpan(idx)))
+                ExchangeArray(ref array, array.Length * 2, idx);
+            idx += separator.Length;
+        }
+
+        AppendU8String(ref array, ref idx, strings.Last());
+        return new StringU8(AddNull(array.AsSpan(0, idx)));
+    }
+
+    [OverloadResolutionPriority(50)]
+    public static unsafe StringU8 Join(char separator, params IReadOnlyCollection<object?> strings)
+    {
+        var count = Encoding.UTF8.GetByteCount(&separator, 1);
+        if (count is 1)
+            return Join((byte)separator, strings);
+
+        Span<byte> sep = stackalloc byte[4];
+        sep = sep[..count];
+        Encoding.UTF8.GetBytes(new ReadOnlySpan<char>(&separator, 1), sep);
+
+        return Join(sep, strings);
+    }
+
+    [OverloadResolutionPriority(50)]
+    public static StringU8 Join(ReadOnlySpan<char> separator, params IReadOnlyCollection<object?> strings)
+    {
+        var count = Encoding.UTF8.GetByteCount(separator);
+        if (count is 1)
+            return Join((byte)separator[0], strings);
+
+        var array = ArrayPool.Rent(count);
+        Encoding.UTF8.GetBytes(separator, array);
+
+        var ret = Join(array.AsSpan(0, count), strings);
+        ArrayPool.Return(array);
+        return ret;
+    }
+
+    [OverloadResolutionPriority(100)]
+    public static StringU8 Join(byte separator, params IReadOnlyCollection<string?> strings)
+    {
+        if (strings.Count is 0)
+            return Empty;
+
+        var array = ArrayPool.Rent(strings.Count + strings.Sum(s => s?.Length ?? NullString.Length) * 4);
+        if (strings.Count is 1)
+            return ToU8String(ref array, strings.First());
+
+        var idx = 0;
+        foreach (var text in strings.SkipLast(1))
+        {
+            AppendU8String(ref array, ref idx, text);
+            var span = array.AsSpan(idx);
+            if (span.Length < 1)
+                ExchangeArray(ref array, array.Length * 2, idx);
+            array[idx++] = separator;
+        }
+
+        AppendU8String(ref array, ref idx, strings.Last());
+        return new StringU8(AddNull(array.AsSpan(0, idx)));
+    }
+
+    [OverloadResolutionPriority(100)]
+    public static StringU8 Join(ReadOnlySpan<byte> separator, params IReadOnlyCollection<string?> strings)
+    {
+        if (strings.Count is 0)
+            return Empty;
+
+        var array = ArrayPool.Rent(strings.Count * separator.Length + strings.Sum(s => s?.Length ?? NullString.Length) * 4);
+        if (strings.Count is 1)
+            return ToU8String(ref array, strings.First());
+
+        var idx = 0;
+        foreach (var text in strings.SkipLast(1))
+        {
+            AppendU8String(ref array, ref idx, text);
+            while (!separator.TryCopyTo(array.AsSpan(idx)))
+                ExchangeArray(ref array, array.Length * 2, idx);
+            idx += separator.Length;
+        }
+
+        AppendU8String(ref array, ref idx, strings.Last());
+        return new StringU8(AddNull(array.AsSpan(0, idx)));
+    }
+
+    [OverloadResolutionPriority(100)]
+    public static unsafe StringU8 Join(char separator, params IReadOnlyCollection<string?> strings)
+    {
+        var count = Encoding.UTF8.GetByteCount(&separator, 1);
+        if (count is 1)
+            return Join((byte)separator, strings);
+
+        Span<byte> sep = stackalloc byte[4];
+        sep = sep[..count];
+        Encoding.UTF8.GetBytes(new ReadOnlySpan<char>(&separator, 1), sep);
+
+        return Join(sep, strings);
+    }
+
+    [OverloadResolutionPriority(100)]
+    public static StringU8 Join(ReadOnlySpan<char> separator, params IReadOnlyCollection<string?> strings)
+    {
+        var count = Encoding.UTF8.GetByteCount(separator);
+        if (count is 1)
+            return Join((byte)separator[0], strings);
+
+        var array = ArrayPool.Rent(count);
+        Encoding.UTF8.GetBytes(separator, array);
+
+        var ret = Join(array.AsSpan(0, count), strings);
+        ArrayPool.Return(array);
+        return ret;
+    }
+
+
+    private static void ExchangeArray(ref byte[] array, int minSize, int copyExistingLength)
+    {
+        if (minSize < array.Length)
+            return;
+
+        var newSize  = (int)BitOperations.RoundUpToPowerOf2((uint)minSize);
+        var oldArray = array;
+        array = ArrayPool.Rent(newSize);
+        oldArray.AsMemory(0, copyExistingLength).CopyTo(array);
+        ArrayPool.Return(oldArray);
+    }
+
+    private static StringU8 ToU8String(ref byte[] array, object? text)
+    {
+        int bytes;
+        if (text is IUtf8SpanFormattable format)
+        {
+            while (!format.TryFormat(array, out bytes, string.Empty, null))
+                ExchangeArray(ref array, array.Length * 2, 0);
+            return new StringU8(AddNull(array.AsSpan(0, bytes)));
+        }
+
+        var asString = text is null ? null : text as string ?? text.ToString();
+        if (asString is null)
+            return NullString;
+
+        while (!Encoding.UTF8.TryGetBytes(asString, array, out bytes))
+            ExchangeArray(ref array, array.Length * 2, 0);
+        return new StringU8(AddNull(array.AsSpan(0, bytes)));
+    }
+
+    private static void AppendU8String(ref byte[] array, ref int idx, object? text)
+    {
+        int bytes;
+        if (text is IUtf8SpanFormattable format)
+        {
+            while (!format.TryFormat(array.AsSpan(idx), out bytes, string.Empty, null))
+                ExchangeArray(ref array, array.Length * 2, idx);
+        }
+        else
+        {
+            var asString = text is null ? null : text as string ?? text.ToString();
+
+            if (asString is null)
+            {
+                bytes = NullString.Length;
+                while (!NullString._value.TryCopyTo(array.AsMemory(idx)))
+                    ExchangeArray(ref array, array.Length * 2, idx);
+            }
+            else
+            {
+                while (!Encoding.UTF8.TryGetBytes(asString, array.AsSpan(idx), out bytes))
+                    ExchangeArray(ref array, array.Length * 2, idx);
+            }
+        }
+
+        idx += bytes;
+    }
+
+    private static StringU8 ToU8String(ref byte[] array, string? text)
+    {
+        if (text is null)
+            return NullString;
+
+        int bytes;
+        while (!Encoding.UTF8.TryGetBytes(text, array, out bytes))
+            ExchangeArray(ref array, array.Length * 2, 0);
+        return new StringU8(AddNull(array.AsSpan(0, bytes)));
+    }
+
+    private static void AppendU8String(ref byte[] array, ref int idx, string? text)
+    {
+        int bytes;
+        if (text is null)
+        {
+            bytes = NullString.Length;
+            while (!NullString._value.TryCopyTo(array.AsMemory(idx)))
+                ExchangeArray(ref array, array.Length * 2, idx);
+        }
+        else
+        {
+            while (!Encoding.UTF8.TryGetBytes(text, array.AsSpan(idx), out bytes))
+                ExchangeArray(ref array, array.Length * 2, idx);
+        }
+
+        idx += bytes;
+    }
+
+    public string ToString(string? format, IFormatProvider? formatProvider)
+        => ToString();
+
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        => Encoding.UTF8.TryGetChars(_value.Span, destination, out charsWritten);
+
+    public bool TryFormat(Span<byte> destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        if (!_value.Span.TryCopyTo(destination))
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        bytesWritten = Length;
+        return true;
     }
 }
