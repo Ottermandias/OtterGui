@@ -16,6 +16,9 @@ public partial class FileSystemSelector<T, TStateStorage>
     private int             _currentIndex;
     private int             _currentEnd;
     private DateTimeOffset  _lastButtonTime = DateTimeOffset.UtcNow;
+    private float           _currentWidth;
+    private float           _minWidth;
+    private float           _maxWidth;
 
     private (Vector2, Vector2) DrawStateStruct(StateStruct state)
     {
@@ -143,12 +146,17 @@ public partial class FileSystemSelector<T, TStateStorage>
             flags |= ImGuiTreeNodeFlags.Selected;
         var       expandedState = GetPathState(folder);
         using var color         = ImRaii.PushColor(ImGuiCol.Text, expandedState ? ExpandedFolderColor : CollapsedFolderColor);
-        var       recurse       = ImGui.TreeNodeEx((nint)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
 
+        var endPos = new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight(), ImGui.GetTextLineHeight());
+        using var clipRect = ImUtf8.PushClipRectSize(ImGui.GetCursorScreenPos(),
+            new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight(), ImGui.GetTextLineHeight()), folder.IsLocked, false);
+        var recurse = ImGui.TreeNodeEx((nint)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
+        clipRect.Pop();
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);
 
         color.Pop();
+
 
         if (AllowMultipleSelection && ImGui.IsItemClicked(ImGuiMouseButton.Left) && ImGui.GetIO().KeyCtrl)
             Select(folder, default, true, false);
@@ -196,15 +204,19 @@ public partial class FileSystemSelector<T, TStateStorage>
 
 
     // Draw the whole list.
-    private bool DrawList(float width)
+    private bool DrawList()
     {
         // Filter row is outside the child for scrolling.
-        DrawFilterRow(width);
+        var filterPos = ImGui.GetCursorPos();
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetFrameHeight());
 
         using (var outerStyle = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero)
                    .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero))
         {
-            using var child = ImRaii.Child(Label, new Vector2(width, -ImGui.GetFrameHeight()), true);
+            var childSize = new Vector2(_currentWidth, ImGui.GetContentRegionAvail().Y - ImGui.GetFrameHeight());
+            using var child = ImUtf8.ResizableChild(Label, childSize, out childSize, SetSize, childSize with { X = _minWidth },
+                childSize with { X = _maxWidth });
+            _currentWidth = childSize.X;
             outerStyle.Pop(2);
             MainContext();
             if (!child)
@@ -212,7 +224,7 @@ public partial class FileSystemSelector<T, TStateStorage>
 
             ImGui.SetScrollX(0);
             _stateStorage = ImGui.GetStateStorage();
-            using (var innerStyle = ImRaii.PushStyle(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
+            using (ImRaii.PushStyle(ImGuiStyleVar.IndentSpacing, 14f * ImGuiHelpers.GlobalScale)
                        .Push(ImGuiStyleVar.ItemSpacing,  new Vector2(ImGui.GetStyle().ItemSpacing.X, ImGuiHelpers.GlobalScale))
                        .Push(ImGuiStyleVar.FramePadding, new Vector2(ImGuiHelpers.GlobalScale,       ImGui.GetStyle().FramePadding.Y)))
             {
@@ -254,6 +266,11 @@ public partial class FileSystemSelector<T, TStateStorage>
             outerStyle.Push(ImGuiStyleVar.WindowPadding, Vector2.Zero)
                 .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
         }
+
+        var currentPos = ImGui.GetCursorPos();
+        ImGui.SetCursorPos(filterPos);
+        DrawFilterRow();
+        ImGui.SetCursorPos(currentPos);
 
         return true;
     }

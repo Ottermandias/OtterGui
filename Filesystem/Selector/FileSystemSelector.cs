@@ -7,6 +7,8 @@ using OtterGui.Raii;
 
 namespace OtterGui.FileSystem.Selector;
 
+public record struct ModSelectorSettings(float CurrentWidth, float MinimumScale, float MaximumScale, bool Resizable, bool UseScaling);
+
 public partial class FileSystemSelector<T, TStateStorage> where T : class where TStateStorage : struct
 {
     public delegate void SelectionChangeDelegate(T? oldSelection, T? newSelection, in TStateStorage state);
@@ -129,6 +131,32 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
 
     protected readonly Logger Log;
 
+    protected virtual void SetSize(Vector2 size)
+    {
+        _currentWidth = size.X;
+    }
+
+    protected virtual float CurrentWidth
+        => MathF.Round(ImGui.GetContentRegionAvail().X);
+
+    protected virtual float MinimumAbsoluteSize
+        => 0;
+
+    protected virtual float MinimumAbsoluteRemainder
+        => 0;
+
+    protected virtual float MinimumScaling
+        => 0.1f;
+
+    protected virtual float MaximumScaling
+        => 0.9f;
+
+    protected virtual bool UseScaling
+        => true;
+
+    protected virtual bool Resizable
+        => true;
+
     public FileSystemSelector(FileSystem<T> fileSystem, IKeyState keyState, Logger log, Action<Exception>? exceptionHandler = null,
         string label = "##FileSystemSelector", bool allowMultipleSelection = false)
     {
@@ -145,6 +173,21 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         ExceptionHandler = exceptionHandler ?? (e => Log.Warning(e.ToString()));
     }
 
+    private void GetSizeInternal()
+    {
+        var window = ImGui.GetContentRegionAvail().X;
+
+        var minimumButtons  = ButtonCount * ImGui.GetFrameHeight();
+        var minimumAbsolute = MathF.Max(minimumButtons, MinimumAbsoluteSize);
+
+        var maximumAbsolute = MathF.Max(minimumAbsolute, window - MinimumAbsoluteRemainder);
+        (_minWidth, _maxWidth) = UseScaling
+            ? (MathF.Round(MathF.Max(minimumAbsolute, MinimumScaling * window)), MathF.Min(maximumAbsolute, MaximumScaling * window))
+            : (minimumAbsolute, maximumAbsolute);
+
+        _currentWidth = Math.Clamp(CurrentWidth, _minWidth, _maxWidth);
+    }
+
     // Default flags to use for custom leaf nodes.
     protected const ImGuiTreeNodeFlags LeafFlags = ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.Bullet | ImGuiTreeNodeFlags.NoTreePushOnOpen;
 
@@ -157,19 +200,15 @@ public partial class FileSystemSelector<T, TStateStorage> where T : class where 
         using var _    = ImRaii.TreeNode(leaf.Name, flag);
     }
 
-    public void Draw(float width)
+    public void Draw()
     {
         try
         {
             DrawPopups();
             using var group = ImRaii.Group();
-            width = MathF.Round(width);
-            if (DrawList(width))
-            {
-                if (width < 0)
-                    width = ImGui.GetWindowWidth() - width;
-                DrawButtons(width);
-            }
+            GetSizeInternal();
+            if (DrawList())
+                DrawButtons();
         }
         catch (Exception e)
         {

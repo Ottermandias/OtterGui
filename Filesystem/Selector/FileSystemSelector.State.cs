@@ -59,10 +59,10 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         => (width, false);
 
     // Draw the default filter row of a given width.
-    private void DrawFilterRow(float width)
+    private void DrawFilterRow()
     {
         using var style = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero).Push(ImGuiStyleVar.FrameRounding, 0);
-        (width, var clear) = CustomFilters(width);
+        var (width, clear) = CustomFilters(_currentWidth);
         ImGui.SetNextItemWidth(width);
         var       tmp    = FilterValue;
         using var id     = ImRaii.PushId(0, clear);

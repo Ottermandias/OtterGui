@@ -20,11 +20,14 @@ public partial class FileSystemSelector<T, TStateStorage>
     // List sorted on priority, then subscription order.
     private readonly List<(Action<Vector2>, int)> _buttons = new(1);
 
+    /// <summary> Number of buttons to draw. </summary>
+    public int ButtonCount
+        => _buttons.Count;
 
     // Draw all subscribed buttons.
-    private void DrawButtons(float width)
+    private void DrawButtons()
     {
-        var buttonWidth = new Vector2(width / Math.Max(_buttons.Count, 1), ImGui.GetFrameHeight());
+        var buttonWidth = new Vector2(_currentWidth / Math.Max(_buttons.Count, 1), ImGui.GetFrameHeight());
         using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0f)
             .Push(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
 
