@@ -7,7 +7,7 @@ using OtterGui.Text;
 
 namespace OtterGui.Services;
 
-public class DynamisIpc : IDisposable
+public class DynamisIpc : IDisposable, IService
 {
     private readonly IDalamudPluginInterface _pluginInterface;
     private readonly Logger                  _log;
