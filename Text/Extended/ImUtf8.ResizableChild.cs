@@ -16,6 +16,7 @@ public static unsafe partial class ImUtf8
     /// <summary> Create a bordered child that can be resized in positive X- or Y-direction. </summary>
     /// <param name="label"> The ID of the child as a UTF8 string. HAS to be null-terminated. </param>
     /// <param name="size"> The desired current size of the child. </param>
+    /// <param name="currentSize"> The returned current size of the child. </param>
     /// <param name="setSize"> The function to invoke when the size of the child finalizes a change. </param>
     /// <param name="minSize"> The minimum size of the child. </param>
     /// <param name="maxSize"> The maximum size of the child. </param>
@@ -23,7 +24,7 @@ public static unsafe partial class ImUtf8
     /// <param name="resizeY"> Whether to allow resizing in Y-direction. </param>
     /// <param name="flags"> Additional flags for the child. </param>
     /// <returns> A disposable object that evaluates to true if any part of the begun child is currently visible. Use with using. </returns>
-    public static Child ResizableChild(ReadOnlySpan<byte> label, Vector2 size, Action<Vector2> setSize, Vector2 minSize, Vector2 maxSize,
+    public static Child ResizableChild(ReadOnlySpan<byte> label, Vector2 size, out Vector2 currentSize, Action<Vector2> setSize, Vector2 minSize, Vector2 maxSize,
         ImGuiWindowFlags flags = default, bool resizeX = true, bool resizeY = false)
     {
         // Work in the child ID.
@@ -34,7 +35,7 @@ public static unsafe partial class ImUtf8
         var valueId = GetId("####value"u8);
         var state   = ImGui.GetStateStorage().GetIntRef(stateId, 0);
         var value   = ImGui.GetStateStorage().GetFloatRef(valueId, 0f);
-        size = *state switch
+        currentSize = *state switch
         {
             1 => size with { X = *value },
             2 => size with { Y = *value },
@@ -48,7 +49,7 @@ public static unsafe partial class ImUtf8
         var         rounding        = ImGui.GetStyle().ChildRounding;
         var         onlyInner       = rounding is 0 ? borderWidth : rounding;
         var         hoverExtend     = 5f * GlobalScale;
-        const float delay           = 0.5f;
+        const float delay           = 0.1f;
 
         var rectMin  = ImGui.GetCursorScreenPos() + new Vector2(halfBorderWidth);
         var rectMax  = (ImGui.GetCursorScreenPos() + size).Round();
@@ -172,17 +173,17 @@ public static unsafe partial class ImUtf8
     }
 
     /// <param name="label"> The ID of the child as a UTF16 string. </param>
-    /// <inheritdoc cref="ResizableChild(ReadOnlySpan{byte},Vector2,Action{Vector2},Vector2,Vector2,ImGuiWindowFlags,bool,bool)"/>
+    /// <inheritdoc cref="ResizableChild(ReadOnlySpan{byte},Vector2, out Vector2,Action{Vector2},Vector2,Vector2,ImGuiWindowFlags,bool,bool)"/>
     /// <exception cref="ImUtf8FormatException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Child ResizableChild(ReadOnlySpan<char> label, Vector2 size, Action<Vector2> setSize, Vector2 minSize, Vector2 maxSize,
+    public static Child ResizableChild(ReadOnlySpan<char> label, Vector2 size, out Vector2 currentSize, Action<Vector2> setSize, Vector2 minSize, Vector2 maxSize,
         ImGuiWindowFlags flags = default, bool resizeX = true, bool resizeY = false)
-        => ResizableChild(label.Span<LabelStringHandlerBuffer>(), size, setSize, minSize, maxSize, flags, resizeX, resizeY);
+        => ResizableChild(label.Span<LabelStringHandlerBuffer>(), size, out currentSize, setSize, minSize, maxSize, flags, resizeX, resizeY);
 
     /// <param name="label"> The ID of the child as a format string. </param>
-    /// <inheritdoc cref="ResizableChild(ReadOnlySpan{char},Vector2,Action{Vector2},Vector2,Vector2,ImGuiWindowFlags,bool,bool)"/>
+    /// <inheritdoc cref="ResizableChild(ReadOnlySpan{char},Vector2,out Vector2,Action{Vector2},Vector2,Vector2,ImGuiWindowFlags,bool,bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Child ResizableChild(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Vector2 size, Action<Vector2> setSize,
+    public static Child ResizableChild(ref Utf8StringHandler<LabelStringHandlerBuffer> label, Vector2 size, out Vector2 currentSize, Action<Vector2> setSize,
         Vector2 minSize, Vector2 maxSize, ImGuiWindowFlags flags = default, bool resizeX = true, bool resizeY = false)
-        => ResizableChild(label.Span(), size, setSize, minSize, maxSize, flags, resizeX, resizeY);
+        => ResizableChild(label.Span(), size, out currentSize, setSize, minSize, maxSize, flags, resizeX, resizeY);
 }
