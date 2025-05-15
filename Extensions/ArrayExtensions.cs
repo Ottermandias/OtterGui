@@ -117,6 +117,19 @@ public static class ArrayExtensions
         return false;
     }
 
+    /// <summary> Find the index of the first occurence of <paramref name="needle"/> within <paramref name="array"/>, if one exists. </summary>
+    /// <returns> The index if an occurence was found, -1 otherwise. </returns>
+    public static int IndexOf<T>(this ReadOnlySpan<T> array, T needle) where T : IEquatable<T>
+    {
+        for (var i = 0; i < array.Length; ++i)
+        {
+            if (array[i].Equals(needle))
+                return i;
+        }
+
+        return -1;
+    }
+
     /// <summary> Write a byte span as a list of hexadecimal bytes separated by spaces. </summary>
     public static string WriteHexBytes(this ReadOnlySpan<byte> bytes)
     {
@@ -138,14 +151,14 @@ public static class ArrayExtensions
         var sb      = new StringBuilder(shorter * 3);
         for (var i = 0; i < shorter - 1; ++i)
         {
-            var d = (byte) (bytes[i] ^ diff[i]);
+            var d = (byte)(bytes[i] ^ diff[i]);
             if (d == 0)
                 sb.Append("   ");
             else
                 sb.Append($"{d:X2} ");
         }
 
-        var last = (byte) (bytes[shorter - 1] ^ diff[shorter - 1]);
+        var last = (byte)(bytes[shorter - 1] ^ diff[shorter - 1]);
         if (last == 0)
             sb.Append("   ");
         else
