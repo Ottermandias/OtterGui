@@ -32,6 +32,36 @@ public static unsafe partial class ImUtf8
         return false;
     }
 
+    /// <summary> Draw a text input. </summary>
+    /// <param name="label"> The input label as a UTF8 string. HAS to be null-terminated. </param>
+    /// <param name="buffer"> The buffer preloaded with the input data, which should have enough space to edit inside the buffer. </param>
+    /// <param name="textLength"> The length of the text written to the buffer.  </param>
+    /// <param name="hint"> An optional hint to display in the input box as long as the input is empty as a UTF8 string. HAS to be null-terminated. </param>
+    /// <param name="flags"> Additional flags controlling the input behavior. </param>
+    /// <returns> Whether the value changed in this frame. </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, out int textLength, ReadOnlySpan<byte> hint = default,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
+    {
+        var userData = 0;
+
+        var input = hint.Length > 0
+            ? ImGuiNative.igInputTextWithHint(label.Start(), hint.Start(), buffer.Start(), (uint)buffer.Length,
+                flags | ImGuiInputTextFlags.CallbackAlways,
+                a => *(int*)a->UserData = a->BufTextLen, &userData).Bool()
+            : ImGuiNative.igInputText(label.Start(), buffer.Start(), (uint)buffer.Length, flags | ImGuiInputTextFlags.CallbackAlways,
+                WriteTextLengthCallback,
+                &userData).Bool();
+        textLength = userData;
+        return input;
+    }
+
+    private static int WriteTextLengthCallback(ImGuiInputTextCallbackData* ptr)
+    {
+        *(int*)ptr->UserData = ptr->BufTextLen;
+        return 0;
+    }
+
     /// <param name="label"> The input label as a UTF16 string. </param>
     /// <inheritdoc cref="InputText(ReadOnlySpan{byte},Span{byte}, out TerminatedByteString, ReadOnlySpan{byte}, ImGuiInputTextFlags)"/>
     /// <exception cref="ImUtf8FormatException" />
