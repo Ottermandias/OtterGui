@@ -23,14 +23,19 @@ public static class ImGuiClip
     // but subtracting the current cursor position,
     // and apply the dummy of the appropriate height, removing one item spacing.
     // The height has to contain the spacing.
-    public static int GetNecessarySkipsAtPos(float height, float cursorPosY)
+    public static int GetNecessarySkipsAtPos(float height, float cursorPosY, int maxCount = int.MaxValue)
     {
         var curY  = ImGui.GetScrollY() - cursorPosY;
         var skips = (int)(curY / height);
+        if (skips > maxCount)
+            skips = maxCount;
         if (skips > 0)
+        {
             ImGui.Dummy(new Vector2(1, skips * height - ImGui.GetStyle().ItemSpacing.Y));
+            return skips;
+        }
 
-        return skips;
+        return 0;
     }
 
 
@@ -100,7 +105,6 @@ public static class ImGuiClip
         {
             if (idx >= skips)
             {
-
                 using (var group = ImRaii.Group())
                 {
                     using var id = ImRaii.PushId(idx);
