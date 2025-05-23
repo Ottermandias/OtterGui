@@ -1,5 +1,6 @@
 using ImGuiNET;
 using OtterGui.Classes;
+using OtterGui.Extensions;
 using OtterGui.Log;
 
 namespace OtterGui.Widgets;
@@ -52,10 +53,13 @@ public abstract class FilterComboCache<T> : FilterComboBase<T>
         CurrentSelection = newSelection;
     }
 
-    protected override void OnMouseWheel(string _1, ref int _2, int steps)
+    protected override void OnMouseWheel(string preview, ref int _2, int steps)
     {
         if (Items.Count <= 1)
             return;
+
+        if (CurrentSelectionIdx < 0)
+            CurrentSelectionIdx = Items.IndexOf(i => ToString(i) == preview);
 
         var mouseWheel = -steps % Items.Count;
         NewSelection = mouseWheel switch
