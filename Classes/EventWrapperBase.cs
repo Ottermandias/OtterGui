@@ -32,7 +32,7 @@ public abstract class EventWrapperBase<TPriority>(string name) : IDisposable, IS
     where TPriority : struct, Enum
 {
     public readonly    string                                        Name  = name;
-    protected readonly List<(object Subscriber, TPriority Priority)> Event = [];
+    protected readonly List<(Delegate Subscriber, TPriority Priority)> Event = [];
     protected readonly ReaderWriterLockSlim                          Lock  = new(LockRecursionPolicy.SupportsRecursion);
 
     public bool HasSubscribers
@@ -50,10 +50,10 @@ public abstract class EventWrapperBase<TPriority>(string name) : IDisposable, IS
     protected virtual void Dispose(bool disposing)
     { }
 
-    protected void Subscribe(object subscriber, TPriority priority)
+    protected void Subscribe(Delegate subscriber, TPriority priority)
     {
         Lock.EnterReadLock();
-        var existingIdx = Event.FindIndex(p => ReferenceEquals(p.Subscriber, subscriber));
+        var existingIdx = Event.FindIndex(p => p.Subscriber == subscriber);
         var idx         = Event.FindIndex(p => p.Priority.CompareTo(priority) > 0);
         Lock.ExitReadLock();
         Lock.EnterWriteLock();
@@ -78,10 +78,10 @@ public abstract class EventWrapperBase<TPriority>(string name) : IDisposable, IS
         Lock.ExitWriteLock();
     }
 
-    protected void Unsubscribe(object subscriber)
+    protected void Unsubscribe(Delegate subscriber)
     {
         Lock.EnterReadLock();
-        var idx = Event.FindIndex(p => ReferenceEquals(p.Subscriber, subscriber));
+        var idx = Event.FindIndex(p => p.Subscriber == subscriber);
         Lock.ExitReadLock();
         if (idx < 0)
             return;
