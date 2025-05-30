@@ -93,11 +93,11 @@ public abstract class EventWrapperBase<TPriority>(string name) : IDisposable, IS
 
     protected IEnumerable<T> Enumerate<T>() where T : Delegate
     {
-        Lock.EnterReadLock();
+        Lock.EnterUpgradeableReadLock();
         for (var i = Event.Count - 1; i >= 0; --i)
             yield return (T)Event[i].Subscriber;
 
-        Lock.ExitReadLock();
+        Lock.ExitUpgradeableReadLock();
     }
 }
 
