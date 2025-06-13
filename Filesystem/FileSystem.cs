@@ -14,16 +14,17 @@ public enum FileSystemChangeType
 }
 
 // The public facing filesystem methods all throw descriptive exceptions if they are unsuccessful.
-public partial class FileSystem<T> where T : class
+public partial class FileSystem<T> : IReadOnlyDictionary<T, FileSystem<T>.Leaf> where T : class
 {
     // Any filesystem change triggers the event after the actual change has taken place.
     public delegate void         ChangeDelegate(FileSystemChangeType type, IPath changedObject, IPath? previousParent, IPath? newParent);
     public event ChangeDelegate? Changed;
 
-    private readonly NameComparer      _nameComparer;
-    private readonly IComparer<string> _stringComparer;
-    public           Folder            Root      = Folder.CreateRoot();
-    public           uint              IdCounter = 1;
+    private readonly Dictionary<T, Leaf> _leaves = [];
+    private readonly NameComparer        _nameComparer;
+    private readonly IComparer<string>   _stringComparer;
+    public           Folder              Root      = Folder.CreateRoot();
+    public           uint                IdCounter = 1;
 
     // The string comparer passed will be used to compare the names of siblings.
     // If none is supplied, they will be compared with OrdinalIgnoreCase.
@@ -89,6 +90,7 @@ public partial class FileSystem<T> where T : class
         if (SetChild(parent, leaf, out var idx) == Result.ItemExists)
             throw new Exception($"Could not add leaf {leaf.Name} to {parent.FullName()}: Child of that name already exists.");
 
+        _leaves.Add(data, leaf);
         Changed?.Invoke(FileSystemChangeType.LeafAdded, leaf, null, parent);
         return (leaf, idx);
     }
@@ -98,7 +100,7 @@ public partial class FileSystem<T> where T : class
     public (Leaf, int) CreateDuplicateLeaf(Folder parent, string name, T data)
     {
         name = name.FixName();
-        while (Search(parent, name) > 0)
+        while (Search(parent, name) >= 0)
             name = name.IncrementDuplicate();
         return CreateLeaf(parent, name, data);
     }
@@ -232,6 +234,8 @@ public partial class FileSystem<T> where T : class
         {
             case Result.InvalidOperation: throw new Exception("Can not delete root directory.");
             case Result.Success:
+                if (child is Leaf l)
+                    _leaves.Remove(l.Value);
                 Changed?.Invoke(FileSystemChangeType.ObjectRemoved, child, child.Parent, null);
                 return;
         }
@@ -285,4 +289,28 @@ public partial class FileSystem<T> where T : class
                     $"Could not merge {from.FullName()} into {to.FullName()} because all children already existed in the target.");
         }
     }
+
+    public IEnumerator<KeyValuePair<T, Leaf>> GetEnumerator()
+        => _leaves.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => GetEnumerator();
+
+    int IReadOnlyCollection<KeyValuePair<T, Leaf>>.Count
+        => _leaves.Count;
+
+    public bool ContainsKey(T key)
+        => _leaves.ContainsKey(key);
+
+    public bool TryGetValue(T key, [NotNullWhen(true)] out Leaf? value)
+        => _leaves.TryGetValue(key, out value);
+
+    Leaf IReadOnlyDictionary<T, Leaf>.this[T key]
+        => _leaves[key];
+
+    IEnumerable<T> IReadOnlyDictionary<T, Leaf>.Keys
+        => _leaves.Keys;
+
+    IEnumerable<Leaf> IReadOnlyDictionary<T, Leaf>.Values
+        => _leaves.Values;
 }

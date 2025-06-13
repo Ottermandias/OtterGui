@@ -89,6 +89,7 @@ public partial class FileSystem<T>
     protected bool Load(JObject? jObject, IEnumerable<T> objects, Func<T, string> toIdentifier, Func<T, string> toName)
     {
         IdCounter = 1;
+        _leaves.Clear();
         Root.Children.Clear();
         var changes = true;
         if (jObject != null)
@@ -115,6 +116,7 @@ public partial class FileSystem<T>
                         }
 
                         var leaf = new Leaf(folder, split[^1], value, IdCounter++);
+                        _leaves.Add(value, leaf);
                         while (SetChild(folder, leaf, out _) == Result.ItemExists)
                         {
                             leaf.SetName(leaf.Name.IncrementDuplicate());
@@ -125,6 +127,7 @@ public partial class FileSystem<T>
                     {
                         // Add a new leaf using the given toName function.
                         var leaf = new Leaf(Root, toName(value), value, IdCounter++);
+                        _leaves.Add(value, leaf);
                         while (SetChild(Root, leaf, out _) == Result.ItemExists)
                         {
                             leaf.SetName(leaf.Name.IncrementDuplicate());

@@ -3,13 +3,8 @@ namespace OtterGui.Filesystem;
 public partial class FileSystem<T>
 {
     // Compare paths only by their name, using the submitted string comparer.
-    private readonly struct NameComparer : IComparer<IPath>
+    private readonly struct NameComparer(IComparer<string> baseComparer) : IComparer<IPath>
     {
-        private readonly IComparer<string> _baseComparer;
-
-        public NameComparer(IComparer<string> baseComparer)
-            => _baseComparer = baseComparer;
-
         public int Compare(IPath? x, IPath? y)
         {
             if (ReferenceEquals(x, y))
@@ -19,7 +14,7 @@ public partial class FileSystem<T>
             if (x is null)
                 return -1;
 
-            return _baseComparer.Compare(x.Name, y.Name);
+            return baseComparer.Compare(x.Name, y.Name);
         }
     }
 }
