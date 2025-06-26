@@ -2,6 +2,9 @@ using Dalamud.Interface.ImGuiNotification;
 using ImGuiNET;
 using OtterGui.Classes;
 using OtterGui.Raii;
+using OtterGui.Text;
+using OtterGui.Widgets;
+using OtterGuiInternal.Enums;
 
 namespace OtterGui.Custom;
 
@@ -53,5 +56,71 @@ public static class CustomGui
 
         if (tooltip != null)
             ImGuiUtil.HoverTooltip(tooltip);
+    }
+
+    public static void DrawKofiPatreonButton(MessageService message, Vector2 size)
+    {
+        const string kofiAddress    = "https://ko-fi.com/ottermandias";
+        const string patreonAddress = "https://www.patreon.com/Ottermandias";
+        var          half           = size with { X = size.X / 2 };
+
+        switch (ToggleButton.SplitButton((ImGuiId)5, new ToggleButton.SplitButtonData()
+                {
+                    Label      = "Ko-Fi"u8,
+                    Active     = 0xFF5B5EFFu,
+                    Background = 0xFFFFC313u,
+                    Hovered    = ImGui.GetColorU32(ImGuiCol.ButtonHovered),
+                    Tooltip =
+                        "Open Ottermandias' Ko-Fi at https://ko-fi.com/ottermandias in your browser.\n\nAny donations made are entirely voluntary and will not yield any preferential treatment or benefits beyond making Otter happy."u8,
+                }, new ToggleButton.SplitButtonData()
+                {
+                    Label      = "Patreon"u8,
+                    Active     = 0xFF492C00u,
+                    Hovered    = ImGui.GetColorU32(ImGuiCol.ButtonHovered),
+                    Background = 0xFF5467F7u,
+                    Tooltip =
+                        "Open Ottermandias' Patreon at https://www.patreon.com/Ottermandias in your browser.\n\nAny donations made are entirely voluntary and will not yield any preferential treatment or benefits beyond making Otter happy."u8,
+                }, size, MixColors(0xFFFFC313u, 0xFF5467F7u)))
+        {
+            case 1:
+                try
+                {
+                    var process = new ProcessStartInfo("https://ko-fi.com/ottermandias")
+                    {
+                        UseShellExecute = true,
+                    };
+                    Process.Start(process);
+                }
+                catch
+                {
+                    message.NotificationMessage($"Could not open Ko-Fi link at {kofiAddress} in external browser", NotificationType.Error);
+                }
+
+                break;
+            case 2:
+                try
+                {
+                    var process = new ProcessStartInfo(patreonAddress)
+                    {
+                        UseShellExecute = true,
+                    };
+                    Process.Start(process);
+                }
+                catch
+                {
+                    message.NotificationMessage($"Could not open Patreon link at {patreonAddress} in external browser", NotificationType.Error);
+                }
+
+                break;
+        }
+
+
+        uint MixColors(uint x, uint y)
+        {
+            var r = ((x & 0xFF) + (y & 0xFF)) / 2;
+            var g = (((x >> 8) & 0xFF) + ((y >> 8) & 0xFF)) / 2;
+            var b = (((x >> 16) & 0xFF) + ((y >> 16) & 0xFF)) / 2;
+            return r | (g << 8) | (b << 16) | 0xFF000000u;
+        }
     }
 }
