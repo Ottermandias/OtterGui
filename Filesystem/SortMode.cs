@@ -14,8 +14,8 @@ public enum SortMode
 
 public interface ISortMode<T> where T : class
 {
-    string Name        { get; }
-    string Description { get; }
+    ReadOnlySpan<byte> Name        { get; }
+    ReadOnlySpan<byte> Description { get; }
 
     IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder);
 
@@ -30,11 +30,11 @@ public interface ISortMode<T> where T : class
 
     private struct FoldersFirstT : ISortMode<T>
     {
-        public string Name
-            => "Folders First";
+        public ReadOnlySpan<byte> Name
+            => "Folders First"u8;
 
-        public string Description
-            => "In each folder, sort all subfolders lexicographically, then sort all leaves lexicographically.";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all subfolders lexicographically, then sort all leaves lexicographically."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.GetSubFolders().Cast<FileSystem<T>.IPath>().Concat(folder.GetLeaves());
@@ -42,11 +42,11 @@ public interface ISortMode<T> where T : class
 
     private struct LexicographicalT : ISortMode<T>
     {
-        public string Name
-            => "Lexicographical";
+        public ReadOnlySpan<byte> Name
+            => "Lexicographical"u8;
 
-        public string Description
-            => "In each folder, sort all children lexicographically.";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all children lexicographically."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.Children;
@@ -54,11 +54,11 @@ public interface ISortMode<T> where T : class
 
     private struct InverseFoldersFirstT : ISortMode<T>
     {
-        public string Name
-            => "Folders First (Inverted)";
+        public ReadOnlySpan<byte> Name
+            => "Folders First (Inverted)"u8;
 
-        public string Description
-            => "In each folder, sort all subfolders in inverse lexicographical order, then sort all leaves in inverse lexicographical order.";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all subfolders in inverse lexicographical order, then sort all leaves in inverse lexicographical order."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.GetSubFolders().Cast<FileSystem<T>.IPath>().Reverse().Concat(folder.GetLeaves().Reverse());
@@ -66,11 +66,11 @@ public interface ISortMode<T> where T : class
 
     public struct InverseLexicographicalT : ISortMode<T>
     {
-        public string Name
-            => "Lexicographical (Inverted)";
+        public ReadOnlySpan<byte> Name
+            => "Lexicographical (Inverted)"u8;
 
-        public string Description
-            => "In each folder, sort all children in inverse lexicographical order.";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all children in inverse lexicographical order."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.Children.Cast<FileSystem<T>.IPath>().Reverse();
@@ -78,11 +78,11 @@ public interface ISortMode<T> where T : class
 
     public struct FoldersLastT : ISortMode<T>
     {
-        public string Name
-            => "Folders Last";
+        public ReadOnlySpan<byte> Name
+            => "Folders Last"u8;
 
-        public string Description
-            => "In each folder, sort all leaves lexicographically, then sort all subfolders lexicographically.";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all leaves lexicographically, then sort all subfolders lexicographically."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.GetLeaves().Cast<FileSystem<T>.IPath>().Concat(folder.GetSubFolders());
@@ -90,11 +90,11 @@ public interface ISortMode<T> where T : class
 
     public struct InverseFoldersLastT : ISortMode<T>
     {
-        public string Name
-            => "Folders Last (Inverted)";
+        public ReadOnlySpan<byte> Name
+            => "Folders Last (Inverted)"u8;
 
-        public string Description
-            => "In each folder, sort all leaves in inverse lexicographical order, then sort all subfolders in inverse lexicographical order.";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all leaves in inverse lexicographical order, then sort all subfolders in inverse lexicographical order."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.GetLeaves().Cast<FileSystem<T>.IPath>().Reverse().Concat(folder.GetSubFolders().Reverse());
@@ -102,11 +102,11 @@ public interface ISortMode<T> where T : class
 
     public struct InternalOrderT : ISortMode<T>
     {
-        public string Name
-            => "Internal Order";
+        public ReadOnlySpan<byte> Name
+            => "Internal Order"u8;
 
-        public string Description
-            => "In each folder, sort all children in order of their identifiers (i.e. in order of their creation in the filesystem).";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all children in order of their identifiers (i.e. in order of their creation in the filesystem)."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.Children.OrderBy(c => c.Identifier);
@@ -114,11 +114,11 @@ public interface ISortMode<T> where T : class
 
     public struct InverseInternalOrderT : ISortMode<T>
     {
-        public string Name
-            => "Internal Order (Inverted)";
+        public ReadOnlySpan<byte> Name
+            => "Internal Order (Inverted)"u8;
 
-        public string Description
-            => "In each folder, sort all children in inverse order of their identifiers (i.e. in inverse order of their creation in the filesystem).";
+        public ReadOnlySpan<byte> Description
+            => "In each folder, sort all children in inverse order of their identifiers (i.e. in inverse order of their creation in the filesystem)."u8;
 
         public IEnumerable<FileSystem<T>.IPath> GetChildren(FileSystem<T>.Folder folder)
             => folder.Children.OrderByDescending(c => c.Identifier);

@@ -63,6 +63,12 @@ public class Logger
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
 
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(utf8Value));
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _builder.AppendFormatted(Encoding.UTF8.GetString(utf8Value), alignment, format);
+
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
 
@@ -100,6 +106,9 @@ public class Logger
 
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
+
+        public void AppendLiteral(ReadOnlySpan<byte> s)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(s));
 
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
@@ -139,6 +148,12 @@ public class Logger
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
 
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(utf8Value));
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _builder.AppendFormatted(Encoding.UTF8.GetString(utf8Value), alignment, format);
+
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
 
@@ -176,6 +191,12 @@ public class Logger
 
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(utf8Value));
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _builder.AppendFormatted(Encoding.UTF8.GetString(utf8Value), alignment, format);
 
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
@@ -215,6 +236,12 @@ public class Logger
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
 
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(utf8Value));
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _builder.AppendFormatted(Encoding.UTF8.GetString(utf8Value), alignment, format);
+
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
 
@@ -253,6 +280,12 @@ public class Logger
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
 
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(utf8Value));
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _builder.AppendFormatted(Encoding.UTF8.GetString(utf8Value), alignment, format);
+
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
 
@@ -290,6 +323,12 @@ public class Logger
 
         public void AppendLiteral(string s)
             => _builder.AppendLiteral(s);
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value)
+            => _builder.AppendLiteral(Encoding.UTF8.GetString(utf8Value));
+
+        public void AppendFormatted(scoped ReadOnlySpan<byte> utf8Value, int alignment = 0, string? format = null)
+            => _builder.AppendFormatted(Encoding.UTF8.GetString(utf8Value), alignment, format);
 
         public void AppendFormatted<T>(T t)
             => _builder.AppendFormatted(t);
