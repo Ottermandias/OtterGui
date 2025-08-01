@@ -1,5 +1,5 @@
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using JetBrains.Annotations;
 using OtterGui.Text.HelperObjects;
 
@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     /// <param name="text"> The given text as a UTF8 string. Does not have to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Text(ReadOnlySpan<byte> text)
-        => ImGuiNative.igTextUnformatted(text.Start(out var end), end);
+        => ImGui.TextUnformatted(text.Start(out var end), end);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="Text(ReadOnlySpan{byte})"/>

@@ -1,5 +1,5 @@
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Extensions;
 using OtterGui.Text.EndObjects;
 using OtterGui.Text.HelperObjects;
@@ -58,7 +58,7 @@ public static unsafe partial class ImUtf8
         // If resizing in X direction is allowed, handle it.
         if (resizeX)
         {
-            var id = (ImGuiId)GetId("####x"u8);
+            var id = GetId("####x"u8);
             // Behaves as a splitter, so second size is the remainder.
             var sizeInc      = size.X;
             var sizeDec      = ImGui.GetContentRegionAvail().X - size.X;
@@ -67,7 +67,7 @@ public static unsafe partial class ImUtf8
             using var color = ImRaii.PushColor(ImGuiCol.Separator, borderColor);
             var rect = new ImRect(new Vector2(rectMax.X - halfBorderWidth, rectMin.Y + onlyInner),
                 new Vector2(rectMax.X + halfBorderWidth,                   rectMax.Y - onlyInner));
-            if (ImGuiNativeInterop.SplitterBehavior(rect, id, ImGuiAxis.X, &sizeInc, &sizeDec, minSize.X, remainderMin, hoverExtend, delay, 0))
+            if (ImGuiP.SplitterBehavior(rect, id, ImGuiAxis.X, &sizeInc, &sizeDec, minSize.X, remainderMin, hoverExtend, delay, 0))
             {
                 // Update internal state.
                 *value  = sizeInc;
@@ -92,7 +92,7 @@ public static unsafe partial class ImUtf8
         if (resizeY)
         {
             // Same as X just for the other direction. Y takes priority in length.
-            var id = (ImGuiId)GetId("####y"u8);
+            var id = GetId("####y"u8);
 
             var sizeInc      = size.Y;
             var sizeDec      = ImGui.GetContentRegionAvail().Y - size.Y;
@@ -101,7 +101,7 @@ public static unsafe partial class ImUtf8
             using var color = ImRaii.PushColor(ImGuiCol.Separator, borderColor);
             var rect = new ImRect(new Vector2(rectMin.X + onlyInner, rectMax.Y - halfBorderWidth),
                 new Vector2(rectMax.X - onlyInner,                   rectMax.Y + halfBorderWidth));
-            if (ImGuiNativeInterop.SplitterBehavior(rect, id, ImGuiAxis.Y, &sizeInc, &sizeDec, minSize.X, remainderMin, hoverExtend, delay, 0))
+            if (ImGuiP.SplitterBehavior(rect, id, ImGuiAxis.Y, &sizeInc, &sizeDec, minSize.X, remainderMin, hoverExtend, delay, 0))
             {
                 *value  = sizeInc;
                 size    = size with { Y = sizeInc };

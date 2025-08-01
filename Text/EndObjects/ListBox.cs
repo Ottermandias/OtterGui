@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -10,7 +10,7 @@ public unsafe ref struct ListBox
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal ListBox(ReadOnlySpan<byte> label, Vector2 size)
-        => Success = ImGuiNative.igBeginListBox(label.Start(), size).Bool();
+        => Success = ImGui.BeginListBox(label.Start(), size);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(ListBox value)

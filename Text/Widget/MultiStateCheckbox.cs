@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 using OtterGuiInternal;
 using OtterGuiInternal.Structs;
@@ -59,7 +59,7 @@ public abstract class MultiStateCheckbox<T>
         // Calculate the bounding box of the checkbox including the label.
         var squareSize  = ImGui.GetFrameHeight();
         var style       = ImGui.GetStyle();
-        var screenPos   = window.Dc.CursorPos;
+        var screenPos   = window.DC.CursorPos;
         var itemSize    = new Vector2(squareSize + (labelSize.X > 0 ? style.ItemInnerSpacing.X + labelSize.X : 0), squareSize);
         var boundingBox = new ImRect(screenPos, screenPos + itemSize);
 
@@ -89,7 +89,7 @@ public abstract class MultiStateCheckbox<T>
         // Add the label if there is one visible.
         if (labelSize.X > 0)
         {
-            var labelPos = new Vector2(checkBoundingBox.MaxX + style.ItemInnerSpacing.X, checkBoundingBox.MinY + style.FramePadding.Y);
+            var labelPos = new Vector2(checkBoundingBox.Max.X + style.ItemInnerSpacing.X, checkBoundingBox.Min.Y + style.FramePadding.Y);
             StringHelpers.AddText(ImGui.GetWindowDrawList(), labelPos, ImGui.GetColorU32(ImGuiCol.Text), label[..visibleEnd], false);
         }
 

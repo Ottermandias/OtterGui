@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -24,10 +24,10 @@ public static unsafe partial class ImUtf8
         Vector2 size = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
+        var id = ImGui.GetID(label.Start(out var end), end);
         if (InputStringHandlerBuffer.IsActive && id == InputStringHandlerBuffer.LastId)
         {
-            ImGuiNative.igInputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
+            ImGui.InputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
                 null!, null);
             return InputStringHandlerBuffer.Return(input, out result);
         }
@@ -66,10 +66,10 @@ public static unsafe partial class ImUtf8
         Vector2 size = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
+        var id = ImGui.GetID(label.Start(out var end), end);
         if (InputStringHandlerBuffer.IsActive && id == InputStringHandlerBuffer.LastId)
         {
-            ImGuiNative.igInputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
+            ImGui.InputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
                 null!, null);
             return InputStringHandlerBuffer.Return(input, out result);
         }

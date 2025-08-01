@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Selectable(ReadOnlySpan<byte> label, bool isSelected = false, ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
         Vector2 size = default)
-        => ImGuiNative.igSelectable_Bool(label.Start(), isSelected.Byte(), flags, size).Bool();
+        => ImGui.Selectable(label.Start(), isSelected, flags, size);
 
     /// <param name="label"> The selectable label as a UTF16 string. </param>
     /// <inheritdoc cref="Selectable(ReadOnlySpan{byte},bool,ImGuiSelectableFlags,Vector2)"/>

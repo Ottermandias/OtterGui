@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -10,11 +10,11 @@ public unsafe ref struct Modal
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Modal(ReadOnlySpan<byte> label, ref bool open, ImGuiWindowFlags flags)
-        => Success = ImGuiNative.igBeginPopupModal(label.Start(), (byte*) Unsafe.AsPointer(ref open), flags).Bool();
+        => Success = ImGui.BeginPopupModal(label.Start(), ref open, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Modal(ReadOnlySpan<byte> label, ImGuiWindowFlags flags)
-        => Success = ImGuiNative.igBeginPopupModal(label.Start(), null, flags).Bool();
+        => Success = ImGui.BeginPopupModal(label.Start(), null, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Modal value)

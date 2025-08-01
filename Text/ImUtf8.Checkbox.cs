@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the checkbox has been clicked in this frame, in which case <paramref name="value"/> will be flipped. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Checkbox(ReadOnlySpan<byte> label, ref bool value)
-        => ImGuiNative.igCheckbox(label.Start(), (byte*)Unsafe.AsPointer(ref value)).Bool();
+        => ImGui.Checkbox(label.Start(), ref value);
 
     /// <param name="label"> The checkbox label as a UTF16 string. </param>
     /// <inheritdoc cref="Checkbox(ReadOnlySpan{byte}, ref bool)"/>
@@ -43,7 +43,7 @@ public static unsafe partial class ImUtf8
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Checkbox(ReadOnlySpan<byte> label, ref uint value, uint flags)
-        => ImGuiNative.igCheckboxFlags_UintPtr(label.Start(), (uint*)Unsafe.AsPointer(ref value), flags).Bool();
+        => ImGui.CheckboxFlags(label.Start(), ref value, flags);
 
     /// <param name="label"> The checkbox label as a UTF16 string. </param>
     /// <inheritdoc cref="Checkbox(ReadOnlySpan{byte},ref uint, uint)"/>

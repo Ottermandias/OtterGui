@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
@@ -10,7 +10,7 @@ public static unsafe partial class ImUtf8
     /// <param name="text"> The text itself as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void LabelText(ReadOnlySpan<byte> label, ReadOnlySpan<byte> text)
-        => ImGuiNative.igLabelText(label.Start(), text.Start());
+        => ImGui.LabelText(label.Start(), text.Start());
 
     /// <param name="text"> The text itself as a UTF16 string. HAS to be null-terminated. </param>
     /// <inheritdoc cref="LabelText(ReadOnlySpan{byte},ReadOnlySpan{byte})"/>

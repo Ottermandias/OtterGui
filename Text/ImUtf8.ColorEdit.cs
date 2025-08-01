@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the color has been changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorEdit(ReadOnlySpan<byte> label, ref Vector3 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGuiNative.igColorEdit3(label.Start(), (Vector3*)Unsafe.AsPointer(ref color), flags).Bool();
+        => ImGui.ColorEdit3(label.Start(), ref color, flags);
 
     /// <param name="label"> The panel label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorEdit(ReadOnlySpan{byte}, ref Vector3, ImGuiColorEditFlags)"/>
@@ -35,7 +35,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ColorEdit(ReadOnlySpan{byte}, ref Vector3, ImGuiColorEditFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorEdit(ReadOnlySpan<byte> label, ref Vector4 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGuiNative.igColorEdit4(label.Start(), (Vector4*)Unsafe.AsPointer(ref color), flags).Bool();
+        => ImGui.ColorEdit4(label.Start(), ref color, flags);
 
     /// <param name="label"> The panel label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorEdit(ReadOnlySpan{byte}, ref Vector4, ImGuiColorEditFlags)"/>
@@ -59,7 +59,7 @@ public static unsafe partial class ImUtf8
     public static bool ColorEdit(ReadOnlySpan<byte> label, ref uint color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
     {
         var value = ImGui.ColorConvertU32ToFloat4(color);
-        if (!ImGuiNative.igColorEdit4(label.Start(), (Vector4*)Unsafe.AsPointer(ref value), flags).Bool())
+        if (!ImGui.ColorEdit4(label.Start(), ref value, flags))
             return false;
 
         color = ImGui.ColorConvertFloat4ToU32(value);

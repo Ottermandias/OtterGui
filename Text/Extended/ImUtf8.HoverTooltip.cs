@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Raii;
 using OtterGui.Text.HelperObjects;
 
@@ -64,7 +64,7 @@ public static unsafe partial class ImUtf8
 
         using var disabled = ImRaii.Enabled();
         using var tt       = Tooltip();
-        ImGuiNative.igTextUnformatted(text.Begin, end);
+        ImGui.TextUnformatted(text.Begin, end);
     }
 
     /// <inheritdoc cref="HoverTooltip(ImGuiHoveredFlags, ref HoverUtf8StringHandler)"/>>

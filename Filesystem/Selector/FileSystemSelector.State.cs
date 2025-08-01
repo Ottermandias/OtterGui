@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 
@@ -71,7 +71,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         {
             try
             {
-                var x = ImGui.GetClipboardText();
+                var x = ImGui.GetClipboardTextS();
                 if (x.Length > 0)
                 {
                     tmp    = x;

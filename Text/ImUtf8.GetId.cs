@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -12,7 +12,7 @@ public static unsafe partial class ImUtf8
     /// <returns> The ImGui ID of the label in the current ID stack. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint GetId(ReadOnlySpan<byte> label)
-        => ImGuiNative.igGetID_StrStr(label.Start(out var end), end);
+        => ImGui.GetID(label.Start(out var end), end);
 
     /// <param name="label"> The object's label as a UTF16 string. </param>
     /// <inheritdoc cref="GetId(ReadOnlySpan{byte})"/>

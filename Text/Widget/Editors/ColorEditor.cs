@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.Widget.Editors;
 
@@ -36,7 +36,7 @@ public sealed class ColorEditor : IEditor<float>, IEditor<Vector3>, IEditor<Vect
 
         ref var value = ref values[0];
         var previous = value;
-        if (!ImUtf8.ColorEdit("###color"u8, ref value, ImGuiColorEditFlags.Float | (_hdr ? ImGuiColorEditFlags.HDR : 0)))
+        if (!ImUtf8.ColorEdit("###color"u8, ref value, ImGuiColorEditFlags.Float | (_hdr ? ImGuiColorEditFlags.Hdr : 0)))
             return false;
         if (disabled)
         {
@@ -56,7 +56,7 @@ public sealed class ColorEditor : IEditor<float>, IEditor<Vector3>, IEditor<Vect
         ref var value = ref values[0];
         var previous = value;
         if (!ImUtf8.ColorEdit("###color"u8, ref value,
-                ImGuiColorEditFlags.Float | ImGuiColorEditFlags.AlphaPreviewHalf | (_hdr ? ImGuiColorEditFlags.HDR : 0)))
+                ImGuiColorEditFlags.Float | ImGuiColorEditFlags.AlphaPreviewHalf | (_hdr ? ImGuiColorEditFlags.Hdr : 0)))
             return false;
         if (disabled)
         {

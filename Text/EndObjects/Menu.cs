@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -10,7 +10,7 @@ public unsafe ref struct Menu
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Menu(ReadOnlySpan<byte> label, bool enabled)
-        => Success = ImGuiNative.igBeginMenu(label.Start(), enabled.Byte()).Bool();
+        => Success = ImGui.BeginMenu(label.Start(), enabled);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Menu value)

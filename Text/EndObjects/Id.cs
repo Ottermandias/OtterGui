@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -21,7 +21,7 @@ public unsafe ref struct Id
     public Id Push(nint ptr)
     {
         ++_counter;
-        ImGui.PushID(ptr);
+        ImGui.PushID((byte*)ptr);
         return this;
     }
 
@@ -30,7 +30,7 @@ public unsafe ref struct Id
     public Id Push(ReadOnlySpan<byte> label)
     {
         ++_counter;
-        ImGuiNative.igPushID_StrStr(label.Start(out var end), end);
+        ImGui.PushID(label.Start(out var end), end);
         return this;
     }
 

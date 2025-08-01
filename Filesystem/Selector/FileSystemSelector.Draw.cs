@@ -1,6 +1,6 @@
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Classes;
 using OtterGui.Extensions;
 using OtterGui.Filesystem;
@@ -139,7 +139,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     //     - drag'n drop
     //     - right-click context menus
     //     - expanding/collapsing
-    private (Vector2, Vector2) DrawFolder(FileSystem<T>.Folder folder)
+    private unsafe (Vector2, Vector2) DrawFolder(FileSystem<T>.Folder folder)
     {
         var flags = ImGuiTreeNodeFlags.NoTreePushOnOpen | (FoldersDefaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None);
         if (SelectedPaths.Contains(folder))
@@ -150,7 +150,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         var endPos = new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight(), ImGui.GetTextLineHeight());
         using var clipRect = ImUtf8.PushClipRectSize(ImGui.GetCursorScreenPos(),
             new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight(), ImGui.GetTextLineHeight()), folder.IsLocked, false);
-        var recurse = ImGui.TreeNodeEx((nint)folder.Identifier, flags, folder.Name.Replace("%", "%%"));
+        var recurse = ImGui.TreeNodeEx(folder.Identifier.ToString(), flags, folder.Name.Replace("%", "%%"));
         clipRect.Pop();
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);

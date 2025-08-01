@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGuiInternal;
 using OtterGuiInternal.Enums;
 using OtterGuiInternal.Structs;
@@ -15,7 +15,7 @@ public static partial class ImUtf8
 
         var style       = ImGui.GetStyle();
         var id          = (ImGuiId)GetId(label);
-        var pos         = window.Dc.CursorPos;
+        var pos         = window.DC.CursorPos;
         var size        = new Vector2(radius * 2, (radius + style.FramePadding.Y) * 2);
         var boundingBox = new ImRect(pos, pos + size);
         ImGuiInternal.ItemSize(boundingBox, style.FramePadding.Y);

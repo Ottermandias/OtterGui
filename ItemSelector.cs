@@ -1,5 +1,5 @@
 using Dalamud.Interface;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Raii;
 using OtterGui.Text;
 
@@ -88,14 +88,14 @@ public class ItemSelector<T>
         SetCurrent(0);
     }
 
-    public void CreateDropSource<TData>(TData data, string tooltip)
+    public unsafe void CreateDropSource<TData>(TData data, string tooltip)
     {
         using var source = ImRaii.DragDropSource();
         if (!source)
             return;
 
         _dragDropData = data;
-        ImGui.SetDragDropPayload(DragDropLabel, nint.Zero, 0);
+        ImGui.SetDragDropPayload(DragDropLabel, null, 0);
         ImGui.TextUnformatted(tooltip);
     }
 
@@ -207,7 +207,7 @@ public class ItemSelector<T>
     protected virtual void OnDrop(object? data, int idx)
         => throw new NotImplementedException();
 
-    private void InternalDraw(int idx)
+    private unsafe void InternalDraw(int idx)
     {
         // Add a slight distance from the border so that the padding of a selectable fills the whole border.
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X);
@@ -226,7 +226,7 @@ public class ItemSelector<T>
             if (source)
             {
                 _dragDropData = idx;
-                ImGui.SetDragDropPayload(MoveLabel, nint.Zero, 0);
+                ImGui.SetDragDropPayload(MoveLabel, null, 0);
                 ImGui.TextUnformatted($"Reordering {idx + 1}...");
             }
         }

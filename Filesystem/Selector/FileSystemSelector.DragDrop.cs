@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Filesystem;
 using OtterGui.Raii;
 
@@ -12,7 +12,7 @@ public partial class FileSystemSelector<T, TStateStorage>
     private readonly Dictionary<string, FileSystem<T>.IPath>          _movedPathsDragDropCache = new();
     private          List<KeyValuePair<string, FileSystem<T>.IPath>>? _movedPathsDragDrop;
 
-    private void DragDropSource(FileSystem<T>.IPath path)
+    private unsafe void DragDropSource(FileSystem<T>.IPath path)
     {
         if (path.IsLocked)
             return;
@@ -21,7 +21,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         if (!_)
             return;
 
-        ImGui.SetDragDropPayload(MoveLabel, nint.Zero, 0);
+        ImGui.SetDragDropPayload(MoveLabel, null, 0);
         _movedPathsDragDrop = MoveList(path);
         ImGui.TextUnformatted(_movedPathsDragDropCache.Count == 1
             ? $"Moving {_movedPathsDragDropCache.Keys.First()}..."

@@ -1,5 +1,5 @@
 using System.Text.Unicode;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.HelperObjects;
 

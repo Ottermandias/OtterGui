@@ -1,5 +1,5 @@
 using Dalamud.Game.Text;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Raii;
 
 namespace OtterGui.Widgets;

@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -17,7 +17,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorButton(ReadOnlySpan<byte> description, Vector4 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None,
         Vector2 size = default)
-        => ImGuiNative.igColorButton(description.Start(), color, flags, size).Bool();
+        => ImGui.ColorButton(description.Start(), color, flags, size);
 
     /// <param name="description"> The tooltip description and ID as a UTF16 string. </param>
     /// <inheritdoc cref="ColorButton(ReadOnlySpan{byte}, Vector4, ImGuiColorEditFlags, Vector2)"/>
@@ -40,7 +40,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorButton(ReadOnlySpan<byte> description, uint color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None,
         Vector2 size = default)
-        => ImGuiNative.igColorButton(description.Start(), ImGui.ColorConvertU32ToFloat4(color), flags, size).Bool();
+        => ImGui.ColorButton(description.Start(), ImGui.ColorConvertU32ToFloat4(color), flags, size);
 
     /// <param name="description"> The tooltip description and ID as a UTF16 string. </param>
     /// <inheritdoc cref="ColorButton(ReadOnlySpan{byte}, uint, ImGuiColorEditFlags, Vector2)"/>

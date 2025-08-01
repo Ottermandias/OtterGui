@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text;
 using OtterGuiInternal;
 using OtterGuiInternal.Enums;
@@ -20,10 +20,10 @@ public static class ToggleButton
 
         var style = ImGui.GetStyle();
         var (visibleEnd, textSize, id) = StringHelpers.ComputeSizeAndId(label);
-        var screenPos = window.Dc.CursorPos;
+        var screenPos = window.DC.CursorPos;
         // Try to vertically align buttons that are smaller/have no padding so that text baseline matches (bit hacky, since it shouldn't be a flag)
-        if (flags.HasFlag(AlignTextBaseLine) && style.FramePadding.Y < window.Dc.CurrLineTextBaseOffset)
-            screenPos.Y += window.Dc.CurrLineTextBaseOffset - style.FramePadding.Y;
+        if (flags.HasFlag(AlignTextBaseLine) && style.FramePadding.Y < window.DC.CurrLineTextBaseOffset)
+            screenPos.Y += window.DC.CurrLineTextBaseOffset - style.FramePadding.Y;
 
         var size        = ImGuiInternal.CalcItemSize(sizeArg, textSize.X + style.FramePadding.X * 2, textSize.Y + style.FramePadding.Y * 2);
         var boundingBox = new ImRect(screenPos, screenPos + size);
@@ -57,8 +57,8 @@ public static class ToggleButton
 
     private static (float Incline, bool IsHoveredLeft, bool IsHoveredRight) DiagonalCheck(bool isHovered, in ImRect boundingBox)
     {
-        var lowerLeft  = new Vector2(boundingBox.MinX, boundingBox.MaxY);
-        var upperRight = new Vector2(boundingBox.MaxX, boundingBox.MinY);
+        var lowerLeft  = new Vector2(boundingBox.Min.X, boundingBox.Max.Y);
+        var upperRight = new Vector2(boundingBox.Max.X, boundingBox.Min.Y);
         var incline    = (upperRight.Y - lowerLeft.Y) / (upperRight.X - lowerLeft.X);
         if (!isHovered)
             return (incline, false, false);
@@ -76,7 +76,7 @@ public static class ToggleButton
         if (window.SkipItems)
             return 0;
 
-        var     screenPos = window.Dc.CursorPos;
+        var     screenPos = window.DC.CursorPos;
         Vector2 rightStart;
         var     style = ImGui.GetStyle();
         if (size.Y is 0)
