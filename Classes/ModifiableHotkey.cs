@@ -1,5 +1,7 @@
 using Dalamud.Game.ClientState.Keys;
+using Dalamud.Interface.Utility;
 using Dalamud.Plugin.Services;
+using ImGuiNET;
 using Newtonsoft.Json;
 
 namespace OtterGui.Classes;
@@ -104,6 +106,9 @@ public struct ModifiableHotkey : IEquatable<ModifiableHotkey>
                 : Modifier2.Modifier is VirtualKey.NO_KEY
                     ? $"{Modifier1} + {Hotkey.GetFancyName()}"
                     : $"{Modifier1} + {Modifier2} + {Hotkey.GetFancyName()}";
+
+    public bool IsPressed()
+        => Modifier1.IsActive() && Modifier2.IsActive() && ImGui.IsKeyPressed(ImGuiHelpers.VirtualKeyToImGuiKey(Hotkey));
 }
 
 public static class VirtualKeyExtensions
