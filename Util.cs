@@ -250,7 +250,7 @@ public static partial class ImGuiUtil
     // It has a centered 'Understood' button to close the window.
     public static void HelpPopup(string label, Vector2 size, Action content)
     {
-        ImGui.SetNextWindowPos(ImGui.GetMainViewport().Pos + ImGui.GetMainViewport().Size / 2f, ImGuiCond.Always, new Vector2(0.5f));
+        ImGui.SetNextWindowPos(ImGui.GetCenter(ImGui.GetMainViewport()), ImGuiCond.Always, new Vector2(0.5f));
         ImGui.SetNextWindowSize(size);
         using var pop = ImRaii.Popup(label, ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove);
         if (pop)
