@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <param name="format"> The printf format-string to display the number in as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ProgressBar(float fraction, Vector2 size, ReadOnlySpan<byte> format)
-        => ImGuiNative.igProgressBar(fraction, size, format.Start());
+        => ImGui.ProgressBar(fraction, size, format.Start());
 
     /// <param name="format"> The printf format-string to display the number in as a UTF16 string. </param>
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{byte})"/>>
@@ -32,13 +32,13 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{byte})"/>>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ProgressBar(float fraction, Vector2 size)
-        => ImGuiNative.igProgressBar(fraction, size, null);
+        => ImGui.ProgressBar(fraction, size, (byte*)null);
 
     /// <summary> Draw a progress bar of standard height over the available content width. </summary>
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{byte})"/>>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ProgressBar(float fraction, ReadOnlySpan<byte> format)
-        => ImGuiNative.igProgressBar(fraction, new Vector2(-float.MinValue, 0), format.Start());
+        => ImGui.ProgressBar(fraction, new Vector2(-float.MinValue, 0), format.Start());
 
     /// <summary> Draw a progress bar of standard height over the available content width. </summary>
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{char})"/>>
@@ -57,5 +57,5 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{byte})"/>>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ProgressBar(float fraction)
-        => ImGuiNative.igProgressBar(fraction, new Vector2(-float.MinValue, 0), null);
+        => ImGui.ProgressBar(fraction, new Vector2(-float.MinValue, 0), (byte*)null);
 }

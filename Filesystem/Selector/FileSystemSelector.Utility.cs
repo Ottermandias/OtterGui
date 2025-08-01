@@ -1,5 +1,5 @@
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Filesystem;
 
 namespace OtterGui.FileSystem.Selector;
@@ -95,9 +95,9 @@ public partial class FileSystemSelector<T, TStateStorage>
         return changes;
     }
 
-    private bool GetPathState(FileSystem<T>.IPath path)
-        => _stateStorage.GetBool(ImGui.GetID((nint)path.Identifier), FoldersDefaultOpen);
+    private unsafe bool GetPathState(FileSystem<T>.IPath path)
+        => _stateStorage.GetBool(ImGui.GetID(path.Identifier.ToString()), FoldersDefaultOpen);
 
-    private void SetFolderState(FileSystem<T>.Folder path, bool state)
-        => _stateStorage.SetBool(ImGui.GetID((nint)path.Identifier), state);
+    private unsafe void SetFolderState(FileSystem<T>.Folder path, bool state)
+        => _stateStorage.SetBool(ImGui.GetID(path.Identifier.ToString()), state);
 }

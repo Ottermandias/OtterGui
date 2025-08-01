@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -18,8 +18,8 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SliderAngle(ReadOnlySpan<byte> label, ref float degreeRadians, ReadOnlySpan<byte> format, float minDegrees = -360f,
         float maxDegrees = 360f, ImGuiSliderFlags flags = ImGuiSliderFlags.None)
-        => ImGuiNative.igSliderAngle(label.Start(), (float*)Unsafe.AsPointer(ref degreeRadians), minDegrees, maxDegrees, format.Start(), flags)
-            .Bool();
+        => ImGui.SliderAngle(label.Start(), (float*)Unsafe.AsPointer(ref degreeRadians), minDegrees, maxDegrees, format.Start(), flags)
+            ;
 
     /// <param name="label"> The slider label as a UTF16 string. </param>
     /// <inheritdoc cref="SliderAngle(ReadOnlySpan{byte},ref float, ReadOnlySpan{byte}, float, float, ImGuiSliderFlags)"/>

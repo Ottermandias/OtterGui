@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InvisibleButton(ReadOnlySpan<byte> id, Vector2 size, ImGuiButtonFlags flags = ImGuiButtonFlags.None)
-        => ImGuiNative.igInvisibleButton(id.Start(), size, flags).Bool();
+        => ImGui.InvisibleButton(id.Start(), size, flags);
 
     /// <param name="id"> The button ID as a UTF16 string. </param>
     /// <inheritdoc cref="Button(ReadOnlySpan{byte}, Vector2)"/>

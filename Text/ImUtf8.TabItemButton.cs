@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TabItemButton(ReadOnlySpan<byte> label, ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
-        => ImGuiNative.igTabItemButton(label.Start(), flags).Bool();
+        => ImGui.TabItemButton(label.Start(), flags);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="TabItemButton(ReadOnlySpan{byte},ImGuiTabItemFlags)"/>

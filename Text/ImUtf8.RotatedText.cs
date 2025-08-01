@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 using OtterGuiInternal;
 
@@ -7,31 +7,34 @@ namespace OtterGui.Text;
 #pragma warning disable CS1573
 public static unsafe partial class ImUtf8
 {
-    /// <summary> Draw text rotated by 90°. </summary>
+    /// <summary> Draw text rotated by 90ï¿½. </summary>
     /// <param name="text"> The given text as a UTF8 string. Does not have to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RotatedText(ReadOnlySpan<byte> text, bool alignToFrame = false)
     {
-        var dl          = ImGui.GetWindowDrawList().NativePtr;
-        var startVertexIdx = (int)dl->_VtxCurrentIdx;
+        var dl          = ImGui.GetWindowDrawList();
+        var startVertexIdx = (int)dl.VtxCurrentIdx;
         var screenPos   = ImGui.GetCursorScreenPos();
         fixed (byte* ptr = text)
         {
-            ImGuiNative.ImDrawList_PushClipRectFullScreen(dl);
-            ImGuiNative.ImDrawList_AddText_Vec2(dl, screenPos, ImGui.GetColorU32(ImGuiCol.Text), ptr, ptr + text.Length);
-            ImGuiNative.ImDrawList_PopClipRect(dl);
+            dl.PushClipRectFullScreen();
+            dl.AddText(screenPos, ImGui.GetColorU32(ImGuiCol.Text), ptr, ptr + text.Length);
+            dl.PopClipRect();
         }
 
         var textSize     = CalcTextSize(text, false);
-        var endVertexIdx = (int)dl->_VtxCurrentIdx;
-        var startVertex  = ImGui.GetWindowDrawList().VtxBuffer[startVertexIdx].NativePtr;
-        var endVertex    = ImGui.GetWindowDrawList().VtxBuffer[endVertexIdx].NativePtr;
+        var endVertexIdx = (int)dl.VtxCurrentIdx;
+        var startVertex  = ImGui.GetWindowDrawList().VtxBuffer[startVertexIdx];
+        var endVertex    = ImGui.GetWindowDrawList().VtxBuffer[endVertexIdx];
         var (offset, dummy) = alignToFrame
             ? (new Vector2(ImGui.GetStyle().FramePadding.Y, textSize.X), new Vector2(2 * ImGui.GetStyle().FramePadding.Y + textSize.Y, textSize.X))
             : (new Vector2(0,                               textSize.X), new Vector2(textSize.Y, textSize.X));
         offset += screenPos;
-        for (var vertex = startVertex; vertex < endVertex; ++vertex)
-            vertex->pos = ImGuiInternal.Rotate(vertex->pos - screenPos, 0, -1) + offset;
+        for (var index = startVertexIdx; index < endVertexIdx; ++index)
+        {
+            ref var vertex = ref ImGui.GetWindowDrawList().VtxBuffer.Ref(index);
+            vertex.Pos = ImGuiInternal.Rotate(vertex.Pos - screenPos, 0, -1) + offset;
+        }
 
         ImGui.Dummy(dummy);
     }

@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Classes;
 using OtterGui.Extensions;
 using OtterGui.Log;

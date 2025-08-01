@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -19,8 +19,8 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Slider<T>(ReadOnlySpan<byte> label, ref T value, ReadOnlySpan<byte> format, T minValue, T maxValue,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
-        => ImGuiNative.igSliderScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), &minValue, &maxValue, format.Start(), flags)
-            .Bool();
+        => ImGui.SliderScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), &minValue, &maxValue, format.Start(), flags)
+            ;
 
     /// <param name="label"> The slider label as a UTF16 string. </param>
     /// <inheritdoc cref="Slider{T}(ReadOnlySpan{byte},ref T, ReadOnlySpan{byte}, T, T, ImGuiSliderFlags)"/>

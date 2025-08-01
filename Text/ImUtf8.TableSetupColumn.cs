@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -15,7 +15,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void TableSetupColumn(ReadOnlySpan<byte> label, ImGuiTableColumnFlags flags = ImGuiTableColumnFlags.None,
         float widthOrWeight = 0, uint userId = 0)
-        => ImGuiNative.igTableSetupColumn(label.Start(), flags, widthOrWeight, userId);
+        => ImGui.TableSetupColumn(label.Start(), flags, widthOrWeight, userId);
 
     /// <param name="label"> The header label as a UTF16 string. </param>
     /// <inheritdoc cref="TableSetupColumn(ReadOnlySpan{byte},ImGuiTableColumnFlags,float,uint)"/>

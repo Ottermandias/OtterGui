@@ -1,8 +1,9 @@
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 using OtterGuiInternal;
 using OtterGuiInternal.Structs;
+using Dalamud.Interface.Utility;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 
@@ -31,8 +32,7 @@ public static partial class ImUtf8
             .Push(ImGuiCol.Text, textColor, textColor != 0);
         using var style = ImRaii.PushStyle(ImGuiStyleVar.FrameBorderSize, GlobalScale, borderColor != 0);
         ImGuiInternal.RenderFrame(rect, frameColor, borderColor != 0, Style.FrameRounding);
-        ImGuiNativeInterop.RenderTextClippedEx(ImGui.GetWindowDrawList().NativePtr, rect.Min, rect.Max, text.Start(out var textEnd), textEnd,
-            (ImVec2*)&textSize, Style.ButtonTextAlign, null);
+        ImGui.GetWindowDrawList().AddTextClippedEx(rect.Min, rect.Max, Encoding.UTF8.GetString(text), textSize, Style.ButtonTextAlign, null);
         ImGuiInternal.ItemSize(rect, FramePadding.Y);
         ImGuiInternal.ItemAdd(rect, 0);
     }
