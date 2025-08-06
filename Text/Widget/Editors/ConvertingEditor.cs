@@ -7,7 +7,7 @@ internal sealed class ConvertingEditor<TStored, TEditable>(IEditor<TEditable> in
 {
     public unsafe bool Draw(Span<TStored> values, bool disabled)
     {
-        // Allocation strategy borrowed from ImGuiNET string conversion logic.
+        // Allocation strategy borrowed from Dalamud.Bindings.ImGui string conversion logic.
         Span<TEditable> converted = values.Length <= StringHelpers.MaxStackAlloc / sizeof(TEditable)
             ? stackalloc TEditable[values.Length]
             : new TEditable[values.Length];

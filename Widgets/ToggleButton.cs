@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text;
 using OtterGuiInternal;
 using OtterGuiInternal.Enums;

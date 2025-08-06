@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGuiInternal.Utility;
 
 namespace OtterGui.Text.Widget;

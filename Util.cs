@@ -3,7 +3,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Textures.TextureWraps;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Raii;
 using OtterGui.Text;
 
@@ -389,7 +389,7 @@ public static partial class ImGuiUtil
     }
 
     public static bool DrawEditButtonText(int id, string current, out string newText, ref bool edit, Vector2 buttonSize, float inputWidth,
-        uint maxLength = 256)
+        int maxLength = 256)
     {
         newText = current;
         var       tmpEdit = edit;
@@ -422,13 +422,13 @@ public static partial class ImGuiUtil
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(IDalamudTextureWrap icon, Vector2 iconSize)
-        => HoverIcon(icon.ImGuiHandle, icon.Size, iconSize);
+        => HoverIcon(icon.Handle, icon.Size, iconSize);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static void HoverIcon(ISharedImmediateTexture icon, Vector2 iconSize)
     {
         if (icon.TryGetWrap(out var wrap, out _))
-            HoverIcon(wrap.ImGuiHandle, wrap.Size, iconSize);
+            HoverIcon(wrap.Handle, wrap.Size, iconSize);
         else
             ImGui.Dummy(iconSize);
     }
@@ -452,7 +452,7 @@ public static partial class ImGuiUtil
 
         using var enable = ImRaii.Enabled();
         ImGui.BeginTooltip();
-        ImGui.Image(icon.ImGuiHandle, size);
+        ImGui.Image(icon.Handle, size);
         if (text.Length > 0)
             ImGui.TextUnformatted(text);
         ImGui.EndTooltip();
@@ -573,7 +573,7 @@ public static partial class ImGuiUtil
     /// <seealso cref="Text.EndObjects.DragDropTarget.CheckPayload(ReadOnlySpan{byte}, ImGuiDragDropFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool IsDropping(string name)
-        => ImGui.AcceptDragDropPayload(name).NativePtr != null;
+        => ImGui.AcceptDragDropPayload(name).Handle != null;
 
     /// <summary> Make a single-button color picker with a contrasted letter centered on it. </summary>
     public static bool ColorPicker(string label, string tooltip, Vector3 input, Action<Vector3> setter, string letter = "")

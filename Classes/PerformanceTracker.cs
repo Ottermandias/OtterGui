@@ -1,6 +1,6 @@
 using Dalamud.Interface.Utility;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Raii;
 
 namespace OtterGui.Classes;

@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 using OtterGuiInternal;
 
@@ -7,7 +7,7 @@ namespace OtterGui.Text;
 #pragma warning disable CS1573
 public static unsafe partial class ImUtf8
 {
-    /// <summary> Draw text rotated by 90°. </summary>
+    /// <summary> Draw text rotated by 90ï¿½. </summary>
     /// <param name="text"> The given text as a UTF8 string. Does not have to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RotatedText(ReadOnlySpan<byte> text, bool alignToFrame = false)

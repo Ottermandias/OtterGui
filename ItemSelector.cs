@@ -1,5 +1,5 @@
 using Dalamud.Interface;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Raii;
 using OtterGui.Text;
 
@@ -95,7 +95,7 @@ public class ItemSelector<T>
             return;
 
         _dragDropData = data;
-        ImGui.SetDragDropPayload(DragDropLabel, nint.Zero, 0);
+        ImGui.SetDragDropPayload(DragDropLabel, ReadOnlySpan<byte>.Empty, 0);
         ImGui.TextUnformatted(tooltip);
     }
 
@@ -226,7 +226,7 @@ public class ItemSelector<T>
             if (source)
             {
                 _dragDropData = idx;
-                ImGui.SetDragDropPayload(MoveLabel, nint.Zero, 0);
+                ImGui.SetDragDropPayload(MoveLabel, ReadOnlySpan<byte>.Empty, 0);
                 ImGui.TextUnformatted($"Reordering {idx + 1}...");
             }
         }

@@ -1,7 +1,7 @@
 using Dalamud.Interface;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Log;
 using OtterGui.Text;
 

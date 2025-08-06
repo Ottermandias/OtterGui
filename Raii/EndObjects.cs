@@ -1,5 +1,5 @@
 using Dalamud.Interface;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Widgets;
 
 namespace OtterGui.Raii;
@@ -51,7 +51,7 @@ public static partial class ImRaii
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopup(id, flags));
 
     public static IEndObject ContextPopupItem()
-        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem());
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem("##Empty"));
 
     public static IEndObject ContextPopupItem(string label)
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem(label));
@@ -111,7 +111,7 @@ public static partial class ImRaii
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label));
 
     public static unsafe IEndObject TabItem(byte* label, ImGuiTabItemFlags flags)
-        => new EndConditionally(ImGuiNative.igEndTabItem, ImGuiNative.igBeginTabItem(label, null, flags) != 0);
+        => new EndConditionally(ImGuiNative.EndTabItem, ImGuiNative.BeginTabItem(label, null, flags) != 0);
 
     public static IEndObject TabItem(string label, ref bool open)
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label, ref open));
