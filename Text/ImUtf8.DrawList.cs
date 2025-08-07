@@ -19,8 +19,7 @@ public static unsafe partial class ImUtf8
     public static void AddText(this ImDrawListPtr drawList, ReadOnlySpan<byte> text, ImFontPtr font, float fontSize, Vector2 pos,
         uint color = 0, float wrapWidth = 0)
         => drawList.AddText(font, fontSize, pos,
-            color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text.Start(out var end), end, wrapWidth,
-            null);
+            color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text, wrapWidth);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="AddText(ImDrawListPtr,ReadOnlySpan{byte},ImFontPtr,float,Vector2,uint,float)"/>
@@ -45,7 +44,7 @@ public static unsafe partial class ImUtf8
     /// <param name="color"> The color of the text. Uses the current default text color if this is 0. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddText(this ImDrawListPtr drawList, ReadOnlySpan<byte> text, Vector2 pos, uint color = 0)
-        => drawList.AddText(pos, color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text.Start(out var end), end);
+        => drawList.AddText(pos, color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="AddText(ImDrawListPtr,ReadOnlySpan{byte},Vector2,uint)"/>

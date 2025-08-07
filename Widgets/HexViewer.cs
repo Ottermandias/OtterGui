@@ -91,7 +91,7 @@ public static partial class Widget
                 if (bytesPerRow < data.Length)
                 {
                     using var color = ImRaii.PushColor(ImGuiCol.Text, offsetColor);
-                    ImGui.TextUnformatted(buffer, packStart);
+                    ImGuiNative.TextUnformatted(buffer, packStart);
                     ImGui.SameLine(0, spacing);
                 }
 
@@ -100,13 +100,13 @@ public static partial class Widget
                 {
                     var       packEnd = packStart + 24;
                     using var color   = ImRaii.PushColor(ImGuiCol.Text, (i & 8) == 0 ? color1 : color2);
-                    ImGui.TextUnformatted(packStart, packEnd);
+                    ImGuiNative.TextUnformatted(packStart, packEnd);
                     ImGui.SameLine(0, spacing);
                     packStart = packEnd;
                 }
 
                 // Finally the printable block.
-                ImGui.TextUnformatted(packStart, buffer + capacity);
+                ImGuiNative.TextUnformatted(packStart, buffer + capacity);
             }
         }
     }

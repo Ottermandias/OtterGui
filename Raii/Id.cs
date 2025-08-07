@@ -45,7 +45,7 @@ public static partial class ImRaii
         {
             if (condition)
             {
-                ImGui.PushID((byte*)id);
+                ImGui.PushID(id);
                 ++_count;
             }
 

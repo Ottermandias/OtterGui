@@ -55,7 +55,7 @@ public static partial class ImGuiUtil
     {
         try
         {
-            return ImGui.GetClipboardTextS();
+            return ImGui.GetClipboardText();
         }
         catch
         {
@@ -389,7 +389,7 @@ public static partial class ImGuiUtil
     }
 
     public static bool DrawEditButtonText(int id, string current, out string newText, ref bool edit, Vector2 buttonSize, float inputWidth,
-        uint maxLength = 256)
+        int maxLength = 256)
     {
         newText = current;
         var       tmpEdit = edit;
@@ -539,12 +539,7 @@ public static partial class ImGuiUtil
     /// Input an ushort.
     /// </summary>
     public static unsafe bool InputUInt16(string label, ref ushort v, ImGuiInputTextFlags flags)
-    {
-        fixed (void* v2 = &v)
-        {
-            return ImGui.InputScalar(label, ImGuiDataType.U16, v2, null, null, "%hu", flags);
-        }
-    }
+        => ImUtf8.InputScalar(label, ref v, flags: flags);
 
     /// <inheritdoc cref="ColorIntensity(Vector4)"/>
     public static float ColorIntensity(uint color)

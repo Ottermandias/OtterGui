@@ -46,14 +46,14 @@ public static unsafe partial class ImUtf8
         var userData = 0;
 
         var input = hint.Length > 0
-            ? ImGui.InputTextWithHint(label.Start(), hint.Start(), buffer.Start(), (uint)buffer.Length,
+            ? ImGuiNative.InputTextWithHint(label.Start(), hint.Start(), buffer.Start(), (uint)buffer.Length,
                 flags | ImGuiInputTextFlags.CallbackAlways,
                 a => *(int*)a->UserData = a->BufTextLen, &userData)
-            : ImGui.InputText(label.Start(), buffer.Start(), (uint)buffer.Length, flags | ImGuiInputTextFlags.CallbackAlways,
+            : ImGuiNative.InputText(label.Start(), buffer.Start(), (uint)buffer.Length, flags | ImGuiInputTextFlags.CallbackAlways,
                 WriteTextLengthCallback,
                 &userData);
         textLength = userData;
-        return input;
+        return input.Bool();
     }
 
     private static int WriteTextLengthCallback(ImGuiInputTextCallbackData* ptr)
