@@ -1,5 +1,3 @@
-using System.Text.Unicode;
-using Dalamud.Interface;
 using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
@@ -18,7 +16,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Button(ReadOnlySpan<byte> label, Vector2 size = default)
-        => ImGui.Button(label.Start(), size);
+        => ImGui.Button(label, size);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="Button(ReadOnlySpan{byte}, Vector2)"/>

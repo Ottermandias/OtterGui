@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True when the menu item was activated this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool MenuItem(ReadOnlySpan<byte> text, ReadOnlySpan<byte> shortcut, bool selected = false, bool enabled = true)
-        => ImGui.MenuItem(text.Start(), shortcut.Length == 0 || shortcut[0] == '\0' ? shortcut.Start() : null, selected, enabled);
+        => ImGui.MenuItem(text, shortcut.Length == 0 || shortcut[0] == '\0' ? shortcut.Start() : null, selected, enabled);
 
     /// <param name="text"> The menu label as a UTF16 string. </param>
     /// <inheritdoc cref="MenuItem(ReadOnlySpan{byte},ReadOnlySpan{byte},bool,bool)"/>

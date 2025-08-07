@@ -3,9 +3,6 @@ using Dalamud.Bindings.ImGui;
 using OtterGui.Extensions;
 using OtterGui.Text.EndObjects;
 using OtterGui.Text.HelperObjects;
-using OtterGuiInternal;
-using OtterGuiInternal.Enums;
-using OtterGuiInternal.Structs;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 
@@ -35,10 +32,10 @@ public static unsafe partial class ImUtf8
         var valueId = GetId("####value"u8);
         var state   = ImGui.GetStateStorage().GetIntRef(stateId, 0);
         var value   = ImGui.GetStateStorage().GetFloatRef(valueId, 0f);
-        currentSize = *state switch
+        currentSize = state switch
         {
-            1 => size with { X = *value },
-            2 => size with { Y = *value },
+            1 => size with { X = value },
+            2 => size with { Y = value },
             _ => size,
         };
 
@@ -70,19 +67,19 @@ public static unsafe partial class ImUtf8
             if (ImGuiP.SplitterBehavior(rect, id, ImGuiAxis.X, &sizeInc, &sizeDec, minSize.X, remainderMin, hoverExtend, delay, 0))
             {
                 // Update internal state.
-                *value  = sizeInc;
+                value  = sizeInc;
                 size    = size with { X = sizeInc };
                 rectMax = (ImGui.GetCursorScreenPos() + size).Round();
-                *state  = 1;
+                state  = 1;
             }
 
             if (ImGui.IsItemDeactivated())
             {
                 // Handle updating on deactivation only.
-                *state = 0;
+                state = 0;
                 if (ImGui.IsItemDeactivatedAfterEdit())
                 {
-                    size.X  = *value;
+                    size.X  = value;
                     rectMax = (ImGui.GetCursorScreenPos() + size).Round();
                     setSize(size);
                 }
@@ -103,18 +100,18 @@ public static unsafe partial class ImUtf8
                 new Vector2(rectMax.X - onlyInner,                   rectMax.Y + halfBorderWidth));
             if (ImGuiP.SplitterBehavior(rect, id, ImGuiAxis.Y, &sizeInc, &sizeDec, minSize.X, remainderMin, hoverExtend, delay, 0))
             {
-                *value  = sizeInc;
+                value  = sizeInc;
                 size    = size with { Y = sizeInc };
                 rectMax = (ImGui.GetCursorScreenPos() + size).Round();
-                *state  = 2;
+                state  = 2;
             }
 
             if (ImGui.IsItemDeactivated())
             {
-                *state = 0;
+                state = 0;
                 if (ImGui.IsItemDeactivatedAfterEdit())
                 {
-                    size.Y  = *value;
+                    size.Y  = value;
                     rectMax = (ImGui.GetCursorScreenPos() + size).Round();
                     setSize(size);
                 }

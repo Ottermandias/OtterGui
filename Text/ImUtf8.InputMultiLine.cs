@@ -122,5 +122,5 @@ public static unsafe partial class ImUtf8
     /// <summary> Simple helper to wrap the multiline input. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool InputMultiLine(ReadOnlySpan<byte> label, Span<byte> buffer, Vector2 size, ImGuiInputTextFlags flags)
-        => ImGui.InputTextMultiline(label.Start(), buffer.Start(), (uint)buffer.Length, size, flags, null!, null);
+        => ImGuiNative.InputTextMultiline(label.Start(), buffer.Start(), (uint)buffer.Length, size, flags, null!, null).Bool();
 }

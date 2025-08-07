@@ -1,5 +1,4 @@
 using Dalamud.Bindings.ImGui;
-using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
 
@@ -10,11 +9,11 @@ public unsafe ref struct TabItem
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal TabItem(ReadOnlySpan<byte> label, ref bool open, ImGuiTabItemFlags flags)
-        => Success = ImGui.BeginTabItem(label.Start(), ref open, flags);
+        => Success = ImGui.BeginTabItem(label, ref open, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal TabItem(ReadOnlySpan<byte> label, ImGuiTabItemFlags flags)
-        => Success = ImGui.BeginTabItem(label.Start(), null, flags);
+        => Success = ImGui.BeginTabItem(label, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(TabItem value)

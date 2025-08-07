@@ -5,7 +5,7 @@ using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw an editing panel for a given color. </summary>
     /// <param name="label"> The label as a UTF8 string. HAS to be null-terminated. </param>
@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the color has been changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorEdit(ReadOnlySpan<byte> label, ref Vector3 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGui.ColorEdit3(label.Start(), ref color, flags);
+        => ImGui.ColorEdit3(label, ref color, flags);
 
     /// <param name="label"> The panel label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorEdit(ReadOnlySpan{byte}, ref Vector3, ImGuiColorEditFlags)"/>
@@ -35,7 +35,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ColorEdit(ReadOnlySpan{byte}, ref Vector3, ImGuiColorEditFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorEdit(ReadOnlySpan<byte> label, ref Vector4 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGui.ColorEdit4(label.Start(), ref color, flags);
+        => ImGui.ColorEdit4(label, ref color, flags);
 
     /// <param name="label"> The panel label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorEdit(ReadOnlySpan{byte}, ref Vector4, ImGuiColorEditFlags)"/>
@@ -59,7 +59,7 @@ public static unsafe partial class ImUtf8
     public static bool ColorEdit(ReadOnlySpan<byte> label, ref uint color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
     {
         var value = ImGui.ColorConvertU32ToFloat4(color);
-        if (!ImGui.ColorEdit4(label.Start(), ref value, flags))
+        if (!ImGui.ColorEdit4(label, ref value, flags))
             return false;
 
         color = ImGui.ColorConvertFloat4ToU32(value);

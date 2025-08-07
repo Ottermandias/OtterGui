@@ -5,7 +5,7 @@ using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw the given color button. </summary>
     /// <param name="description"> The tooltip description and ID as a UTF8 string. HAS to be null-terminated. </param>
@@ -17,7 +17,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorButton(ReadOnlySpan<byte> description, Vector4 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None,
         Vector2 size = default)
-        => ImGui.ColorButton(description.Start(), color, flags, size);
+        => ImGui.ColorButton(description, color, flags, size);
 
     /// <param name="description"> The tooltip description and ID as a UTF16 string. </param>
     /// <inheritdoc cref="ColorButton(ReadOnlySpan{byte}, Vector4, ImGuiColorEditFlags, Vector2)"/>
@@ -40,7 +40,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorButton(ReadOnlySpan<byte> description, uint color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None,
         Vector2 size = default)
-        => ImGui.ColorButton(description.Start(), ImGui.ColorConvertU32ToFloat4(color), flags, size);
+        => ImGui.ColorButton(description, ImGui.ColorConvertU32ToFloat4(color), flags, size);
 
     /// <param name="description"> The tooltip description and ID as a UTF16 string. </param>
     /// <inheritdoc cref="ColorButton(ReadOnlySpan{byte}, uint, ImGuiColorEditFlags, Vector2)"/>

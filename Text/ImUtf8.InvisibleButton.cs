@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InvisibleButton(ReadOnlySpan<byte> id, Vector2 size, ImGuiButtonFlags flags = ImGuiButtonFlags.None)
-        => ImGui.InvisibleButton(id.Start(), size, flags);
+        => ImGui.InvisibleButton(id, size, flags);
 
     /// <param name="id"> The button ID as a UTF16 string. </param>
     /// <inheritdoc cref="Button(ReadOnlySpan{byte}, Vector2)"/>

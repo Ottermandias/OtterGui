@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <param name="format"> The printf format-string to display the number in as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ProgressBar(float fraction, Vector2 size, ReadOnlySpan<byte> format)
-        => ImGui.ProgressBar(fraction, size, format.Start());
+        => ImGui.ProgressBar(fraction, size, format);
 
     /// <param name="format"> The printf format-string to display the number in as a UTF16 string. </param>
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{byte})"/>>
@@ -38,7 +38,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{byte})"/>>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ProgressBar(float fraction, ReadOnlySpan<byte> format)
-        => ImGui.ProgressBar(fraction, new Vector2(-float.MinValue, 0), format.Start());
+        => ImGui.ProgressBar(fraction, new Vector2(-float.MinValue, 0), format);
 
     /// <summary> Draw a progress bar of standard height over the available content width. </summary>
     /// <inheritdoc cref="ProgressBar(float,Vector2,ReadOnlySpan{char})"/>>

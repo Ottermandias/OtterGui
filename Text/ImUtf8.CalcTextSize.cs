@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     public static Vector2 CalcTextSize(ReadOnlySpan<byte> text, bool hideTextAfterDashes = true, float wrapWidth = 0)
     {
         var ret = Vector2.Zero;
-        ImGui.CalcTextSize(&ret, text.Start(out var end), end, hideTextAfterDashes, wrapWidth);
+        ImGuiNative.CalcTextSize(&ret, text.Start(out var end), end, hideTextAfterDashes.Byte(), wrapWidth);
         return ret;
     }
 

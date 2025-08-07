@@ -25,7 +25,7 @@ public unsafe ref struct DragDropTarget()
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool CheckPayload(ReadOnlySpan<byte> label, ImGuiDragDropFlags flags = ImGuiDragDropFlags.None)
-        => !ImGui.AcceptDragDropPayload(label.Start(), flags).IsNull;
+        => !ImGui.AcceptDragDropPayload(label, flags).IsNull;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool CheckPayload(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ImGuiDragDropFlags flags = ImGuiDragDropFlags.None)

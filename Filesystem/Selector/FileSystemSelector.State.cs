@@ -71,7 +71,7 @@ public partial class FileSystemSelector<T, TStateStorage> : IDisposable
         {
             try
             {
-                var x = ImGui.GetClipboardTextS();
+                var x = ImGui.GetClipboardText();
                 if (x.Length > 0)
                 {
                     tmp    = x;

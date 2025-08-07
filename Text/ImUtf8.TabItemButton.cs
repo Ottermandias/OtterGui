@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool TabItemButton(ReadOnlySpan<byte> label, ImGuiTabItemFlags flags = ImGuiTabItemFlags.None)
-        => ImGui.TabItemButton(label.Start(), flags);
+        => ImGui.TabItemButton(label, flags);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="TabItemButton(ReadOnlySpan{byte},ImGuiTabItemFlags)"/>

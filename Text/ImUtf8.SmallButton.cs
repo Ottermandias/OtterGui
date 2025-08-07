@@ -10,7 +10,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SmallButton(ReadOnlySpan<byte> label)
-        => ImGui.SmallButton(label.Start());
+        => ImGui.SmallButton(label);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="SmallButton(ReadOnlySpan{byte})"/>

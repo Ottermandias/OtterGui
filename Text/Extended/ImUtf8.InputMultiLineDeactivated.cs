@@ -24,10 +24,10 @@ public static unsafe partial class ImUtf8
         Vector2 size = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGui.GetID(label.Start(out var end), end);
+        var id = ImGui.GetID(label);
         if (InputStringHandlerBuffer.IsActive && id == InputStringHandlerBuffer.LastId)
         {
-            ImGui.InputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
+            ImGuiNative.InputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
                 null!, null);
             return InputStringHandlerBuffer.Return(input, out result);
         }
@@ -66,10 +66,10 @@ public static unsafe partial class ImUtf8
         Vector2 size = default, ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         flags &= ~ImGuiInputTextFlags.EnterReturnsTrue;
-        var id = ImGui.GetID(label.Start(out var end), end);
+        var id = ImGui.GetID(label);
         if (InputStringHandlerBuffer.IsActive && id == InputStringHandlerBuffer.LastId)
         {
-            ImGui.InputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
+            ImGuiNative.InputTextMultiline(label.Start(), InputStringHandlerBuffer.Buffer, (uint)InputStringHandlerBuffer.Size, size, flags,
                 null!, null);
             return InputStringHandlerBuffer.Return(input, out result);
         }

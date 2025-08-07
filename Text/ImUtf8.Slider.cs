@@ -19,7 +19,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Slider<T>(ReadOnlySpan<byte> label, ref T value, ReadOnlySpan<byte> format, T minValue, T maxValue,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None) where T : unmanaged, INumber<T>
-        => ImGui.SliderScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), &minValue, &maxValue, format.Start(), flags);
+        => ImGuiNative.SliderScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), &minValue, &maxValue, format.Start(), flags).Bool();
 
     /// <param name="label"> The slider label as a UTF16 string. </param>
     /// <inheritdoc cref="Slider{T}(ReadOnlySpan{byte},ref T, ReadOnlySpan{byte}, T, T, ImGuiSliderFlags)"/>

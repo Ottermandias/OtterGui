@@ -5,30 +5,28 @@ using OtterGuiInternal;
 namespace OtterGui.Text;
 
 #pragma warning disable CS1573
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw text rotated by 90°. </summary>
     /// <param name="text"> The given text as a UTF8 string. Does not have to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RotatedText(ReadOnlySpan<byte> text, bool alignToFrame = false)
     {
-        var dl          = ImGui.GetWindowDrawList();
+        var dl             = ImGui.GetWindowDrawList();
         var startVertexIdx = (int)dl.VtxCurrentIdx;
-        var screenPos   = ImGui.GetCursorScreenPos();
-        fixed (byte* ptr = text)
-        {
-            dl.PushClipRectFullScreen();
-            dl.AddText(screenPos, ImGui.GetColorU32(ImGuiCol.Text), ptr, ptr + text.Length);
-            dl.PopClipRect();
-        }
+        var screenPos      = ImGui.GetCursorScreenPos();
+        dl.PushClipRectFullScreen();
+        dl.AddText(screenPos, ImGui.GetColorU32(ImGuiCol.Text), text);
+        dl.PopClipRect();
 
         var textSize     = CalcTextSize(text, false);
         var endVertexIdx = (int)dl.VtxCurrentIdx;
         var startVertex  = ImGui.GetWindowDrawList().VtxBuffer[startVertexIdx];
         var endVertex    = ImGui.GetWindowDrawList().VtxBuffer[endVertexIdx];
         var (offset, dummy) = alignToFrame
-            ? (new Vector2(ImGui.GetStyle().FramePadding.Y, textSize.X), new Vector2(2 * ImGui.GetStyle().FramePadding.Y + textSize.Y, textSize.X))
-            : (new Vector2(0,                               textSize.X), new Vector2(textSize.Y, textSize.X));
+            ? (new Vector2(ImGui.GetStyle().FramePadding.Y,                   textSize.X),
+                new Vector2(2 * ImGui.GetStyle().FramePadding.Y + textSize.Y, textSize.X))
+            : (new Vector2(0, textSize.X), new Vector2(textSize.Y, textSize.X));
         offset += screenPos;
         for (var index = startVertexIdx; index < endVertexIdx; ++index)
         {

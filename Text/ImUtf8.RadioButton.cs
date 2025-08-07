@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool RadioButton(ReadOnlySpan<byte> label, bool active)
-        => ImGui.RadioButton(label.Start(), active);
+        => ImGui.RadioButton(label, active);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="RadioButton(ReadOnlySpan{byte},bool)"/>

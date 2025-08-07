@@ -64,7 +64,7 @@ public static unsafe partial class ImUtf8
 
         using var disabled = ImRaii.Enabled();
         using var tt       = Tooltip();
-        ImGui.TextUnformatted(text.Begin, end);
+        ImGuiNative.TextUnformatted(text.Begin, end);
     }
 
     /// <inheritdoc cref="HoverTooltip(ImGuiHoveredFlags, ref HoverUtf8StringHandler)"/>>

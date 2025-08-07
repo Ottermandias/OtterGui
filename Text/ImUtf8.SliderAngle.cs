@@ -18,7 +18,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SliderAngle(ReadOnlySpan<byte> label, ref float degreeRadians, ReadOnlySpan<byte> format, float minDegrees = -360f,
         float maxDegrees = 360f, ImGuiSliderFlags flags = ImGuiSliderFlags.None)
-        => ImGui.SliderAngle(label.Start(), (float*)Unsafe.AsPointer(ref degreeRadians), minDegrees, maxDegrees, format.Start(), flags);
+        => ImGuiNative.SliderAngle(label.Start(), (float*)Unsafe.AsPointer(ref degreeRadians), minDegrees, maxDegrees, format.Start(), flags).Bool();
 
     /// <param name="label"> The slider label as a UTF16 string. </param>
     /// <inheritdoc cref="SliderAngle(ReadOnlySpan{byte},ref float, ReadOnlySpan{byte}, float, float, ImGuiSliderFlags)"/>

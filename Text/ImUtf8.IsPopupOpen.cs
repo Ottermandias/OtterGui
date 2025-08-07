@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <remarks> Popups are subject to the ID stack. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsPopupOpen(ReadOnlySpan<byte> id, ImGuiPopupFlags flags = ImGuiPopupFlags.None)
-        => ImGui.IsPopupOpen(id.Start(), flags);
+        => ImGui.IsPopupOpen(id, flags);
 
     /// <param name="id"> The popup ID as a UTF16 string. </param>
     /// <inheritdoc cref="IsPopupOpen(ReadOnlySpan{byte},ImGuiPopupFlags)"/>

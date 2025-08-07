@@ -10,7 +10,7 @@ public unsafe ref struct Popup
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Popup(ReadOnlySpan<byte> label, ImGuiWindowFlags flags)
-        => Success = ImGui.BeginPopup(label.Start(), flags);
+        => Success = ImGui.BeginPopup(label, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Popup value)

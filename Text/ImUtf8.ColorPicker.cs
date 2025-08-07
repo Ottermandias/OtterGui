@@ -5,7 +5,7 @@ using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw a color button opening a color edit popup for a given color. </summary>
     /// <param name="label"> The label as a UTF8 string. HAS to be null-terminated. </param>
@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the color has been changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorPicker(ReadOnlySpan<byte> label, ref Vector3 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGui.ColorPicker3(label.Start(), ref color, flags);
+        => ImGui.ColorPicker3(label, ref color, flags);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{byte}, ref Vector3, ImGuiColorEditFlags)"/>
@@ -37,7 +37,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorPicker(ReadOnlySpan<byte> label, ref Vector4 color, Vector4 referenceColor,
         ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGui.ColorPicker4(label.Start(), ref color, flags, (float*)&referenceColor);
+        => ImGui.ColorPicker4(label, ref color, flags, referenceColor);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{byte}, ref Vector4, Vector4, ImGuiColorEditFlags)"/>
@@ -58,7 +58,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{byte}, ref Vector4, Vector4, ImGuiColorEditFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorPicker(ReadOnlySpan<byte> label, ref Vector4 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGui.ColorPicker4(label.Start(), ref color, flags, null);
+        => ImGui.ColorPicker4(label, ref color, flags);
 
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{char}, ref Vector4, Vector4, ImGuiColorEditFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

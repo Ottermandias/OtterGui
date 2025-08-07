@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the checkbox has been clicked in this frame, in which case <paramref name="value"/> will be flipped. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Checkbox(ReadOnlySpan<byte> label, ref bool value)
-        => ImGui.Checkbox(label.Start(), ref value);
+        => ImGui.Checkbox(label, ref value);
 
     /// <param name="label"> The checkbox label as a UTF16 string. </param>
     /// <inheritdoc cref="Checkbox(ReadOnlySpan{byte}, ref bool)"/>
@@ -43,7 +43,7 @@ public static unsafe partial class ImUtf8
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Checkbox(ReadOnlySpan<byte> label, ref uint value, uint flags)
-        => ImGui.CheckboxFlags(label.Start(), ref value, flags);
+        => ImGui.CheckboxFlags(label, ref value, flags);
 
     /// <param name="label"> The checkbox label as a UTF16 string. </param>
     /// <inheritdoc cref="Checkbox(ReadOnlySpan{byte},ref uint, uint)"/>

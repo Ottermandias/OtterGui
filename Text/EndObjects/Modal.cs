@@ -14,7 +14,7 @@ public unsafe ref struct Modal
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Modal(ReadOnlySpan<byte> label, ImGuiWindowFlags flags)
-        => Success = ImGui.BeginPopupModal(label.Start(), null, flags);
+        => Success = ImGui.BeginPopupModal(label.Start(), flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Modal value)

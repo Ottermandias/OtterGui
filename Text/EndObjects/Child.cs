@@ -10,7 +10,7 @@ public unsafe ref struct Child
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Child(ReadOnlySpan<byte> label, Vector2 size, bool border, ImGuiWindowFlags flags)
-        => Success = ImGui.BeginChild(label.Start(), size, border, flags);
+        => Success = ImGui.BeginChild(label, size, border, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Child value)

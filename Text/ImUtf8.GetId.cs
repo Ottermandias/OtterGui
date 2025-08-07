@@ -12,7 +12,7 @@ public static unsafe partial class ImUtf8
     /// <returns> The ImGui ID of the label in the current ID stack. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint GetId(ReadOnlySpan<byte> label)
-        => ImGui.GetID(label.Start(out var end), end);
+        => ImGui.GetID(label);
 
     /// <param name="label"> The object's label as a UTF16 string. </param>
     /// <inheritdoc cref="GetId(ReadOnlySpan{byte})"/>

@@ -5,7 +5,7 @@ using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw a selectable, i.e. text that highlights on being hovered or selected. </summary>
     /// <param name="label"> The selectable label as a UTF8 string. HAS to be null-terminated. </param>
@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Selectable(ReadOnlySpan<byte> label, bool isSelected = false, ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
         Vector2 size = default)
-        => ImGui.Selectable(label.Start(), isSelected, flags, size);
+        => ImGui.Selectable(label, isSelected, flags, size);
 
     /// <param name="label"> The selectable label as a UTF16 string. </param>
     /// <inheritdoc cref="Selectable(ReadOnlySpan{byte},bool,ImGuiSelectableFlags,Vector2)"/>

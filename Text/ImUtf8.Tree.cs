@@ -28,4 +28,26 @@ public static partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TreeNode TreeNode(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
         => new(label.Span(), flags);
+
+    /// <summary> Begin a tree node and end it on leaving scope. </summary>
+    /// <param name="id"> The node ID as pointer value. This will not be dereferenced. </param>
+    /// <param name="label"> The node label as a UTF8 string. HAS to be null-terminated. </param>
+    /// <param name="flags"> Additional flags to control the tree's behaviour. </param>
+    /// <returns> A disposable object that evaluates to true if the begun tree node is currently expanded. Use with using. </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TreeNode TreeNode(nint id, ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        => new(id, label, flags);
+
+    /// <param name="label"> The node label as a UTF16 string. </param>
+    /// <inheritdoc cref="TreeNode(ReadOnlySpan{byte}, ImGuiTreeNodeFlags)"/>
+    /// <exception cref="ImUtf8FormatException" />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TreeNode TreeNode(nint id, ReadOnlySpan<char> label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        => new(id, label.Span<LabelStringHandlerBuffer>(), flags);
+
+    /// <param name="label"> The node label as a formatted string. </param>
+    /// <inheritdoc cref="TreeNode(ReadOnlySpan{char}, ImGuiTreeNodeFlags)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TreeNode TreeNode(nint id, ref Utf8StringHandler<LabelStringHandlerBuffer> label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
+        => new(id, label.Span(), flags);
 }

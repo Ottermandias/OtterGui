@@ -11,7 +11,7 @@ public ref struct DragDropSource
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool SetPayload(ReadOnlySpan<byte> label, ImGuiCond condition = ImGuiCond.None)
-        => ImGui.SetDragDropPayload(label.Start(), null, 0, condition);
+        => ImGui.SetDragDropPayload(label, [], condition);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SetPayload(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ImGuiCond condition = ImGuiCond.None)

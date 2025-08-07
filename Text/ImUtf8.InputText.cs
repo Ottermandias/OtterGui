@@ -287,6 +287,6 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool InputText(ReadOnlySpan<byte> label, Span<byte> buffer, ReadOnlySpan<byte> hint, ImGuiInputTextFlags flags)
         => hint.Length > 0
-            ? ImGui.InputTextWithHint(label.Start(), hint.Start(), buffer.Start(), (uint)buffer.Length, flags, null!, null)
-            : ImGui.InputText(label.Start(), buffer.Start(), (uint)buffer.Length, flags, null!, null);
+            ? ImGuiNative.InputTextWithHint(label.Start(), hint.Start(), buffer.Start(), (uint)buffer.Length, flags, null!, null).Bool()
+            : ImGuiNative.InputText(label.Start(), buffer.Start(), (uint)buffer.Length, flags, null!, null).Bool();
 }

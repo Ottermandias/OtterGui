@@ -150,7 +150,7 @@ public partial class FileSystemSelector<T, TStateStorage>
         var endPos = new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight(), ImGui.GetTextLineHeight());
         using var clipRect = ImUtf8.PushClipRectSize(ImGui.GetCursorScreenPos(),
             new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetFrameHeight(), ImGui.GetTextLineHeight()), folder.IsLocked, false);
-        var recurse = ImGui.TreeNodeEx(folder.Identifier.ToString(), flags, folder.Name.Replace("%", "%%"));
+        var recurse = ImUtf8.TreeNode((nint)folder.Identifier, folder.Name.Replace("%", "%%"), flags);
         clipRect.Pop();
         if (expandedState != recurse)
             AddOrRemoveDescendants(folder, recurse);

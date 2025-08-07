@@ -1,16 +1,18 @@
 using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw text with an additional label as a single item. </summary>
     /// <param name="label"> The text label as a UTF8 string. HAS to be null-terminated. </param>
     /// <param name="text"> The text itself as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void LabelText(ReadOnlySpan<byte> label, ReadOnlySpan<byte> text)
-        => ImGui.LabelText(label.Start(), text.Start());
+        => ImGui.LabelText(label, text);
 
     /// <param name="text"> The text itself as a UTF16 string. HAS to be null-terminated. </param>
     /// <inheritdoc cref="LabelText(ReadOnlySpan{byte},ReadOnlySpan{byte})"/>
