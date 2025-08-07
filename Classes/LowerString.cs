@@ -71,7 +71,7 @@ public readonly struct LowerString : IEquatable<LowerString>, IComparable<LowerS
         => new(s);
 
     // Create an ImGui text input box with hint that converts the string to a LowerString.
-    public static bool InputWithHint(string label, string hint, ref LowerString s, uint maxLength = 128,
+    public static bool InputWithHint(string label, string hint, ref LowerString s, int maxLength = 128,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         var tmp = s.Text;

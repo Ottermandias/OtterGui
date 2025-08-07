@@ -12,7 +12,7 @@ public static partial class ImUtf8
     /// <param name="id"> The layout identifier as a UTF8 string. This will not be pushed on the ID stack and is only used to retain user resizing state. HAS to be null-terminated. </param>
     /// <param name="border"> Whether to display borders between columns. </param>
     /// <returns> A disposable object that ends the multi-column layout on disposal. Use with using. </returns>
-    /// <remarks> Multi-column layouts cannot be nested without using <see cref="Child(ReadOnlySpan{byte}, Vector2, bool, ImGuiNET.ImGuiWindowFlags)"/>. </remarks>
+    /// <remarks> Multi-column layouts cannot be nested without using <see cref="Child(ReadOnlySpan{byte}, Vector2, bool, Dalamud.Bindings.ImGui.ImGuiWindowFlags)"/>. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Columns Columns(int count, ReadOnlySpan<byte> id, bool border = true)
         => new(count, id, border);

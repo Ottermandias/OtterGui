@@ -32,7 +32,7 @@ public static partial class Widget
             width = ImGui.CalcTextSize(input).X + 10;
 
         ImGui.SetNextItemWidth(width);
-        var ret = ImGui.InputText(label, ref input, maxLength, ImGuiInputTextFlags.EnterReturnsTrue);
+        var ret = ImGui.InputText(label, ref input, (int)maxLength, ImGuiInputTextFlags.EnterReturnsTrue);
         TextInputWidths[id] = ImGui.CalcTextSize(input).X + 10;
         return (ret, id);
     }
