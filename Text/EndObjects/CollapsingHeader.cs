@@ -1,5 +1,4 @@
-using ImGuiNET;
-using OtterGui.Text.HelperObjects;
+using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.EndObjects;
 
@@ -11,15 +10,15 @@ public unsafe ref struct CollapsingHeader
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal CollapsingHeader(ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
     {
-        Success = ImGuiNative.igCollapsingHeader_TreeNodeFlags(label.Start(), flags).Bool();
-        ImGuiNative.igPushID_StrStr(label.Start(out var end), end);
+        Success = ImGui.CollapsingHeader(label, flags);
+        ImGui.PushID(label);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal CollapsingHeader(ReadOnlySpan<byte> label, ref bool visible, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
     {
-        Success = ImGuiNative.igCollapsingHeader_BoolPtr(label.Start(), (byte*) Unsafe.AsPointer(ref visible), flags).Bool();
-        ImGuiNative.igPushID_StrStr(label.Start(out var end), end);
+        Success = ImGui.CollapsingHeader(label, ref visible, flags);
+        ImGui.PushID(label);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]

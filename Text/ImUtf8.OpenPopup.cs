@@ -1,11 +1,11 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Ensure a popup is open. </summary>
     /// <param name="id"> The popup ID as a UTF8 string. HAS to be null-terminated. </param>
@@ -13,7 +13,7 @@ public static unsafe partial class ImUtf8
     /// <remarks> Popups are subject to the ID stack. </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void OpenPopup(ReadOnlySpan<byte> id, ImGuiPopupFlags flags = ImGuiPopupFlags.None)
-        => ImGuiNative.igOpenPopup_Str(id.Start(), flags);
+        => ImGui.OpenPopup(id, flags);
 
     /// <param name="id"> The popup ID as a UTF16 string. </param>
     /// <inheritdoc cref="OpenPopup(ReadOnlySpan{byte},ImGuiPopupFlags)"/>

@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -16,7 +16,7 @@ public static unsafe partial class ImUtf8
     public static Vector2 CalcTextSize(ReadOnlySpan<byte> text, bool hideTextAfterDashes = true, float wrapWidth = 0)
     {
         var ret = Vector2.Zero;
-        ImGuiNative.igCalcTextSize(&ret, text.Start(out var end), end, hideTextAfterDashes.Byte(), wrapWidth);
+        ImGuiNative.CalcTextSize(&ret, text.Start(out var end), end, hideTextAfterDashes.Byte(), wrapWidth);
         return ret;
     }
 

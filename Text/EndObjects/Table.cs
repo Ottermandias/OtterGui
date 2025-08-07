@@ -1,16 +1,15 @@
-using ImGuiNET;
-using OtterGui.Text.HelperObjects;
+using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.EndObjects;
 
-public unsafe ref struct Table
+public ref struct Table
 {
     public readonly bool Success;
     public          bool Disposed;
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Table(ReadOnlySpan<byte> label, int columns, ImGuiTableFlags flags, Vector2 outerSize, float innerWidth)
-        => Success = ImGuiNative.igBeginTable(label.Start(), columns, flags, outerSize, innerWidth).Bool();
+        => Success = ImGui.BeginTable(label, columns, flags, outerSize, innerWidth);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Table value)

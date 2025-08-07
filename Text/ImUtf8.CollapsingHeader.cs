@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.EndObjects;
 using OtterGui.Text.HelperObjects;
 
@@ -6,7 +6,7 @@ using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw a header button the width of the available content region. </summary>
     /// <param name="label"> The header label as a UTF8 string. HAS to be null-terminated. </param>
@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> Whether the header is open or closed. </returns>
     /// <remarks> This does not push any kind of ID to the ID stack or indent anything. </remarks>
     public static bool CollapsingHeader(ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
-        => ImGuiNative.igCollapsingHeader_TreeNodeFlags(label.Start(), flags).Bool();
+        => ImGui.CollapsingHeader(label, flags);
 
     /// <param name="label"> The header label as a UTF16 string. </param>
     /// <inheritdoc cref="CollapsingHeader(ReadOnlySpan{byte}, ImGuiTreeNodeFlags)"/>
@@ -33,7 +33,7 @@ public static unsafe partial class ImUtf8
     /// <param name="visible"> Whether this header is visible. If it is, there is a right-aligned close button that toggles this bool. </param>
     /// <inheritdoc cref="CollapsingHeader(ReadOnlySpan{byte}, ImGuiTreeNodeFlags)"/>
     public static bool CollapsingHeader(ReadOnlySpan<byte> label, ref bool visible, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None)
-        => ImGuiNative.igCollapsingHeader_BoolPtr(label.Start(), (byte*)Unsafe.AsPointer(ref visible), flags).Bool();
+        => ImGui.CollapsingHeader(label, ref visible, flags);
 
     /// <param name="label"> The header label as a UTF16 string. </param>
     /// <inheritdoc cref="CollapsingHeader(ReadOnlySpan{byte}, ref bool, ImGuiTreeNodeFlags)"/>

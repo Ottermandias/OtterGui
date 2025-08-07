@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -18,7 +18,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddText(this ImDrawListPtr drawList, ReadOnlySpan<byte> text, ImFontPtr font, float fontSize, Vector2 pos,
         uint color = 0, float wrapWidth = 0)
-        => ImGuiNative.ImDrawList_AddText_FontPtr(drawList.NativePtr, font.NativePtr, fontSize, pos,
+        => drawList.AddText(font, fontSize, pos,
             color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text.Start(out var end), end, wrapWidth,
             null);
 
@@ -45,7 +45,7 @@ public static unsafe partial class ImUtf8
     /// <param name="color"> The color of the text. Uses the current default text color if this is 0. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AddText(this ImDrawListPtr drawList, ReadOnlySpan<byte> text, Vector2 pos, uint color = 0)
-        => ImGuiNative.ImDrawList_AddText_Vec2(drawList.NativePtr, pos, color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text.Start(out var end), end);
+        => drawList.AddText(pos, color == 0 ? ImGui.GetColorU32(ImGuiCol.Text) : color, text.Start(out var end), end);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="AddText(ImDrawListPtr,ReadOnlySpan{byte},Vector2,uint)"/>

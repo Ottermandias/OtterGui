@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -19,7 +19,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InputScalar<T>(ReadOnlySpan<byte> label, ref T value, ReadOnlySpan<byte> format, T step = default, T stepFast = default,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None) where T : unmanaged, INumber<T>
-        => ImGuiNative.igInputScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), step.Equals(default) ? null : &step, &stepFast,
+        => ImGuiNative.InputScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), step.Equals(default) ? null : &step, &stepFast,
             format.Start(), flags).Bool();
 
     /// <param name="label"> The input label as a UTF16 string. </param>

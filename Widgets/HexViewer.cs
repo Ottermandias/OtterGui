@@ -1,6 +1,6 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text;
 
 namespace OtterGui.Widgets;
@@ -91,7 +91,7 @@ public static partial class Widget
                 if (bytesPerRow < data.Length)
                 {
                     using var color = ImRaii.PushColor(ImGuiCol.Text, offsetColor);
-                    ImGuiNative.igTextUnformatted(buffer, packStart);
+                    ImGui.TextUnformatted(buffer, packStart);
                     ImGui.SameLine(0, spacing);
                 }
 
@@ -100,13 +100,13 @@ public static partial class Widget
                 {
                     var       packEnd = packStart + 24;
                     using var color   = ImRaii.PushColor(ImGuiCol.Text, (i & 8) == 0 ? color1 : color2);
-                    ImGuiNative.igTextUnformatted(packStart, packEnd);
+                    ImGui.TextUnformatted(packStart, packEnd);
                     ImGui.SameLine(0, spacing);
                     packStart = packEnd;
                 }
 
                 // Finally the printable block.
-                ImGuiNative.igTextUnformatted(packStart, buffer + capacity);
+                ImGui.TextUnformatted(packStart, buffer + capacity);
             }
         }
     }

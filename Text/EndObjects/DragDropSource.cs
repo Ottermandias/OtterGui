@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -11,7 +11,7 @@ public ref struct DragDropSource
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool SetPayload(ReadOnlySpan<byte> label, ImGuiCond condition = ImGuiCond.None)
-        => ImGuiNative.igSetDragDropPayload(label.Start(), null, 0, condition).Bool();
+        => ImGui.SetDragDropPayload(label, [], condition);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SetPayload(ref Utf8StringHandler<LabelStringHandlerBuffer> label, ImGuiCond condition = ImGuiCond.None)
@@ -24,7 +24,7 @@ public ref struct DragDropSource
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal DragDropSource(ImGuiDragDropFlags flags = ImGuiDragDropFlags.None)
-        => Success = ImGuiNative.igBeginDragDropSource(flags).Bool();
+        => Success = ImGui.BeginDragDropSource(flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(DragDropSource value)

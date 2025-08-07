@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -11,7 +11,14 @@ public unsafe ref struct TreeNode
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal TreeNode(ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags)
     {
-        Success  = ImGuiNative.igTreeNodeEx_Str(label.Start(), flags).Bool();
+        Success  = ImGui.TreeNodeEx(label, flags);
+        Disposed = flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+    internal TreeNode(nint id, ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags)
+    {
+        Success  = ImGuiNative.TreeNodeEx((void*) id, flags, label.Start()).Bool();
         Disposed = flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen);
     }
 

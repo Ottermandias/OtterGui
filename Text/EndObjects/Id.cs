@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text.EndObjects;
@@ -27,24 +27,22 @@ public unsafe ref struct Id
 
     /// <inheritdoc cref="ImUtf8.PushId(ReadOnlySpan{byte})"/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-    public Id Push(ReadOnlySpan<byte> label)
+    public Id Push(scoped ReadOnlySpan<byte> label)
     {
         ++_counter;
-        ImGuiNative.igPushID_StrStr(label.Start(out var end), end);
+        ImGui.PushID(label);
         return this;
     }
 
     /// <inheritdoc cref="ImUtf8.PushId(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-    public Id Push(ReadOnlySpan<char> label)
+    public Id Push(scoped ReadOnlySpan<char> label)
         => Push(label.Span<LabelStringHandlerBuffer>());
 
     /// <inheritdoc cref="ImUtf8.PushId(ref Utf8StringHandler{LabelStringHandlerBuffer})"/>
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
-    public Id Push(ref Utf8StringHandler<LabelStringHandlerBuffer> label)
-#pragma warning disable CS9094
+    public Id Push(scoped ref Utf8StringHandler<LabelStringHandlerBuffer> label)
         => Push(label.Span());
-#pragma warning restore CS9045
 
     /// <summary> Pop a number of IDs from the ID stack, but at most as many as this object pushed. </summary>
     /// <param name="count"> The number of IDs to pop. </param>

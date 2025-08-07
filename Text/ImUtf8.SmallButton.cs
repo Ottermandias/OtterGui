@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
@@ -10,7 +10,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the button has been clicked in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SmallButton(ReadOnlySpan<byte> label)
-        => ImGuiNative.igSmallButton(label.Start()).Bool();
+        => ImGui.SmallButton(label);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="SmallButton(ReadOnlySpan{byte})"/>

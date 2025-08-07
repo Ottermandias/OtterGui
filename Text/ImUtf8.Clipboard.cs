@@ -1,16 +1,15 @@
-using Dalamud.Memory;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Copy the given text to the clipboard. </summary>
     /// <param name="text"> The text as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SetClipboardText(ReadOnlySpan<byte> text)
-        => ImGuiNative.igSetClipboardText(text.Start());
+        => ImGui.SetClipboardText(text);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="SetClipboardText(ReadOnlySpan{byte})"/>
@@ -30,19 +29,14 @@ public static unsafe partial class ImUtf8
     /// <returns> An owned, null-terminated span of UTF8 text. An empty (still null-terminated) span on failure. </returns>
     public static TerminatedByteString GetClipboardTextUtf8()
     {
-        var ptr = ImGuiNative.igGetClipboardText();
-        return ptr == null
+        var ptr = ImGui.GetClipboardTextU8();
+        return ptr.Length is 0
             ? TerminatedByteString.Empty
-            : MemoryHelper.CastNullTerminated<byte>((nint)ptr).CloneNullTerminated();
+            : ptr.CloneNullTerminated();
     }
 
     /// <inheritdoc cref="GetClipboardTextUtf8"/>
     /// <returns> A string of the current clipboard text. An empty string on failure. </returns>
     public static string GetClipboardText()
-    {
-        var ptr = ImGuiNative.igGetClipboardText();
-        return ptr == null
-            ? string.Empty
-            : MemoryHelper.ReadStringNullTerminated((nint)ptr);
-    }
+        => ImGui.GetClipboardText();
 }

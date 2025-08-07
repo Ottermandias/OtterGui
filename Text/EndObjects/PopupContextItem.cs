@@ -1,5 +1,4 @@
-using ImGuiNET;
-using OtterGui.Text.HelperObjects;
+using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.EndObjects;
 
@@ -10,7 +9,7 @@ public unsafe ref struct PopupContextItem
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal PopupContextItem(ReadOnlySpan<byte> label, ImGuiPopupFlags flags)
-        => Success = ImGuiNative.igBeginPopupContextItem(label.Start(), flags).Bool();
+        => Success = ImGui.BeginPopupContextItem(label, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(PopupContextItem value)

@@ -1,11 +1,11 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 
 namespace OtterGui.Text;
 
-public static unsafe partial class ImUtf8
+public static partial class ImUtf8
 {
     /// <summary> Draw a color button opening a color edit popup for a given color. </summary>
     /// <param name="label"> The label as a UTF8 string. HAS to be null-terminated. </param>
@@ -14,7 +14,7 @@ public static unsafe partial class ImUtf8
     /// <returns> True if the color has been changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorPicker(ReadOnlySpan<byte> label, ref Vector3 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGuiNative.igColorPicker3(label.Start(), (Vector3*)Unsafe.AsPointer(ref color), flags).Bool();
+        => ImGui.ColorPicker3(label, ref color, flags);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{byte}, ref Vector3, ImGuiColorEditFlags)"/>
@@ -37,7 +37,7 @@ public static unsafe partial class ImUtf8
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorPicker(ReadOnlySpan<byte> label, ref Vector4 color, Vector4 referenceColor,
         ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGuiNative.igColorPicker4(label.Start(), (Vector4*)Unsafe.AsPointer(ref color), flags, (float*)&referenceColor).Bool();
+        => ImGui.ColorPicker4(label, ref color, flags, referenceColor);
 
     /// <param name="label"> The button label as a UTF16 string. </param>
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{byte}, ref Vector4, Vector4, ImGuiColorEditFlags)"/>
@@ -58,7 +58,7 @@ public static unsafe partial class ImUtf8
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{byte}, ref Vector4, Vector4, ImGuiColorEditFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ColorPicker(ReadOnlySpan<byte> label, ref Vector4 color, ImGuiColorEditFlags flags = ImGuiColorEditFlags.None)
-        => ImGuiNative.igColorPicker4(label.Start(), (Vector4*)Unsafe.AsPointer(ref color), flags, null).Bool();
+        => ImGui.ColorPicker4(label, ref color, flags);
 
     /// <inheritdoc cref="ColorPicker(ReadOnlySpan{char}, ref Vector4, Vector4, ImGuiColorEditFlags)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

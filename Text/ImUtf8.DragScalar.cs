@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -24,7 +24,7 @@ public static unsafe partial class ImUtf8
     {
         var actualMin = min.GetValueOrDefault();
         var actualMax = max.GetValueOrDefault();
-        return ImGuiNative.igDragScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), speed, min.HasValue ? &actualMin : null,
+        return ImGuiNative.DragScalar(label.Start(), Type<T>(), Unsafe.AsPointer(ref value), speed, min.HasValue ? &actualMin : null,
             max.HasValue ? &actualMax : null, format.Start(), flags).Bool();
     }
 

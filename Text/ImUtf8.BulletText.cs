@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.Text.HelperObjects;
 
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
@@ -11,7 +11,7 @@ public static unsafe partial class ImUtf8
     /// <param name="text"> The given text as a UTF8 string. HAS to be null-terminated. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void BulletText(ReadOnlySpan<byte> text)
-        => ImGuiNative.igBulletText(text.Start());
+        => ImGui.BulletText(text);
 
     /// <param name="text"> The given text as a UTF16 string. </param>
     /// <inheritdoc cref="BulletText(ReadOnlySpan{byte})"/>

@@ -1,5 +1,4 @@
-using ImGuiNET;
-using OtterGui.Text.HelperObjects;
+using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.EndObjects;
 
@@ -7,13 +6,13 @@ public readonly ref struct Columns
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public unsafe Columns(int count, ReadOnlySpan<byte> id = default, bool border = true)
-        => ImGuiNative.igColumns(count, id.Start(), border.Byte());
+        => ImGui.Columns(count, id, border);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public void Next()
-        => ImGuiNative.igNextColumn();
+        => ImGui.NextColumn();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    public unsafe void Dispose()
-        => ImGuiNative.igColumns(1, null, 1);
+    public void Dispose()
+        => ImGui.Columns(1, default, true);
 }

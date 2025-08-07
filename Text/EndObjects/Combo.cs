@@ -1,5 +1,4 @@
-using ImGuiNET;
-using OtterGui.Text.HelperObjects;
+using Dalamud.Bindings.ImGui;
 
 namespace OtterGui.Text.EndObjects;
 
@@ -10,7 +9,7 @@ public unsafe ref struct Combo
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal Combo(ReadOnlySpan<byte> label, ReadOnlySpan<byte> preview, ImGuiComboFlags flags)
-        => Success = ImGuiNative.igBeginCombo(label.Start(), preview.Start(), flags).Bool();
+        => Success = ImGui.BeginCombo(label, preview, flags);
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     public static implicit operator bool(Combo value)
