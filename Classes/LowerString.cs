@@ -75,7 +75,7 @@ public readonly struct LowerString : IEquatable<LowerString>, IComparable<LowerS
         ImGuiInputTextFlags flags = ImGuiInputTextFlags.None)
     {
         var tmp = s.Text;
-        if (!ImGui.InputTextWithHint(label, hint, ref tmp, maxLength, flags) || tmp == s.Text)
+        if (!ImGui.InputTextWithHint(label, hint, ref tmp, (int)maxLength, flags) || tmp == s.Text)
             return false;
 
         s = new LowerString(tmp);

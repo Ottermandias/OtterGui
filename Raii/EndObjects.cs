@@ -51,7 +51,7 @@ public static partial class ImRaii
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopup(id, flags));
 
     public static IEndObject ContextPopupItem()
-        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem());
+        => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem(default));
 
     public static IEndObject ContextPopupItem(string label)
         => new EndConditionally(ImGui.EndPopup, ImGui.BeginPopupContextItem(label));
@@ -111,7 +111,7 @@ public static partial class ImRaii
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label));
 
     public static unsafe IEndObject TabItem(byte* label, ImGuiTabItemFlags flags)
-        => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label, null, flags));
+        => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label, flags));
 
     public static IEndObject TabItem(string label, ref bool open)
         => new EndConditionally(ImGui.EndTabItem, ImGui.BeginTabItem(label, ref open));
