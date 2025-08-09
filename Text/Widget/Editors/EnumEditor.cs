@@ -37,7 +37,7 @@ public sealed class EnumEditor<T>(IReadOnlyList<(ReadOnlyMemory<byte> Label, T V
                 labelLength = writer.Position;
             }
             ret = disabled
-                ? ImUtf8.InputText(default(ReadOnlySpan<byte>), TextStringHandlerBuffer.Span[..labelLength], out TerminatedByteString _, flags: ImGuiInputTextFlags.ReadOnly)
+                ? ImUtf8.InputText(""u8, TextStringHandlerBuffer.Span[..labelLength], out TerminatedByteString _, flags: ImGuiInputTextFlags.ReadOnly)
                 : DrawCombo(TextStringHandlerBuffer.Span[..labelLength], ref values[valueIdx]);
         }
 
@@ -46,7 +46,7 @@ public sealed class EnumEditor<T>(IReadOnlyList<(ReadOnlyMemory<byte> Label, T V
 
     private bool DrawCombo(ReadOnlySpan<byte> preview, ref T currentValue)
     {
-        using var c = ImUtf8.Combo(default(ReadOnlySpan<byte>), preview);
+        using var c = ImUtf8.Combo(""u8, preview);
         if (!c)
             return false;
 
