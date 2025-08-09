@@ -11,7 +11,7 @@ public unsafe ref struct TreeNode
     [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
     internal TreeNode(ReadOnlySpan<byte> label, ImGuiTreeNodeFlags flags)
     {
-        Success  = ImGui.TreeNodeEx(label, flags);
+        Success  = ImGuiNative.TreeNodeEx(label.Start(), flags).Bool();
         Disposed = flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen);
     }
 
