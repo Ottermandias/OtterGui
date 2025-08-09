@@ -12,12 +12,12 @@ public static class Editors
     /// <summary>
     /// Provides a default editor suitable for <see cref="float"/> values.
     /// </summary>
-    public static readonly IEditor<float> DefaultFloat = DragEditor<float>.CreateFloat(null, null, 0.1f, 0.0f, 3, default(ReadOnlySpan<byte>), 0);
+    public static readonly IEditor<float> DefaultFloat = DragEditor<float>.CreateFloat(null, null, 0.1f, 0.0f, 3, ""u8, 0);
 
     /// <summary>
     /// Provides a default editor suitable for <see cref="int"/> values.
     /// </summary>
-    public static readonly IEditor<int> DefaultInt = DragEditor<int>.CreateInteger(null, null, 0.1f, 0.0f, default(ReadOnlySpan<byte>), 0);
+    public static readonly IEditor<int> DefaultInt = DragEditor<int>.CreateInteger(null, null, 0.1f, 0.0f, ""u8, 0);
 
     /// <summary>
     /// Adapts a <see cref="MultiStateCheckbox{T}"/> as an <see cref="IEditor{T}"/>.
