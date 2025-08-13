@@ -97,6 +97,9 @@ public class DynamisIpc : IDisposable, IService
         }
     }
 
+    public unsafe void DrawPointer(void* address)
+        => DrawPointer((nint)address);
+
     public void DrawDebugInfo()
     {
         using var table = ImUtf8.Table("##Dynamis"u8, 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg);
