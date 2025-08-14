@@ -99,8 +99,10 @@ public class DynamisIpc : IDisposable, IService
             using (ImRaii.PushFont(UiBuilder.MonoFont,
                        customText is null ? address != nint.Zero : flags.HasFlag(DrawPointerFlags.MonoFont)))
             {
-                using var alpha = ImRaii.PushStyle(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f,
+                using var style = ImRaii.PushStyle(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f,
                     customText is null ? address == nint.Zero : flags.HasFlag(DrawPointerFlags.Semitransparent));
+                style.Push(ImGuiStyleVar.SelectableTextAlign, new Vector2(1.0f, 0.5f),
+                    size != default || flags.HasFlag(DrawPointerFlags.RightAligned));
                 if (ImUtf8.Selectable(customText ?? (address == nint.Zero ? "nullptr" : $"0x{address:X}"),
                         flags.HasFlag(DrawPointerFlags.Selected), selectableFlags, size))
                 {
@@ -264,5 +266,11 @@ public class DynamisIpc : IDisposable, IService
         /// Applied to the default text if the pointer is null.
         /// </summary>
         Semitransparent = 4,
+
+        /// <summary>
+        /// Aligns the text to the right horizontally and centers it vertically.
+        /// Always applied when passed an explicit size.
+        /// </summary>
+        RightAligned = 8,
     }
 }
