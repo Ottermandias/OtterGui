@@ -2,6 +2,7 @@ using Dalamud.Interface;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 using OtterGui.Log;
 using OtterGui.Text;
 
@@ -15,13 +16,14 @@ public class DynamisIpc : IDisposable, IService
     private readonly ICallGateSubscriber<uint, uint, ulong, Version, object?> _initialized;
     private readonly ICallGateSubscriber<object?>                             _disposed;
 
-    private ICallGateSubscriber<nint, object?>?                           _inspectObject;
-    private ICallGateSubscriber<nint, uint, string, uint, uint, object?>? _inspectRegion;
-    private Action<nint>?                                                 _drawPointerAction;
-    private ICallGateSubscriber<nint, object?>?                           _imGuiDrawPointerTooltipDetails;
-    private ICallGateSubscriber<nint, (string, Type?, uint, uint)>?       _getClass;
-    private ICallGateSubscriber<nint, string?, Type?, (bool, uint)>?      _isInstanceOf;
-    private ICallGateSubscriber<object?>?                                 _preloadDataYaml;
+    private ICallGateSubscriber<nint, string?, object?>?                           _inspectObject;
+    private ICallGateSubscriber<nint, uint, string, uint, uint, string?, object?>? _inspectRegion;
+    private Action<nint, Func<string?>?, string?, ulong, Vector2>?                 _drawPointerAction;
+    private ICallGateSubscriber<nint, object?>?                                    _imGuiDrawPointerTooltipDetails;
+    private ICallGateSubscriber<nint, Func<string?>?, object?>?                    _imGuiOpenPointerContextMenu;
+    private ICallGateSubscriber<nint, (string, Type?, uint, uint)>?                _getClass;
+    private ICallGateSubscriber<nint, string?, Type?, (bool, uint)>?               _isInstanceOf;
+    private ICallGateSubscriber<object?>?                                          _preloadDataYaml;
 
     public bool IsSubscribed
         => VersionMajor > 0;
@@ -67,14 +69,17 @@ public class DynamisIpc : IDisposable, IService
         _disposed.Unsubscribe(OnDisposed);
     }
 
-    public void InspectObject(nint address)
-        => _inspectObject?.InvokeAction(address);
+    public void InspectObject(nint address, string? name = null)
+        => _inspectObject?.InvokeAction(address, name);
 
-    public void InspectRegion(nint address, uint size, string typeName, uint typeTemplateId, uint classKindId)
-        => _inspectRegion?.InvokeAction(address, size, typeName, typeTemplateId, classKindId);
+    public void InspectRegion(nint address, uint size, string typeName, uint typeTemplateId, uint classKindId, string? name = null)
+        => _inspectRegion?.InvokeAction(address, size, typeName, typeTemplateId, classKindId, name);
 
     public void DrawTooltipDetails(nint address)
         => _imGuiDrawPointerTooltipDetails?.InvokeAction(address);
+
+    public void OpenContextMenu(nint address, Func<string?>? name = null)
+        => _imGuiOpenPointerContextMenu?.InvokeAction(address, name);
 
     public (string Name, Type? BestManagedType, uint EstimatedSize, uint Displacement) GetClass(nint address)
         => _getClass?.InvokeFunc(address) ?? ("Unavailable", null, 0, 0);
@@ -82,23 +87,44 @@ public class DynamisIpc : IDisposable, IService
     public (bool IsInstance, uint Displacement) IsInstanceOf(nint address, string? className, Type? classType)
         => _isInstanceOf?.InvokeFunc(address, className, classType) ?? (false, 0);
 
-    public void DrawPointer(nint address)
+    public void DrawPointer(nint address, Func<string?>? name = null, string? customText = null, DrawPointerFlags flags = DrawPointerFlags.None,
+        ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.None, Vector2 size = default)
     {
         if (_drawPointerAction is not null)
         {
-            _drawPointerAction.Invoke(address);
+            _drawPointerAction.Invoke(address, name, customText, unchecked((uint)selectableFlags | ((ulong)flags << 32)), size);
         }
         else
         {
-            if (address == nint.Zero)
-                ImUtf8.CopyOnClickSelectable("nullptr"u8, "0x0"u8);
-            else
-                ImUtf8.CopyOnClickSelectable($"0x{address:X}", UiBuilder.MonoFont);
+            using (ImRaii.PushFont(UiBuilder.MonoFont,
+                       customText is null ? address != nint.Zero : flags.HasFlag(DrawPointerFlags.MonoFont)))
+            {
+                using var style = ImRaii.PushStyle(ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f,
+                    customText is null ? address == nint.Zero : flags.HasFlag(DrawPointerFlags.Semitransparent));
+                style.Push(ImGuiStyleVar.SelectableTextAlign, new Vector2(1.0f, 0.5f),
+                    size != default || flags.HasFlag(DrawPointerFlags.RightAligned));
+                if (ImUtf8.Selectable(customText ?? (address == nint.Zero ? "nullptr" : $"0x{address:X}"),
+                        flags.HasFlag(DrawPointerFlags.Selected), selectableFlags, size))
+                {
+                    try
+                    {
+                        ImUtf8.SetClipboardText($"0x{address:X}");
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+            ImUtf8.HoverTooltip("Click to copy to clipboard."u8);
         }
     }
 
-    public unsafe void DrawPointer(void* address)
-        => DrawPointer((nint)address);
+    public unsafe void DrawPointer(void* address, Func<string?>? name = null, string? customText = null,
+        DrawPointerFlags flags = DrawPointerFlags.None, ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.None,
+        Vector2 size = default)
+        => DrawPointer((nint)address, name, customText, flags, selectableFlags, size);
 
     public void DrawDebugInfo()
     {
@@ -144,9 +170,9 @@ public class DynamisIpc : IDisposable, IService
             return;
         }
 
-        if (minor < 3)
+        if (minor < 6)
         {
-            _log.Debug($"Could not attach to Dynamis {VersionMajor}.{VersionMinor}, only 1.3 or higher is supported.");
+            _log.Debug($"Could not attach to Dynamis {VersionMajor}.{VersionMinor}, only 1.6 or higher is supported.");
             return;
         }
 
@@ -156,13 +182,15 @@ public class DynamisIpc : IDisposable, IService
 
         try
         {
-            _inspectObject = _pluginInterface.GetIpcSubscriber<nint, object?>("Dynamis.InspectObject.V1");
-            _inspectRegion = _pluginInterface.GetIpcSubscriber<nint, uint, string, uint, uint, object?>("Dynamis.InspectRegion.V1");
+            _inspectObject = _pluginInterface.GetIpcSubscriber<nint, string?, object?>("Dynamis.InspectObject.V2");
+            _inspectRegion = _pluginInterface.GetIpcSubscriber<nint, uint, string, uint, uint, string?, object?>("Dynamis.InspectRegion.V2");
             _imGuiDrawPointerTooltipDetails = _pluginInterface.GetIpcSubscriber<nint, object?>("Dynamis.ImGuiDrawPointerTooltipDetails.V1");
+            _imGuiOpenPointerContextMenu = _pluginInterface.GetIpcSubscriber<nint, Func<string?>?, object?>("Dynamis.ImGuiOpenPointerContextMenu.V1");
             _getClass = _pluginInterface.GetIpcSubscriber<nint, (string, Type?, uint, uint)>("Dynamis.GetClass.V1");
             _isInstanceOf = _pluginInterface.GetIpcSubscriber<nint, string?, Type?, (bool, uint)>("Dynamis.IsInstanceOf.V1");
             _preloadDataYaml = _pluginInterface.GetIpcSubscriber<object?>("Dynamis.PreloadDataYaml.V1");
-            _drawPointerAction = _pluginInterface.GetIpcSubscriber<Action<nint>>("Dynamis.GetImGuiDrawPointerDelegate.V1").InvokeFunc();
+            _drawPointerAction = _pluginInterface
+                .GetIpcSubscriber<Action<nint, Func<string?>?, string?, ulong, Vector2>>("Dynamis.GetImGuiDrawPointerDelegate.V3").InvokeFunc();
             _log.Verbose("Preloading Dynamis data.yml...");
             _preloadDataYaml.InvokeAction();
             _log.Debug($"Attached to Dynamis {VersionMajor}.{VersionMinor}.");
@@ -191,6 +219,7 @@ public class DynamisIpc : IDisposable, IService
         _preloadDataYaml                = null;
         _drawPointerAction              = null;
         _imGuiDrawPointerTooltipDetails = null;
+        _imGuiOpenPointerContextMenu    = null;
     }
 
     private void UpdateVersion()
@@ -213,5 +242,35 @@ public class DynamisIpc : IDisposable, IService
             _log.Verbose($"Error subscribing to Dynamis IPC:\n{ex}");
             OnDisposed();
         }
+    }
+
+    // See https://github.com/Exter-N/Dynamis/blob/main/Dynamis/UI/ImGuiComponents.cs
+    [Flags]
+    public enum DrawPointerFlags : uint
+    {
+        None = 0,
+
+        /// <summary>
+        /// Draws the ImGui selectable as selected.
+        /// </summary>
+        Selected = 1,
+
+        /// <summary>
+        /// Draws the supplied custom text in a monospace font.
+        /// Applied to the default text if the pointer is not null.
+        /// </summary>
+        MonoFont = 2,
+
+        /// <summary>
+        /// Draws the supplied custom text with halved opacity.
+        /// Applied to the default text if the pointer is null.
+        /// </summary>
+        Semitransparent = 4,
+
+        /// <summary>
+        /// Aligns the text to the right horizontally and centers it vertically.
+        /// Always applied when passed an explicit size.
+        /// </summary>
+        RightAligned = 8,
     }
 }
