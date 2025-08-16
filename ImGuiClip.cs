@@ -158,6 +158,7 @@ public static class ImGuiClip
             {
                 using (ImRaii.PushId(idx))
                 {
+                    using var _ = ImUtf8.Group();
                     draw(it.Current);
                 }
 
