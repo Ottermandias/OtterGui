@@ -1,10 +1,11 @@
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiNotification;
+using Dalamud.Interface.ImGuiNotification.EventArgs;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
-using Dalamud.Bindings.ImGui;
 using OtterGui.Extensions;
 using OtterGui.Log;
 using OtterGui.Text;
@@ -51,6 +52,9 @@ public class Notification : MessageService.IMessage
 
     public string PrintTooltip
         => _ex?.ToString() ?? string.Empty;
+
+    public void OnNotificationActions(INotificationDrawArgs args)
+    {}
 }
 
 public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INotificationManager notificationManager)
@@ -96,6 +100,10 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
 
         public string PrintTooltip
             => Message;
+
+        /// <summary> Will be subscribed to <see cref="IActiveNotification.DrawActions"/> when a notification is created. </summary>
+        /// <param name="args"> The arguments passed by the event. </param>
+        public void OnNotificationActions(INotificationDrawArgs args);
     }
 
     public readonly Logger               Log                 = log;
@@ -144,7 +152,8 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
 
         var notificationMessage = message.NotificationMessage;
         if (doNotify && notificationMessage.Length > 0)
-            NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+        {
+            var notification = NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
             {
                 Content         = message.NotificationMessage,
                 Title           = message.NotificationTitle,
@@ -152,6 +161,8 @@ public class MessageService(Logger log, IUiBuilder builder, IChatGui chat, INoti
                 Minimized       = false,
                 InitialDuration = TimeSpan.FromMilliseconds(message.NotificationDuration),
             });
+            notification.DrawActions += message.OnNotificationActions;
+        }
 
         var chatMessage = message.ChatMessage;
         if (doChat && chatMessage.Payloads.Count > 0)
