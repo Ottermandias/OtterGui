@@ -9,10 +9,10 @@ public static unsafe partial class ImUtf8
 {
     /// <summary> Draw a slider specifically for angles in degrees radians. </summary>
     /// <param name="label"> The slider label as a UTF8 string. HAS to be null-terminated. </param>
-    /// <param name="degreeRadians"> The angle in degrees radians. </param>
+    /// <param name="degreeRadians"> The angle in radian, i.e. [0, 2pi). </param>
     /// <param name="format"> The printf format-string to display the degrees in as a UTF8 string. HAS to be null-terminated. Default is '%.0f deg' </param>
-    /// <param name="minDegrees"> The minimum value for the degrees. This is only applied on manual input when the AlwaysClamp flag is set. </param>
-    /// <param name="maxDegrees"> The maximum value for the degrees. This is only applied on manual input when the AlwaysClamp flag is set. </param>
+    /// <param name="minDegrees"> The minimum value for the degrees, i.e. [0, 360°]. This is only applied on manual input when the AlwaysClamp flag is set. </param>
+    /// <param name="maxDegrees"> The maximum value for the degrees, i.e. [0, 360°]. This is only applied on manual input when the AlwaysClamp flag is set. </param>
     /// <param name="flags"> Additional flags controlling the sliders behavior. </param>
     /// <returns> Whether the value changed in this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
