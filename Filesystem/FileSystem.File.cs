@@ -157,6 +157,20 @@ public partial class FileSystem<T>
                 changes = true;
             }
         }
+        else
+        {
+            foreach (var value in objects)
+            {
+                // Add a new leaf using the given toName function.
+                var leaf = new Leaf(Root, toName(value), value, IdCounter++);
+                _leaves.Add(value, leaf);
+                while (SetChild(Root, leaf, out _) == Result.ItemExists)
+                {
+                    leaf.SetName(leaf.Name.IncrementDuplicate());
+                    changes = true;
+                }
+            }
+        }
 
         Changed?.Invoke(FileSystemChangeType.Reload, Root, null, null);
         return changes;
