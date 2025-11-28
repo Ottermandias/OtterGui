@@ -264,7 +264,7 @@ public abstract class FilterComboBase<T>
         _available.EnsureCapacity(Items.Count);
 
         // Keep the selected key if possible.
-        var lastSelection = _lastSelection == -1 ? -1 : _available[_lastSelection];
+        var lastSelection = _lastSelection is -1 || _available.Count <= _lastSelection ? -1 : _available[_lastSelection];
         _lastSelection = -1;
 
         _available.Clear();
