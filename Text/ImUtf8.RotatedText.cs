@@ -21,8 +21,6 @@ public static partial class ImUtf8
 
         var textSize     = CalcTextSize(text, false);
         var endVertexIdx = (int)dl.VtxCurrentIdx;
-        var startVertex  = ImGui.GetWindowDrawList().VtxBuffer[startVertexIdx];
-        var endVertex    = ImGui.GetWindowDrawList().VtxBuffer[endVertexIdx];
         var (offset, dummy) = alignToFrame
             ? (new Vector2(ImGui.GetStyle().FramePadding.Y,                   textSize.X),
                 new Vector2(2 * ImGui.GetStyle().FramePadding.Y + textSize.Y, textSize.X))
