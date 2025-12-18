@@ -2,7 +2,7 @@ namespace OtterGui.Text.HelperObjects;
 
 public static class ImTextExtensions
 {
-    private static byte _null;
+    private static byte _null = 0;
 
     /// <summary> Clone the given byte span with an appended null-terminator. </summary>
     public static TerminatedByteString CloneNullTerminated(this ReadOnlySpan<byte> input)
